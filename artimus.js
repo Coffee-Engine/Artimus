@@ -25,6 +25,7 @@ window.artimus = {
         get zoom() { return this.#zoom; }
 
         #tool = ""
+        toolFunction = {};
         set tool(value) {
             if (artimus.tools[value]) this.toolFunction = artimus.tools[value];
             else this.toolFunction = {};
@@ -261,6 +262,8 @@ window.artimus = {
 
         refreshToolOptions() {
             this.toolPropertyHolder.innerHTML = "";
+
+            if (!this.toolFunction.CUGI) return;
             this.toolPropertyHolder.appendChild(CUGI.createList(this.toolFunction.CUGI(this)));
         }
 
@@ -299,12 +302,13 @@ window.artimus = {
                     this.tool = toolID;
                     button.className = "artimus-tool artimus-tool-selected";
 
-                    if (this.selectedElement) {
-                        this.selectedElement.className = "artimus-tool";
-                    }
+                    //Set the last selected to not be selected
+                    if (this.selectedElement) this.selectedElement.className = "artimus-tool";
+
+                    this.selectedElement = button;
                 }
 
-                button.className = "artimus-tool";
+                button.className = (toolID == this.tool) ? "artimus-tool artimus-tool-selected" : "artimus-tool";
                 label.className = "artimus-toolLabel";
                 this.toolbox.appendChild(button);
                 button.appendChild(label);

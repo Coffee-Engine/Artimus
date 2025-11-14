@@ -61,6 +61,8 @@
     border-radius: 16px;
 
     transition: 300ms background-color;
+
+    margin-bottom: 4px;
 }
 
 .artimus-tool:hover {
