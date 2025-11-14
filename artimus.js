@@ -266,6 +266,8 @@ window.artimus = {
 
         refreshTools() {
             this.toolbox.innerHTML = "";
+            this.selectedElement = null;
+
             for (let toolID in artimus.tools) {
                 const tool = artimus.tools[toolID];
 
@@ -295,6 +297,11 @@ window.artimus = {
 
                 button.onclick = () => {
                     this.tool = toolID;
+                    button.className = "artimus-tool artimus-tool-selected";
+
+                    if (this.selectedElement) {
+                        this.selectedElement.className = "artimus-tool";
+                    }
                 }
 
                 button.className = "artimus-tool";

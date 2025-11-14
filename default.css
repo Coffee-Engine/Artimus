@@ -55,6 +55,25 @@
 
     justify-content: left;
     align-items: center;
+
+    background-color: #e2e2ff;
+    border-width: 0px;
+    border-radius: 16px;
+
+    transition: 300ms background-color;
+}
+
+.artimus-tool:hover {
+    background-color: #c2c2ff;
+}
+
+.artimus-tool:active {
+    transition: 0ms background-color;
+    background-color: #6a6aff;
+}
+
+.artimus-tool-selected {
+    background-color: #aaaaff;
 }
 
 .artimus-toolIcon {
