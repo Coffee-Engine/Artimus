@@ -77,6 +77,6 @@ artimus.tools.paintBucket = {
 
     properties: {
         fillColor: "#000000",
-        respectTransparency: false,
+        respectTransparency: true,
     }
 }
