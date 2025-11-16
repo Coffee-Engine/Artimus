@@ -51,11 +51,18 @@ body {
 }
 
 .artimus-layerHolder {
-    flex-direction: column-reverse;
+    display: grid;
+    grid-template-rows: calc(100% - 30px) 30px;
 }
 
 .artimus-layerWrapper {
     display: flex;
+}
+
+.artimus-layerList {
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: auto;
 }
 
 .artimus-layerCreationHolder {
@@ -63,6 +70,8 @@ body {
     display: grid;
     max-width: 100%;
     grid-template-columns: calc(100% - 24px) 24px;
+    margin-top: 4px;
+    margin-bottom: 2px;
 }
 
 .artimus-button {
@@ -86,6 +95,8 @@ body {
 
 .artimus-layerCreationName {
     width: calc(100% - 12px);
+    border-width: 0px;
+    border-radius: 16px;
 }
 
 .artimus-layerButton {

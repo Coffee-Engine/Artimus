@@ -278,6 +278,7 @@ window.artimus = {
             this.toolPropertyHolder = document.createElement("div");
             this.layerHolder = document.createElement("div");
 
+            this.layerList = document.createElement("div");
             this.layerCreationHolder = document.createElement("div");
             this.layerCreationName = document.createElement("input");
             this.layerCreationButton = document.createElement("button");
@@ -295,9 +296,11 @@ window.artimus = {
             this.toolPropertyHolder.className = "artimus-sideBarList artimus-toolPropertyHolder";
             this.layerHolder.className = "artimus-sideBarList artimus-layerHolder";
 
+            this.layerList.className = "artimus-layerList";
+
             this.layerCreationHolder.className = "artimus-layerCreationHolder";
             this.layerCreationName.className = "artimus-layerCreationName";
-            this.layerCreationButton.className = "artimus-layerCreationButton";
+            this.layerCreationButton.className = "artimus-button artimus-layerCreationButton";
 
             this.canvasArea.className = "artimus-canvasArea";
             this.canvas.className = "artimus-canvas";
@@ -307,6 +310,7 @@ window.artimus = {
             this.toolbar.appendChild(this.toolPropertyHolder);
             this.toolbar.appendChild(this.layerHolder);
 
+            this.layerHolder.appendChild(this.layerList);
             this.layerHolder.appendChild(this.layerCreationHolder);
             this.layerCreationHolder.appendChild(this.layerCreationName);
             this.layerCreationHolder.appendChild(this.layerCreationButton);
@@ -506,7 +510,7 @@ window.artimus = {
                 const element = this._createLayerElement(layerData);
 
                 this.layers.push(layerData);
-                this.layerHolder.appendChild(element);
+                this.layerList.appendChild(element);
                 element.positionID = this.layers.length - 1;
 
                 //Finally use the new layer
