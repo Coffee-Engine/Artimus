@@ -10,6 +10,9 @@ artimus.tools.line = {
             const strokeSize = toolProperties.strokeSize;
             const halfSize = Math.floor(strokeSize / 2);
             const distance = 1 / Math.sqrt(Math.pow(sx - ex, 2.0) + Math.pow(sy - ey, 2.0));
+            
+            gl.strokeStyle = toolProperties.strokeColor;
+            gl.lineWidth = toolProperties.strokeSize;
 
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
