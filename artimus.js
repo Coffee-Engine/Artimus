@@ -315,8 +315,10 @@ window.artimus = {
             this.canvasArea.appendChild(this.canvas);
 
             this.layerCreationButton.onclick = () => {
-                this.createLayer(this.layerCreationName.value);
-                this.layerCreationName.value = "";
+                if (!this.layerExists(this.layerCreationName.value)) {
+                    this.createLayer(this.layerCreationName.value);
+                    this.layerCreationName.value = "";
+                }
             }
 
             this.updatePosition();
@@ -640,6 +642,10 @@ window.artimus = {
                 layer.element.parentElement.removeChild(layer.element);
                 this.layers.splice(ID, 1);
             }
+        }
+
+        layerExists(name) {
+            return this.layers.findIndex((layer) => layer.name == name) != -1;
         }
     },
 
