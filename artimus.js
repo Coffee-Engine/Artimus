@@ -134,8 +134,7 @@ window.artimus = {
             this.layers[this.#currentLayer].element = element;
             this.layers[this.#currentLayer].label = label;
             
-            createImageBitmap(this.layers[this.#currentLayer]).then(newBitmap => {
-                this.layers[this.#currentLayer].bitmap = newBitmap;
+            this.updateLayer(this.#currentLayer, () => {
                 this.#currentLayer = value;
 
                 //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
@@ -235,7 +234,7 @@ window.artimus = {
             this.height = 480;
             this.createLayer();
 
-            this.GL = this.editingCanvas.getContext("2d");
+            this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true });
             this.fullviewGL = this.canvas.getContext("2d");
             this.previewGL = this.previewCanvas.getContext("2d");
 
@@ -502,62 +501,7 @@ window.artimus = {
                 layerData.name = name;
                 layerData.bitmap = bitmap;
                 
-                const element = document.createElement("div");
-                element.className = "artimus-layerWrapper";
-                element.targetLayer = layerData.name;
-                layerData.element = element;
-
-                const label = document.createElement("button");
-                label.className = this.layerClass;
-                label.innerText = name;
-                label.onclick = () => this.setLayer(element.targetLayer);
-                layerData.label = label;
-
-                const removeLayer = document.createElement("button");
-                removeLayer.className = "artimus-button artimus-layerButton";
-                removeLayer.innerText = "×";
-                removeLayer.onclick = () => this.removeLayer(element.targetLayer);
-
-                const upButton = document.createElement("button");
-                upButton.className = "artimus-button artimus-layerButton";
-                upButton.innerText = "^";
-                upButton.onclick = () => {
-                    const target = element.positionID + 1;
-                    if (target > this.layers.length - 1) return;
-
-                    const targetLayer = this.layers[target];
-                    targetLayer.element.positionID -= 1;
-                    element.positionID += 1;
-
-                    element.moveAf
-                    
-                    const layer = this.layers.slice(element.positionID, 1);
-                    this.layers.splice(target, 0, element.positionID);
-                }
-
-                const downButton = document.createElement("button");
-                downButton.className = "artimus-button artimus-layerButton";
-                downButton.innerText = "v";
-                downButton.onclick = () => {
-                    const target = element.positionID - 1;
-                    if (target < 0) return;
-
-                    const targetLayer = this.layers[target];
-                    targetLayer.element.positionID += 1;
-                    element.positionID -= 1;
-
-                    element.parentElement.removeChild(element);
-                    targetLayer.element.parentElement.insertBefore(element, targetLayer.element);
-
-                    const layer = this.layers.slice(element.positionID, 1);
-                    this.layers.splice(target, 0, layer);
-                    this.layers[element.positionID].positionID = element.positionID;
-                }
-
-                element.appendChild(removeLayer);
-                element.appendChild(upButton);
-                element.appendChild(downButton);
-                element.appendChild(label);
+                const element = this._createLayerElement(layerData);
 
                 this.layers.push(layerData);
                 this.layerHolder.appendChild(element);
@@ -566,6 +510,111 @@ window.artimus = {
                 //Finally use the new layer
                 this.setLayer(name);
             });
+        }
+
+        _createLayerElement(layerData) {
+            const element = document.createElement("div");
+            element.className = "artimus-layerWrapper";
+            element.targetLayer = layerData.name;
+            layerData.element = element;
+
+            const label = document.createElement("button");
+            label.className = this.layerClass;
+            label.innerText = layerData.name;
+            label.onclick = () => this.setLayer(element.targetLayer);
+            layerData.label = label;
+
+            const removeLayer = document.createElement("button");
+            removeLayer.className = "artimus-button artimus-layerButton";
+            removeLayer.innerText = "×";
+            removeLayer.onclick = () => this.removeLayer(element.targetLayer);
+
+            const upButton = document.createElement("button");
+            upButton.className = "artimus-button artimus-layerButton";
+            upButton.innerText = "^";
+            upButton.onclick = () => {
+                this.moveLayer(element.targetLayer, 1);
+            }
+
+            const downButton = document.createElement("button");
+            downButton.className = "artimus-button artimus-layerButton";
+            downButton.innerText = "v";
+            downButton.onclick = () => {
+                this.moveLayer(element.targetLayer, -1);
+            }
+
+            element.appendChild(removeLayer);
+            element.appendChild(upButton);
+            element.appendChild(downButton);
+            element.appendChild(label);
+
+            return element;
+        }
+
+        moveLayer(ID, by) {
+            if (typeof ID == "string") {
+                const locID = this.layers.findIndex((layer) => layer.name == ID);
+                if (locID != -1) ID = locID;
+            }
+
+            if (typeof ID == "number") {
+                const target = ID + by;
+                if (target < 0 || target >= this.layers.length) return;
+
+                const elFrom = this.layers[ID].element;
+                const elTo = this.layers[target].element;
+
+                const layerFrom = this.layers[ID];
+                const layerTo = this.layers[target];
+
+                this.layers[ID] = layerTo;
+                this.layers[target] = layerFrom;
+
+                elFrom.positionID = target;
+                elTo.positionID = ID;
+
+                if (ID == this.currentLayer) {
+                    this.#currentLayer = target;
+                }
+
+                const parent = elFrom.parentElement;
+
+                if (ID == target - 1) {
+                    parent.removeChild(elFrom);
+                    parent.insertBefore(elFrom, elTo);
+                }
+                else if (target == ID - 1) {
+                    parent.removeChild(elTo);
+                    parent.insertBefore(elTo, elFrom);                    
+                }
+                else {
+                    parent.removeChild(elFrom);
+                    parent.removeChild(elTo);
+
+                    if (target + 1 >= this.layers.length) parent.appendChild(elFrom);
+                    else parent.insertBefore(elFrom, this.layers[target + 1].element);
+
+                    if (ID + 1 >= this.layers.length) parent.appendChild(elTo);
+                    else parent.insertBefore(elTo, this.layers[ID + 1].element);
+                }
+
+                console.log(this.layers[target + 1]);
+                console.log(this.layers[ID + 1]);
+            }
+        }
+
+        updateLayer(ID, then) {
+            if (typeof ID == "string") {
+                const locID = this.layers.findIndex((layer) => layer.name == ID);
+                if (locID != -1) ID = locID;
+            }
+
+            if (typeof ID == "number") {
+                createImageBitmap(this.layers[ID]).then(newBitmap => {
+                    this.layers[ID].bitmap = newBitmap;
+                    if (then) then(newBitmap);
+                });
+            }
         }
 
         removeLayer(ID) {
