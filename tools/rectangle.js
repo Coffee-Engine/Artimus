@@ -13,11 +13,20 @@ artimus.tools.rectangle = {
         if (height == 0) height = 1;
 
         gl.fillStyle = toolProperties.fillColor;
-        gl.fillRect(sx, sy, width, height);
-
         gl.strokeStyle = toolProperties.strokeColor;
         gl.lineWidth = toolProperties.strokeSize;
-        if (toolProperties.strokeSize > 0) gl.strokeRect(sx, sy, width, height);
+
+        if (toolProperties.cornerRounding > 0) {
+            gl.beginPath();
+            gl.roundRect(sx, sy, width, height, toolProperties.cornerRounding);
+            gl.fill();
+            if (toolProperties.strokeSize > 0) gl.stroke();
+            gl.closePath();
+        }
+        else {
+            gl.fillRect(sx, sy, width, height);
+            if (toolProperties.strokeSize > 0) gl.strokeRect(sx, sy, width, height);
+        }
     },
 
     mouseUp: (gl, x, y, toolProperties) => {
@@ -35,12 +44,13 @@ artimus.tools.rectangle = {
         { target: artEditor.toolProperties, key: "fillColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int" },
+        { target: artEditor.toolProperties, key: "cornerRounding", type: "int" },
     ]},
 
     properties: {
         fillColor: "#ff0000",
         strokeColor: "#000000",
         strokeSize: 2,
-        pixelBrush: false,
+        cornerRounding: 0,
     }
 }

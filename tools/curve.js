@@ -57,6 +57,7 @@ artimus.tools.curve = {
             gl.moveTo(sx,sy);
             gl.quadraticCurveTo(cx, cy, ex,ey);
             gl.stroke();
+            gl.closePath();
         }
     },
 

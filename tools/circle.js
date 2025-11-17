@@ -29,6 +29,7 @@ artimus.tools.circle = {
         gl.ellipse(hx, hy, (ex - sx) / 2, (ey - sy) / 2, 0, 0, 2 * Math.PI);
         gl.fill();
         gl.stroke();
+        gl.closePath();
     },
 
     mouseUp: (gl, x, y, toolProperties) => {

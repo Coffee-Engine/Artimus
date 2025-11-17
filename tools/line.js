@@ -30,6 +30,7 @@ artimus.tools.line = {
             gl.moveTo(sx,sy);
             gl.lineTo(ex,ey);
             gl.stroke();
+            gl.closePath();
         }
     },
 
