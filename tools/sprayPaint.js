@@ -14,13 +14,24 @@ artimus.tools.sprayPaint = {
         }
     },
 
-    mouseDown: (gl, x, y, toolProperties) => { artimus.tools.sprayPaint.spray(gl, x, y, toolProperties); },
+    mouseDown: (gl, x, y, toolProperties) => { artimus.tools.sprayPaint.spray(gl, x, y, toolProperties); toolProperties.down = true; },
     mouseMove: (gl, x, y, vx, vy, toolProperties) => { artimus.tools.sprayPaint.spray(gl, x, y, toolProperties); },
+    mouseUp: (gl, x, y, toolProperties) => { toolProperties.down = false;},
 
     preview: (gl, x, y, toolProperties) => {
         //if (toolProperties.start) {
-        //    artimus.tools.circle.drawCircle(gl, ...toolProperties.start, x, y, toolProperties);
         //}
+        if (!toolProperties.down) {
+            gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
+            gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+            gl.lineWidth = 2;
+
+            gl.beginPath();
+            gl.ellipse(x, y, toolProperties.radius, toolProperties.radius, 0, 0, 2 * Math.PI);
+            gl.fill();
+            gl.stroke();
+            gl.closePath();
+        }
     },
 
     CUGI:(artEditor) => { return [
