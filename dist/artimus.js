@@ -425,21 +425,16 @@ window.artimus = {
                 if (event.key.toLowerCase() == "z" && event.ctrlKey) {
                     //Determine undo/redo
                     if (event.shiftKey) {
-                        if (this.historyIndex <= 0) return;
-                        this.historyIndex--;
-
-                        this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+                        this.redo();
                     }
                     else {
-                        if (this.historyIndex >= this.layerHistory.length - 1) return;
-                        this.historyIndex++;
-
-                        this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+                        this.undo();
                     }
                 }
             })
         }
 
+        //Canvas movement
         setCanvasPosition(x, y) {
             this.#scrollX = -x;
             this.#scrollX = -y;
@@ -450,6 +445,7 @@ window.artimus = {
             return [Math.floor((x - Math.floor(left)) / this.zoom), Math.floor((y - Math.floor(top)) / this.zoom)];
         }
 
+        //Tools
         refreshToolOptions() {
             this.toolPropertyHolder.innerHTML = "";
 
@@ -518,33 +514,7 @@ window.artimus = {
             }
         }
 
-        resize(width, height) {
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
-
-            this.#width = width;
-            this.#height = height;
-
-            //Get editing data before resizing due to resizing removing all image data;
-            const editingData = (this.GL) ? this.GL.getImageData(0, 0, this.width, this.height) : null;
-
-            this.canvas.width = width;
-            this.canvas.height = height;
-
-            this.previewCanvas.width = width;
-            this.previewCanvas.height = height;
-            
-            this.editingCanvas.width = width;
-            this.editingCanvas.height = height;
-
-            //resize layers
-            if (this.GL) {
-                for (let index = 0; index < this.layers.length; index++) {
-                    this.resizeLayer(index, this.#width, this.#height, editingData);
-                }
-            }
-        }
-
+        //Layer manipulation, for use inside of the library itself but exposed for people to use for their own purposes
         setLayer(ID) {
             if (typeof ID == "string") {
                 const locID = this.layers.findIndex((layer) => layer.name == ID);
@@ -767,6 +737,73 @@ window.artimus = {
 
         layerExists(name) {
             return this.layers.findIndex((layer) => layer.name == name) != -1;
+        }
+
+        //Now for the stuff people want to interact with
+        resize(width, height) {
+            if (width < 1 || typeof width != "number") width = 1;
+            if (height < 1 || typeof height != "number") height = 1;
+
+            this.#width = width;
+            this.#height = height;
+
+            //Get editing data before resizing due to resizing removing all image data;
+            const editingData = (this.GL) ? this.GL.getImageData(0, 0, this.width, this.height) : null;
+
+            this.canvas.width = width;
+            this.canvas.height = height;
+
+            this.previewCanvas.width = width;
+            this.previewCanvas.height = height;
+            
+            this.editingCanvas.width = width;
+            this.editingCanvas.height = height;
+
+            //resize layers
+            if (this.GL) {
+                for (let index = 0; index < this.layers.length; index++) {
+                    this.resizeLayer(index, this.#width, this.#height, editingData);
+                }
+            }
+        }
+
+        undo() {
+            if (this.historyIndex >= this.layerHistory.length - 1) return;
+            this.historyIndex++;
+
+            this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+        }
+
+        redo() {
+            if (this.historyIndex <= 0) return;
+            this.historyIndex--;
+
+            this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+        }
+
+        new(width, height) {
+            //Remove layers
+            this.currentLayer = 0;
+            for (let ID = this.layers.length - 1; ID > 0; ID--) {
+                this.removeLayer(Number(ID));
+            }
+
+            //Then clear our current layer
+            this.GL.clearRect(0, 0, this.width, this.height);
+            this.updateLayer(this.currentLayer, () => {
+                this.resize(width, height);
+            });
+        }
+
+        export() {
+            return this.canvas.toDataURL();
+        }
+
+        exportToPC() {
+            const link = document.createElement("a");
+            link.href = this.export();
+            link.download = "picture.png";
+            link.click();
         }
     },
 

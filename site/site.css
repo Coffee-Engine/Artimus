@@ -1,0 +1,44 @@
+.main-grid {
+    display: grid;
+    grid-template-rows: 24px 1fr;
+
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    top: 0px;
+    left: 0px;
+}
+
+.top-bar {
+    background-color: var(--artimus-background-2);
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    border-bottom-color: var(--artimus-background-1);
+
+    display: flex;
+
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.top-bar > p {
+    margin: 0px;
+}
+
+cugi-dropdown {
+    text-align: center;
+    user-select: none;
+
+    background-color: var(--artimus-button-normal);
+    transition: 300ms background-color;
+}
+
+cugi-dropdown:hover {
+    background-color: var(--artimus-button-hover);
+}
+
+cugi-dropdown:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color;
+}

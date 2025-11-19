@@ -3,23 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="default.css">
+    <link rel="stylesheet" href="dist/default.css">
+    <link rel="stylesheet" href="site/site.css">
     <title>Artimus test</title>
 </head>
 <body>
-    <script src="artimus.js"></script>
-    <script src="tools/paintBrush.js"></script>
-    <script src="tools/sprayPaint.js"></script>
-    <script src="tools/eraser.js"></script>
-    <script src="tools/paintBucket.js"></script>
-    <script src="tools/line.js"></script>
-    <script src="tools/curve.js"></script>
-    <script src="tools/rectangle.js"></script>
-    <script src="tools/circle.js"></script>
-    <script src="tools/jumble.js"></script>
-    <div id="artimusTest" style="position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;"></div>
+    <script src="site/cugi.js"></script>
+    <script src="dist/artimus.js"></script>
+    <script src="dist/tools/paintBrush.js"></script>
+    <script src="dist/tools/sprayPaint.js"></script>
+    <script src="dist/tools/eraser.js"></script>
+    <script src="dist/tools/paintBucket.js"></script>
+    <script src="dist/tools/line.js"></script>
+    <script src="dist/tools/curve.js"></script>
+    <script src="dist/tools/rectangle.js"></script>
+    <script src="dist/tools/circle.js"></script>
+    <script src="dist/tools/jumble.js"></script>
+    
+    <div class="main-grid">
+        <div class="top-bar">
+            <cugi-dropdown>File
+                <cugi-option>{ type: "button", text: "New", onclick: () => {
+                    artimus.activeWorkspaces[0].new(64, 64);
+                }}</cugi-option>
+                <cugi-option>{ type: "button", text: "Save", onclick: () => {
+                    artimus.activeWorkspaces[0].exportToPC();
+                }}</cugi-option>
+                <cugi-option>{ type: "button", text: "Load" }</cugi-option>
+            </cugi-dropdown>
+            <cugi-dropdown>Sprite
+                <cugi-option>{ type: "button", text: "Resize", onclick: () => {
+                    console.log("hello");
+                }}</cugi-option>
+                <cugi-option>{ type: "button", text: "Undo (ctrl + z)", onclick: () => {
+                    artimus.activeWorkspaces[0].undo();
+                }}</cugi-option>
+                <cugi-option>{ type: "button", text: "Redo (ctrl + shift + z)", onclick: () => {
+                    artimus.activeWorkspaces[0].redo();
+                }}</cugi-option>
+            </cugi-dropdown>
+            <p>Artimus web [dev]</p>
+        </div>
+        <div id="workspace-area" class="workspace"></div>
+    </div>
     <script>
-        const workspace = artimus.inject(document.getElementById("artimusTest"));
+        const workspace = artimus.inject(document.getElementById("workspace-area"));
         artimus.globalRefreshTools();
     </script>
 </body>
