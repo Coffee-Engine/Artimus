@@ -26,7 +26,6 @@ artimus.tools.eraser = {
 
         toolProperties.linePos = [x,y];
     },
-    mouseUp: (gl, x, y, toolProperties) => {},
 
     preview: (gl, x, y, toolProperties) => {
         //Calculations

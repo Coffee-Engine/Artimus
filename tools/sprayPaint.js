@@ -9,7 +9,7 @@ artimus.tools.sprayPaint = {
             const dx = x + Math.floor(Math.sin(angle) * dist);
             const dy = y + Math.floor(Math.cos(angle) * dist);
 
-            gl.fillStyle = toolProperties.fillColor;
+            gl.fillStyle = toolProperties.color;
             gl.fillRect(dx, dy, 1, 1);
         }
     },
@@ -35,13 +35,13 @@ artimus.tools.sprayPaint = {
     },
 
     CUGI:(artEditor) => { return [
-        { target: artEditor.toolProperties, key: "fillColor", type: "color" },
+        { target: artEditor.toolProperties, key: "color", type: "color" },
         { target: artEditor.toolProperties, key: "radius", type: "int" },
         { target: artEditor.toolProperties, key: "points", type: "int" },
     ]},
 
     properties: {
-        fillColor: "#ff0000",
+        color: "#ff0000",
         radius: 10,
         points: 5,
     }

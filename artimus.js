@@ -1,5 +1,6 @@
 window.artimus = {
     tools: {},
+    maxHistory: 10,
 
     iRandRange: (min, max) => {
         return Math.floor(Math.random() * (max - min)) + min;
@@ -120,13 +121,14 @@ window.artimus = {
             //Clean up data and save layer data to previous layer.
             this.layers[this.#currentLayer] = this.GL.getImageData(0, 0, this.width, this.height);
             this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
-            
+
             this.updateLayer(this.#currentLayer, () => {
                 this.#currentLayer = value;
 
                 //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
                 const current = this.layers[this.#currentLayer];
                 this.GL.putImageData(current, 0, 0);
+                this.layerHistory = [this.GL.getImageData(0, 0, this.width, this.height)];
 
                 label.className = this.layerClass;
                 current.label.className = this.layerClass + this.layerClassSelected;
@@ -135,6 +137,9 @@ window.artimus = {
         get currentLayer() {
             return this.#currentLayer;
         }
+
+        layerHistory = [];
+        historyIndex = 0;
 
         toolClass = "artimus-button artimus-sideBarButton artimus-tool ";
         layerClass = "artimus-button artimus-sideBarButton artimus-layer ";
@@ -333,8 +338,10 @@ window.artimus = {
                         const [red, green, blue, alpha] = this.GL.getImageData(...this.getCanvasPosition(event.clientX, event.clientY, true), 1, 1).data;
                         const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
 
+                        //The three typical colours
                         this.toolProperties.strokeColor = converted;
                         this.toolProperties.fillColor = converted;
+                        this.toolProperties.color = converted;
 
                         //Refresh options
                         this.refreshToolOptions();
@@ -351,13 +358,18 @@ window.artimus = {
                 
                 if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
                 if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
+
+                //For the undoing
+                if (this.toolDown && this.tool) this.updateLayerHistory();
                 this.toolDown = false; 
             });
             this.canvas.addEventListener("mouseout", (event) => { 
-
                 if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
                 if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
-                this.toolDown = false; 
+                
+                //For the undoing
+                if (this.toolDown && this.tool) this.updateLayerHistory();
+                this.toolDown = false;
             });
             this.canvas.addEventListener("mousemove", (event) => {
                 const position = this.getCanvasPosition(event.clientX, event.clientY);
@@ -408,6 +420,24 @@ window.artimus = {
                     this.zoom += event.deltaZ / -100;
                 }
             }, { passive: false });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key.toLowerCase() == "z" && event.ctrlKey) {
+                    //Determine undo/redo
+                    if (event.shiftKey) {
+                        if (this.historyIndex <= 0) return;
+                        this.historyIndex--;
+
+                        this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+                    }
+                    else {
+                        if (this.historyIndex >= this.layerHistory.length - 1) return;
+                        this.historyIndex++;
+
+                        this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+                    }
+                }
+            })
         }
 
         setCanvasPosition(x, y) {
@@ -649,6 +679,19 @@ window.artimus = {
                     this.layers[ID].bitmap = newBitmap;
                     if (then) then(newBitmap);
                 });
+            }
+        }
+
+        //For updating the undo history
+        updateLayerHistory() {
+            if (this.historyIndex > 0) {
+                this.layerHistory.splice(0, this.historyIndex);
+            }
+
+            this.historyIndex = 0;
+            this.layerHistory.splice(0, 0, this.GL.getImageData(0, 0, this.width, this.height));
+            if (this.layerHistory.length > artimus.maxHistory) {
+                this.layerHistory.pop();
             }
         }
 
