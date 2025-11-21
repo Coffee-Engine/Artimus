@@ -533,6 +533,17 @@ window.artimus = {
 
         createLayer(name) {
             name = name || ("Layer " + (this.layers.length + 1));
+            //Do a thing, guarenteed to not exist (hopefully)
+            if (this.layerExists(name)) {
+                let num = 1;
+                name = (`Layer ${num}`);
+                
+                //Find one that doesn't exist.
+                while (this.layerExists(name)) {
+                    num++;
+                    name = (`Layer ${num}`);
+                }
+            }
 
             const layerData = new ImageData(this.canvas.width, this.canvas.height);
             createImageBitmap(layerData).then(bitmap => {
