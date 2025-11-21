@@ -28,7 +28,7 @@ artimus.tools.circle = {
         gl.beginPath();
         gl.ellipse(hx, hy, (ex - sx) / 2, (ey - sy) / 2, 0, 0, 2 * Math.PI);
         gl.fill();
-        gl.stroke();
+        if (toolProperties.strokeSize > 0) gl.stroke();
         gl.closePath();
     },
 
