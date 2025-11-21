@@ -2,12 +2,18 @@ window.artimus = {
     tools: {},
     maxHistory: 10,
 
+    getCSSVariable: (variable) => {
+        return getComputedStyle(document.body).getPropertyValue(`--artimus-${variable}`);
+    },
+
     iRandRange: (min, max) => {
         return Math.floor(Math.random() * (max - min)) + min;
     },
 
     HexToRGB: (Hex) => {
         if (typeof Hex === "string") {
+            Hex = Hex.trim();
+
             if (Hex.length > 7) {
                 const splitHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(Hex) || [0,0,0,255];
                 return {
@@ -212,12 +218,17 @@ window.artimus = {
             this.fullviewGL = this.canvas.getContext("2d");
             this.previewGL = this.previewCanvas.getContext("2d");
 
+
             this.fileReader = new FileReader();
             this.fileReader.onload = () => { this.onImageLoad(); };
 
             //Sometimes we need this. Sometimes we don't?
             //I dunno, just no IE11
             //this.GL.translate(-0.5, -0.5);
+            this.fullviewGL.mozImageSmoothingEnabled = false;
+            this.fullviewGL.webkitImageSmoothingEnabled = false;
+            this.fullviewGL.msImageSmoothingEnabled = false;
+            this.fullviewGL.imageSmoothingEnabled = false;
             this.GL.imageSmoothingEnabled = false;
 
             artimus.activeWorkspaces.push(this);
@@ -230,11 +241,50 @@ window.artimus = {
                 requestAnimationFrame(loop);
             }
 
-            loop();
+            //Setup our grid then loop
+            this.setGridSize(8);
+            this.refreshGridPattern(() => {
+                loop();
+            });
+        }
+
+        refreshGridPattern(then) {
+            const c1 = artimus.HexToRGB(artimus.getCSSVariable("grid-1"));
+            const c2 = artimus.HexToRGB(artimus.getCSSVariable("grid-2"));
+
+            const imageData = new ImageData(2, 2);
+
+            //Set data
+            imageData.data[0] = c1.r; imageData.data[1] = c1.g; imageData.data[2] = c1.b; imageData.data[3] = 255;
+            imageData.data[4] = c2.r; imageData.data[5] = c2.g; imageData.data[6] = c2.b; imageData.data[7] = 255;
+            imageData.data[8] = c2.r; imageData.data[9] = c2.g; imageData.data[10] = c2.b; imageData.data[11] = 255;
+            imageData.data[12] = c1.r; imageData.data[13] = c1.g; imageData.data[14] = c1.b; imageData.data[15] = 255;
+            
+            createImageBitmap(imageData).then(bitmap => {
+                this.gridBitmap = bitmap;
+                
+                this.gridPattern = this.fullviewGL.createPattern(bitmap, "repeat");
+                this.gridPattern.setTransform(this.gridMatrix);
+
+                if (then) then();
+            });
+        }
+
+        setGridSize(size) {
+            this.gridMatrix = new DOMMatrix([
+                size, 0,
+                0, size,
+                0, 0
+            ]);
+
+            if (this.gridPattern) {
+                this.gridPattern.setTransform(this.gridMatrix);
+            }
         }
 
         renderLoop() {
-            this.fullviewGL.clearRect(0, 0, this.width, this.height);
+            this.fullviewGL.fillStyle = this.gridPattern;
+            this.fullviewGL.fillRect(0, 0, this.width, this.height);
             for (let layerID in this.layers) {
                 if (layerID == this.currentLayer) this.fullviewGL.drawImage(this.editingCanvas, 0, 0);
                 else {

@@ -2,6 +2,9 @@ body {
     --artimus-eraser-outline: #438eff;
     --artimus-eraser-inline: #d0d0ff;
 
+    --artimus-grid-1: #bbbbff;
+    --artimus-grid-2: #7878a4;
+
     --artimus-selection-outline: #438eff;
 
     --artimus-background-1: #e2e2ff;
@@ -42,9 +45,6 @@ body {
 }
 
 .artimus-canvas {
-    background-size: 8px 8px;
-    background-color: var(--artimus-background-3);
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAA5JREFUCJljYICAaDgBAAVnALfcXD16AAAAAElFTkSuQmCC);
     image-rendering: pixelated;
 
     transform: translate(-50%, -50%) scale(var(--zoom)) translate(var(--scrollX), var(--scrollY));

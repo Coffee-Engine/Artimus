@@ -22,8 +22,8 @@ artimus.tools.sprayPaint = {
         //if (toolProperties.start) {
         //}
         if (!toolProperties.down) {
-            gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
-            gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+            gl.strokeStyle = artimus.getCSSVariable("eraser-outline");
+            gl.fillStyle = artimus.getCSSVariable("eraser-inline");
             gl.lineWidth = 2;
 
             gl.beginPath();
