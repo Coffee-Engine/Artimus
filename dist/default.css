@@ -42,13 +42,14 @@ body {
 
 .artimus-canvasArea {
     overflow: hidden;
+    position: relative;
 }
 
 .artimus-canvas {
     image-rendering: pixelated;
 
-    transform: translate(-50%, -50%) scale(var(--zoom)) translate(var(--scrollX), var(--scrollY)) scale(var(--canvasWidth), var(--canvasHeight));
-    position: relative;
+    transform: translate(-50%, -50%) scale(var(--zoom)) translate(var(--scrollX), var(--scrollY));
+    position: absolute;
     top: 50%;
     left: 50%;
     margin: 0%;

@@ -349,8 +349,8 @@ window.artimus = {
             this.canvas = document.createElement("canvas");
             
             //Fix for it resizing it's parents
-            this.canvas.style.width = "1px";
-            this.canvas.style.height = "1px";
+            //this.canvas.style.width = "1px";
+            //this.canvas.style.height = "1px";
             
             //Now we can style our children
             this.container.className = "artimus-container";
@@ -513,8 +513,8 @@ window.artimus = {
         }
 
         getCanvasPosition(x, y) {
-            const {top, left} = this.canvas.getBoundingClientRect();
-            return [Math.floor((x - Math.floor(left)) / this.zoom), Math.floor((y - Math.floor(top)) / this.zoom)];
+            const {top, left, right, bottom} = this.canvas.getBoundingClientRect();
+            return [Math.floor(((x -left) / (right - left)) * this.canvas.width), Math.floor(((y - top) / (bottom - top)) * this.canvas.height)];
         }
 
         //Tools
