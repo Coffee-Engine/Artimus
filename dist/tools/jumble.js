@@ -13,7 +13,7 @@ artimus.tools.jumble = class extends artimus.tool {
         //Detection for selection, since we do this a lot it's good to have this.
         const insideSelection = (this.workspace.hasSelection) ? 
             (x, y) => this.inSelection(gl, x + rx, y + ry) :
-            () => false;
+            () => true;
 
         //For my jumble, whole square
         if (jumbleWholeSquare) {
