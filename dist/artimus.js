@@ -440,17 +440,24 @@ window.artimus = {
             this.canvas.addEventListener("mouseup", (event) => {
                 if (event.button != 0) return;
                 
-                if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
-                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
-
+                const position = this.getCanvasPosition(event.clientX, event.clientY);
+                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
+                if (this.toolFunction.preview) {
+                    this.previewGL.clearRect(0, 0, this.width, this.height);
+                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                }
+                
                 //For the undoing
                 if (this.toolDown && this.tool) this.updateLayerHistory();
                 this.toolDown = false; 
             });
             this.canvas.addEventListener("mouseout", (event) => { 
-                if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
-                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
-                
+                const position = this.getCanvasPosition(event.clientX, event.clientY);
+                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
+                if (this.toolFunction.preview) {
+                    this.previewGL.clearRect(0, 0, this.width, this.height);
+                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                }
                 //For the undoing
                 if (this.toolDown && this.tool) this.updateLayerHistory();
                 this.toolDown = false;
@@ -536,7 +543,7 @@ window.artimus = {
             if (!this.toolFunction.CUGI) return;
             this.toolPropertyHolder.appendChild(CUGI.createList(this.toolFunction.CUGI(this), {
                 preprocess: (item) => {
-                    item.text = item.text || artimus.translate(item.key || item.translationKey, "toolProperty") || item.key;
+                    item.text = artimus.translate(item.translationKey || item.key || item.text, "toolProperty") || item.text || item.key;
                     return item;
                 }
             }));
@@ -583,12 +590,13 @@ window.artimus = {
                     this.selectedElement = button;
                 }
 
+                //Add cugi related things
                 button.CUGI_CONTEXT = () => {
                     return [
-                        { type: "button", text: "use", onclick: () => {
+                        { type: "button", text: "use", translationKey: "use", onclick: () => {
                             button.onclick();
                         }},
-                        { type: "button", text: "useWithDefaults", onclick: () => {
+                        { type: "button", text: "useWithDefaults", translationKey: "useWithDefaults", onclick: () => {
                             button.onclick();
                             this.toolProperties = Object.assign(this.toolProperties, this.toolFunction.properties);
                             this.refreshToolOptions();
@@ -596,6 +604,12 @@ window.artimus = {
                     ];
                 }
 
+                button.CUGI_PREPROCESS = (item) => {
+                    item.text = artimus.translate(item.translationKey || item.key || item.text, "toolDropdown") || item.text || item.key;
+                    return item;
+                }
+
+                //Then setup items
                 button.className = (toolID == this.tool) ? this.toolClass + this.toolClassSelected : this.toolClass;
                 label.className = "artimus-toolLabel";
                 this.toolbox.appendChild(button);
