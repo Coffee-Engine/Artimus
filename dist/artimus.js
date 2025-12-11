@@ -437,16 +437,17 @@ window.artimus = {
             }
 
             this.fullviewGL.drawImage(this.compositeCanvas, 0, 0);
-            this.fullviewGL.drawImage(this.previewCanvas, 0, 0);
+            if (!isExport) {
+                this.fullviewGL.drawImage(this.previewCanvas, 0, 0);
 
-            //If we have a selection draw the outline
-            if (this.hasSelection && !isExport) {
-                this.selectionAnimation = (this.selectionAnimation + 0.1) % 6;
-                this.fullviewGL.setLineDash([4, 2]);
-                this.fullviewGL.lineDashOffset = this.selectionAnimation;
-                this.fullviewGL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
-                this.fullviewGL.lineWidth = 1;
-                this.fullviewGL.stroke(this.selectionPath);
+                if (this.hasSelection) {
+                    this.selectionAnimation = (this.selectionAnimation + 0.1) % 6;
+                    this.fullviewGL.setLineDash([4, 2]);
+                    this.fullviewGL.lineDashOffset = this.selectionAnimation;
+                    this.fullviewGL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
+                    this.fullviewGL.lineWidth = 1;
+                    this.fullviewGL.stroke(this.selectionPath);
+                }
             }
         }
 
