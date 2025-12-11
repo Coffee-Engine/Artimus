@@ -346,10 +346,12 @@ window.artimus = {
             //For editing
             this.editingCanvas = document.createElement("canvas");
             this.previewCanvas = document.createElement("canvas");
+            this.compositeCanvas = document.createElement("canvas");
             this.gridCanvas = document.createElement("canvas");
 
             this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true });
             this.fullviewGL = this.canvas.getContext("2d");
+            this.compositeGL = this.compositeCanvas.getContext("2d");
             this.previewGL = this.previewCanvas.getContext("2d");
             this.gridGL = this.gridCanvas.getContext("2d");
 
@@ -422,14 +424,19 @@ window.artimus = {
             if (!isExport) this.fullviewGL.drawImage(this.gridCanvas, 0, 0);
             else this.fullviewGL.clearRect(0, 0, this.width, this.height);
 
+            this.compositeGL.clearRect(0, 0, this.width, this.height);
             for (let layerID in this.layers) {
-                if (layerID == this.currentLayer) this.fullviewGL.drawImage(this.editingCanvas, 0, 0);
+                const layer = this.layers[layerID];
+                this.compositeGL.globalCompositeOperation = layer.blendMode || "source-over";
+
+                if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, 0, 0);
                 else {
-                    const bitmap = this.layers[layerID].bitmap;
-                    if (bitmap instanceof ImageBitmap) this.fullviewGL.drawImage(bitmap, 0, 0);
+                    const bitmap = layer.bitmap;
+                    if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, 0, 0);
                 }
             }
 
+            this.fullviewGL.drawImage(this.compositeCanvas, 0, 0);
             this.fullviewGL.drawImage(this.previewCanvas, 0, 0);
 
             //If we have a selection draw the outline
@@ -810,6 +817,19 @@ window.artimus = {
             }
         }
 
+        getLayer(ID) {
+            if (typeof ID == "string") {
+                const locID = this.layers.findIndex((layer) => layer.name == ID);
+                if (locID != -1) ID = locID;
+            }
+
+            if (typeof ID == "number") {
+                return this.layers[ID];
+            }
+
+            return;
+        }
+
         createLayer(name) {
             const layer = new artimus.layer(this.canvas.width, this.canvas.height, name || ("Layer " + (this.layers.length + 1)), this);
             return layer;
@@ -830,7 +850,7 @@ window.artimus = {
             label.CUGI_CONTEXT = () => {
                 return [
                     { type: "button", text: "delete", onclick: () => this.removeLayer(element.targetLayer) },
-                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, element.targetLayer) }
+                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) }
                 ]
             }
 
@@ -1001,6 +1021,9 @@ window.artimus = {
             
             this.gridCanvas.width = width;
             this.gridCanvas.height = height;
+            
+            this.compositeCanvas.width = width;
+            this.compositeCanvas.height = height;
 
             //resize layers
             for (let index = 0; index < this.layers.length; index++) {

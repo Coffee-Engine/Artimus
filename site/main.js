@@ -36,8 +36,8 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 
     editor.popup.innerHTML = "";
     editor.popup.appendChild(CUGI.createList([
-        { type: "header", text: layer },
-        { type: "dropdown", target: window, key: "blendMode", items: [
+        { type: "header", text: layer.name },
+        { type: "dropdown", target: layer, key: "blendMode", items: [
             { text: "Default", value: "source-over"},
             { text: "additive", value: "lighter"},
             { text: "multiply", value: "multiply" },
@@ -56,9 +56,7 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 
             { text: "soft-light", value: "soft-light"},
             { text: "hard-light", value: "hard-light"},
-        ], onchange: () => {
-            
-        } },
+        ]},
         { type: "button", text: "ok", onclick: () => editor.closeModal() }
     ]));
 
