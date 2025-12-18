@@ -377,7 +377,7 @@ window.artimus = {
                 loop();
             });
 
-            this.refreshTools();
+            this.refreshTranslation();
         }
 
         refreshGridPattern(then) {
@@ -465,7 +465,6 @@ window.artimus = {
             this.layerCreationHolder = document.createElement("div");
             this.layerCreationName = document.createElement("input");
             this.layerCreationButton = document.createElement("button");
-            this.layerCreationName.placeholder = "layer";
             this.layerCreationButton.innerText = "✓";
 
             this.canvasArea = document.createElement("div");
@@ -634,6 +633,13 @@ window.artimus = {
                     }
                 }
             })
+        }
+
+        refreshTranslation() {
+            this.layerCreationName.placeholder = artimus.translate("inputPlaceholder", "layer");
+
+            this.refreshTools();
+            this.refreshToolOptions();
         }
 
         //Canvas movement

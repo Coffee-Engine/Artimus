@@ -591,7 +591,7 @@
     });
 
     document.addEventListener("contextmenu", event => {
-        if (event.target.CUGI_CONTEXT) {
+        if (event.target && event.target.CUGI_CONTEXT) {
             event.preventDefault();
             event.stopPropagation();
 
