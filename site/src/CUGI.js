@@ -480,10 +480,21 @@
         createPopup: (items, parameters, x, y) => {
             const container = CUGI.createList(items, parameters);
             container.className = "CUGI-Popup";
-            container.style.setProperty("--x", `${x}px`);
-            container.style.setProperty("--y", `${y}px`);
 
             document.body.appendChild(container);
+
+            let { width, height, padding } = getComputedStyle(container);
+            width = Number(width.replaceAll(/[a-zA-Z]/g, ""));
+            height = Number(height.replaceAll(/[a-zA-Z]/g, ""));
+            padding = Number(padding.replaceAll(/[a-zA-Z]/g, ""));
+
+            //If we are offscreen on either side flip
+            if (x + (width + padding * 2) > window.innerWidth) container.style.setProperty("--x", `${x - (width + padding * 2)}px`);
+            else container.style.setProperty("--x", `${x}px`);
+
+            if (y + (height + padding * 2) > window.innerHeight) container.style.setProperty("--y", `${y - (height + padding * 2)}px`);
+            else container.style.setProperty("--y", `${y}px`);
+
 
             return {
                 container: container,
@@ -495,8 +506,16 @@
         },
 
         dropdownClass: class extends HTMLElement {
+            static observedAttributes = ["func", "preprocess"];
+
             constructor() {
                 super();
+
+                //remove odd spacing
+                for (let nodeID in this.childNodes) {
+                    const node = this.childNodes[nodeID];
+                    if (node instanceof Text) node.data = node.data.trim();
+                }
 
                 //Get this ready and steaming
                 this.addEventListener("click", () => {
@@ -520,13 +539,15 @@
                     }
 
                     script = `[${script}]`;
+                    if (this.hasAttribute("func")) script += `.concat(${this.getAttribute("func")}())`;
 
                     if (CUGI.currentPopup) {
                         CUGI.currentPopup.close();
                         CUGI.currentPopup = null;
                     }
 
-                    CUGI.currentPopup = CUGI.createPopup(eval(script), {}, bounds.left, bounds.top);
+                    if (this.hasAttribute("preprocess")) CUGI.currentPopup = CUGI.createPopup(eval(script), { preprocess: eval(this.getAttribute("preprocess")) }, bounds.left, bounds.top);
+                    else CUGI.currentPopup = CUGI.createPopup(eval(script), {}, bounds.left, bounds.top);
                 });
             }
         },
@@ -579,7 +600,9 @@
                 CUGI.currentPopup = null;
             }
 
-            CUGI.currentPopup = CUGI.createPopup(event.target.CUGI_CONTEXT(), {}, event.clientX, event.clientY);
+            CUGI.currentPopup = CUGI.createPopup(event.target.CUGI_CONTEXT(), {
+                preprocess: event.target.CUGI_PREPROCESS
+            }, event.clientX, event.clientY);
             CUGI.currentPopup.justOpened = false;
         }
     });
