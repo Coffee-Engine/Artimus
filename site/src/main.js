@@ -72,7 +72,7 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     editor.language = JSON.parse(text);
 
     editor.workspace = artimus.inject(document.getElementById("workspace-area"));
-    editor.popup = document.getElementById("popup");
+    editor.popup = document.getElementById("popupContent");
     editor.workspace.resize(0, 0);
     artimus.globalRefreshTools();
 })

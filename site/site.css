@@ -65,7 +65,7 @@ cugi-dropdown:active {
     transition: 250ms opacity;
 }
 
-.welcome-screen {
+.popup {
     position: absolute; 
     
     width: 400px;
@@ -78,16 +78,18 @@ cugi-dropdown:active {
 
     background-color: var(--artimus-background-1);
     border-radius: 16px;
+}
 
+.popup #popupContent {
     text-align: center;
     font-family: monospace;
 }
 
-.welcome-screen .CUGI-PropertyHolder {
+.popup .CUGI-PropertyHolder {
     display: flex;
 }
 
-.welcome-screen > h1 {
+.popup > h1 {
     margin: 0px;
 }
 
@@ -95,11 +97,17 @@ cugi-dropdown:active {
     background-color: var(--artimus-button-normal);
     color: var(--artimus-text);
     transition: 300ms background-color;
+    width: auto;
 
     border-width: 2px;
     border-style: solid;
     border-color: var(--artimus-button-hover);
     border-radius: 16px;
+}
+
+.CUGI-Popup .CUGI-Button {
+    border-width: 0px;
+    width: 100%;
 }
 
 .CUGI-Button:hover {
@@ -113,4 +121,20 @@ cugi-dropdown:active {
 
 .LOGO {
     image-rendering: pixelated;
+}
+
+.popup-close {
+    border-radius: 100%;
+    border-width: 2px;
+    border-style: solid;
+
+    background-color: var(--artimus-background-1);
+    border-color: var(--artimus-background-3);
+    color: var(--artimus-text);
+
+    transition: background-color 100ms;
+}
+
+.popup-close:hover {
+    background-color: var(--artimus-background-2);
 }

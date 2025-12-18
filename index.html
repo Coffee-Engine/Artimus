@@ -23,7 +23,10 @@
     <script src="dist/tools/selectionCircle.js"></script>
     <script src="dist/tools/selectionLasso.js"></script>
     <script src="dist/tools/jumble.js"></script>
+    
     <script src="site/src/main.js"></script>
+    <script src="site/src/themes.js"></script>
+    <script src="site/src/settings.js"></script>
     
     <div class="main-grid">
         <div class="top-bar">
@@ -56,21 +59,28 @@
                 <cugi-option>{ type: "button", text: "Redo (ctrl + shift + z)", onclick: () => {
                     artimus.activeWorkspaces[0].redo();
                 }}</cugi-option>
+                <cugi-option>{ type: "label", text:"Editor" }</cugi-option>
+                <cugi-option>{ type: "button", text: "Editor Settings", onclick: () => {
+                    editor.settingsPage();
+                }}</cugi-option>
             </cugi-dropdown>
             <p style="text-align: right; width: 100%;">Artimus web [dev]</p>
         </div>
         <div id="workspace-area" class="workspace"></div>
     </div>
     <div class="modal-background">
-        <div id="popup" class="welcome-screen">
-            <img src="site/Logo_NoGraffiti.png" class="LOGO"></img>
-            <p>A web based art editor and library created by ObviousStudios and open sourced under the MIT liscense</p>
-            <p>Originally created for <a href="https://coffee-engine.github.io/">Coffee Engine</a></p>
-            <h3>Disclaimer</h3>
-            <p>Please note that this software and the library behind it is under development.</p>
-            <p>Things may break or be unstable.</p>
-            <p>If you are fine with this and want to try this web demo click the "I'm ready!" button below!</p>
-            <button class="artimus-button" onclick="editor.workspace.new(640, 480); editor.closeModal();">I'm ready!</button>
+        <div id="popup" class="popup">
+            <div class="popup-top"><button onclick="editor.closeModal();" class="popup-close">✖</button></div>
+            <div id="popupContent">
+                <img src="site/Logo_NoGraffiti.png" class="LOGO"></img>
+                <p>A web based art editor and library created by ObviousStudios and open sourced under the MIT liscense</p>
+                <p>Originally created for <a href="https://coffee-engine.github.io/">Coffee Engine</a></p>
+                <h3>Disclaimer</h3>
+                <p>Please note that this software and the library behind it is under development.</p>
+                <p>Things may break or be unstable.</p>
+                <p>If you are fine with this and want to try this web demo click the "I'm ready!" button below!</p>
+                <button class="artimus-button" onclick="editor.workspace.new(640, 480); editor.closeModal();">I'm ready!</button>
+            </div>
         </div>
     </div>
 </body>
