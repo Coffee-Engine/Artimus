@@ -1,0 +1,29 @@
+{
+    "tool.circle": "Circle",
+    "tool.curve": "Curve",
+    "tool.eraser": "Eraser",
+    "tool.jumble": "Jumble",
+    "tool.line": "Line",
+    "tool.paintBrush": "Paint Brush",
+    "tool.paintBucket": "Paint Bucket",
+    "tool.rectangle": "Rectangle",
+    "tool.selectionCircle": "Circle Selection",
+    "tool.selectionLasso": "Lasso Selection",
+    "tool.selectionRectangle": "Rectangle Selection",
+    "tool.sprayPaint": "Spray Paint",
+
+    "toolProperty.strokeColor": "Stroke Color",
+    "toolProperty.fillColor": "Fill Color",
+    "toolProperty.color": "Color",
+
+    "toolProperty.radius": "Radius",
+    "toolProperty.points": "Points",
+    "toolProperty.strokeSize": "Stroke Size",
+    "toolProperty.cornerRounding": "Rounding",
+    "toolProperty.jumbleSize": "Size",
+    "toolProperty.mix": "Mix",
+
+    "toolProperty.respectTransparency": "Respect Transparency?",
+    "toolProperty.pixelBrush": "Pixel Brush?",
+    "toolProperty.jumbleWholeSquare": "Whole Area?"
+}

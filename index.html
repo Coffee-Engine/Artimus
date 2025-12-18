@@ -9,7 +9,7 @@
 </head>
 <body>
     <!-- For some reason outside scripts aren't allowed to have context menus? -->
-    <!-- <script src="site/CUGI.js"></script> It seems to be conditional? -->
+    <script src="site/src/CUGI.js"></script>
     <script src="dist/artimus.js"></script>
     <script src="dist/tools/paintBrush.js"></script>
     <script src="dist/tools/sprayPaint.js"></script>
@@ -23,7 +23,7 @@
     <script src="dist/tools/selectionCircle.js"></script>
     <script src="dist/tools/selectionLasso.js"></script>
     <script src="dist/tools/jumble.js"></script>
-    <script src="site/main.js"></script>
+    <script src="site/src/main.js"></script>
     
     <div class="main-grid">
         <div class="top-bar">
@@ -73,11 +73,5 @@
             <button class="artimus-button" onclick="editor.workspace.new(640, 480); editor.closeModal();">I'm ready!</button>
         </div>
     </div>
-    <script>
-        editor.workspace = artimus.inject(document.getElementById("workspace-area"));
-        editor.popup = document.getElementById("popup");
-        editor.workspace.resize(0, 0);
-        artimus.globalRefreshTools();
-    </script>
 </body>
 </html>

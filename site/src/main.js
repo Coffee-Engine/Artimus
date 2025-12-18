@@ -2,7 +2,9 @@ window.editor = {
     docEdit: {
         width: 256,
         height: 240
-    }
+    },
+
+    language: {}
 };
 
 editor.closeModal = () => {
@@ -33,7 +35,6 @@ editor.fileResize = (newFile) => {
 }
 
 artimus.layerPropertyMenu = (workspace, layer) => {
-
     editor.popup.innerHTML = "";
     editor.popup.appendChild(CUGI.createList([
         { type: "header", text: layer.name },
@@ -63,3 +64,15 @@ artimus.layerPropertyMenu = (workspace, layer) => {
     document.body.style.setProperty("--modal-interaction", "all");
     document.body.style.setProperty("--modal-opacity", "100%");
 }
+
+artimus.translate = (item, context) => (editor.language[`${context}.${item}`] || `${context}.${item}`);
+
+fetch("lang/english.json").then(result => result.text()).then(text => {
+    //Parse the language file.
+    editor.language = JSON.parse(text);
+
+    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
+    editor.popup = document.getElementById("popup");
+    editor.workspace.resize(0, 0);
+    artimus.globalRefreshTools();
+})
