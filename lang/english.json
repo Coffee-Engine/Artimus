@@ -20,6 +20,7 @@
     "artimus.toolProperty.strokeSize": "Stroke Size",
     "artimus.toolProperty.jumbleSize": "Jumble Size",
 
+    "artimus.toolProperty.circular": "Is Circular",
     "artimus.toolProperty.jumbleWholeSquare": "Jumble Area",
     "artimus.toolProperty.pixelBrush": "Pixelated",
     "artimus.toolProperty.respectTransparency": "Do Transparency",

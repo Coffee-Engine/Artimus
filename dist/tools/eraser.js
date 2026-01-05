@@ -19,8 +19,8 @@ artimus.tools.eraser = class extends artimus.tool {
         const halfSize = Math.floor(toolProperties.strokeSize / 2);
         const rx = x - halfSize;
         const ry = y - halfSize;
-
-        gl.clearRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
+        if (toolProperties.circular) this.eraserCircular(gl, x, y, toolProperties);
+        else gl.clearRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
@@ -33,10 +33,15 @@ artimus.tools.eraser = class extends artimus.tool {
             const rx = Math.floor((linePos[0] + (x - linePos[0]) * i) - halfSize);
             const ry = Math.floor((linePos[1] + (y - linePos[1]) * i) - halfSize);
 
-            gl.clearRect(rx,ry,strokeSize,strokeSize);
+            if (toolProperties.circular) this.eraserCircular(gl, x, y, toolProperties);
+            else gl.clearRect(rx,ry,strokeSize,strokeSize);
         }
 
         toolProperties.linePos = [x,y];
+    }
+
+    mouseUp(gl, x, y, toolProperties) {
+        toolProperties.linePos = null;
     }
 
     preview(gl, x, y, toolProperties) {
@@ -45,20 +50,38 @@ artimus.tools.eraser = class extends artimus.tool {
         const rx = x - halfSize;
         const ry = y - halfSize;
 
-        gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
-        gl.fillRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
+        if (!toolProperties.linePos) {
+            if (toolProperties.circular) {
+                gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+                gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
+                gl.lineWidth = 2;
 
-        if (toolProperties.strokeSize >= 3) {
-            gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
-            gl.fillRect(rx + 1,ry + 1,toolProperties.strokeSize - 2,toolProperties.strokeSize - 2);
+                gl.moveTo(x,y);
+                gl.beginPath();
+                gl.arc(x, y, (toolProperties.strokeSize / 2) - 1, 0, Math.PI * 2);
+                gl.stroke();
+                gl.fill();
+                gl.closePath();
+            }
+            else {
+                gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
+                gl.fillRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
+
+                if (toolProperties.strokeSize >= 3) {
+                    gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+                    gl.fillRect(rx + 1,ry + 1,toolProperties.strokeSize - 2,toolProperties.strokeSize - 2);
+                }
+            }
         }
     }
 
     CUGI(artEditor) { return [
         { target: artEditor.toolProperties, key: "strokeSize", type: "int" },
+        { target: artEditor.toolProperties, key: "circular", type: "boolean" },
     ]}
 
     properties = {
-        strokeSize: 2
+        strokeSize: 2,
+        circular: true,
     }
 }

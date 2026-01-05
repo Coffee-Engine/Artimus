@@ -13,7 +13,18 @@ artimus.tools.paintBrush = class extends artimus.tool {
             const height = Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius)
             gl.clearRect(x - width, y - height, width * 2, height * 2);
         }
-        
+
+        toolProperties.linePos = [x,y];
+    }
+
+    drawCircular(gl, x, y, toolProperties) {
+        const radius = toolProperties.strokeSize / 2;
+        for (let i = 0; i < 90; i++) {
+            const width = Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius);
+            const height = Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius)
+            gl.fillRect(x - width, y - height, width * 2, height * 2);
+        }
+
         toolProperties.linePos = [x,y];
     }
 
@@ -40,12 +51,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
             gl.stroke();
         }
         else {
-            //Calculations
-            const halfSize = Math.floor(toolProperties.strokeSize / 2);
-            const rx = x - halfSize;
-            const ry = y - halfSize;
-
-            gl.fillRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
+            this.drawCircular(gl, x, y, toolProperties);
         }
     }
 
@@ -53,16 +59,19 @@ artimus.tools.paintBrush = class extends artimus.tool {
         if (toolProperties.isEraser) this.eraserCircular(gl, x, y, toolProperties);
         else if (toolProperties.pixelBrush) {
             //For non-AA line drawing;
-            const {linePos, strokeSize} = toolProperties;
-            const halfSize = Math.floor(strokeSize / 2);
+            const linePos = toolProperties.linePos;
+
+            console.log(linePos[0] - x, linePos[1] - y)
             const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
+
+            console.log(1 / distance, distance);
 
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
-                const rx = Math.floor((linePos[0] + (x - linePos[0]) * i) - halfSize);
-                const ry = Math.floor((linePos[1] + (y - linePos[1]) * i) - halfSize);
+                const rx = Math.floor((linePos[0] + (x - linePos[0]) * i));
+                const ry = Math.floor((linePos[1] + (y - linePos[1]) * i));
 
-                gl.fillRect(rx,ry,strokeSize,strokeSize);
+                this.drawCircular(gl, rx, ry, toolProperties);
             }
 
             toolProperties.linePos = [x,y];
@@ -111,8 +120,8 @@ artimus.tools.paintBrush = class extends artimus.tool {
 
         //For the smooth brush
         if (toolProperties.isEraser && !toolProperties.linePos) {
-            gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
-            gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+            gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
+            gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
             gl.lineWidth = 2;
 
             gl.moveTo(x,y);
@@ -131,12 +140,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
             gl.closePath();
         }
         else {
-            //Calculations
-            const halfSize = Math.floor(toolProperties.strokeSize / 2);
-            const rx = x - halfSize;
-            const ry = y - halfSize;
-
-            gl.fillRect(rx,ry,toolProperties.strokeSize,toolProperties.strokeSize);
+            this.drawCircular(gl, x, y, toolProperties)
         }
     }
 
