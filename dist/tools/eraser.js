@@ -3,13 +3,13 @@ artimus.tools.eraser = class extends artimus.tool {
     
     eraserCircular(gl, x, y, toolProperties) {
         const radius = toolProperties.strokeSize / 2;
-        for (let i = 0; i < 90; i++) {
+        const stepSize = Math.max(1, 90 / toolProperties.strokeSize);
+        
+        for (let i = 0; i < 90; i+=stepSize) {
             const width = Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius);
             const height = Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius)
             gl.clearRect(x - width, y - height, width * 2, height * 2);
         }
-
-        toolProperties.linePos = [x,y];
     }
 
     mouseDown(gl, x, y, toolProperties) {
@@ -33,7 +33,7 @@ artimus.tools.eraser = class extends artimus.tool {
             const rx = Math.floor((linePos[0] + (x - linePos[0]) * i) - halfSize);
             const ry = Math.floor((linePos[1] + (y - linePos[1]) * i) - halfSize);
 
-            if (toolProperties.circular) this.eraserCircular(gl, x, y, toolProperties);
+            if (toolProperties.circular) this.eraserCircular(gl, rx + halfSize, ry + halfSize, toolProperties);
             else gl.clearRect(rx,ry,strokeSize,strokeSize);
         }
 
