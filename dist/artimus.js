@@ -119,7 +119,7 @@ window.artimus = {
             else return 1;
         }
 
-        constructor(width, height, name, workspace) {
+        constructor(width, height, name, workspace, noSwitch) {
             //Create internal image data
             this.dataRaw = new ImageData(width, height);
             
@@ -147,7 +147,7 @@ window.artimus = {
             this.element.positionID = this.workspace.layers.length - 1;
 
             //Finally use the new layer
-            this.workspace.setLayer(name);
+            if (!noSwitch) this.workspace.setLayer(name);
         }
 
         updateBitmap() {
@@ -394,7 +394,6 @@ window.artimus = {
             this.createLayer();
 
             this.fileReader = new FileReader();
-            this.fileReader.onload = () => { this.onImageLoad(); };
 
             artimus.activeWorkspaces.push(this);
 
@@ -879,8 +878,8 @@ window.artimus = {
             return;
         }
 
-        createLayer(name) {
-            const layer = new artimus.layer(this.canvas.width, this.canvas.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this);
+        createLayer(name, noSwitch) {
+            const layer = new artimus.layer(this.canvas.width, this.canvas.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
             return layer;
         }
 
@@ -1131,120 +1130,215 @@ window.artimus = {
             this.historyIndex = 0;
             this.layerHistory = [];
         }
+        
+        //Import
+        importArtimus(input) {
+            const data = new Uint8Array(input);
 
-        importFromPC(image) {
-            this.fileReader.readAsDataURL(image);
-        }
+            //Make sure it is an artimus image
+            if (
+                data[0] == this.magic[0] &&
+                data[1] == this.magic[1] &&
+                data[2] == this.magic[2] &&
+                data[3] == this.magic[3]
+            ) {
+                this.new(
+                (data[5] << 16) + (data[6] << 8) + (data[7]),
+                (data[8] << 16) + (data[9] << 8) + (data[10]),
+                () => {
+                    //Count bytes needed
+                    const bytesPerLayer = this.width * this.height * 4;
+                    const layerCount = (data[11] << 8) + data[12];
+                    let idx = 12;
 
-        onImageLoad() {
-            const image = new Image();
-            image.onload = () => {
-                this.new(image.width, image.height, () => {
-                    this.setLayer(0, () => {
-                        this.GL.drawImage(image, 0, 0);
+                    //Loop through layers
+                    this.layers[0].name = NaN;
+                    for (let layer = 0; layer < layerCount; layer++) {
+                        //Decode name and blend mode
+                        const nameLength = (data[idx + 1] << 16) + (data[idx + 2] << 8) + (data[idx + 3]);
+                        const blendMode = this.blendModes[data[idx + 4]];
+                        idx += 4;
+
+                        //Extract name bytes and decode
+                        let name = [];
+                        for (let i = 0; i < nameLength; i++) {
+                            name.push(data[idx + i + 1]);
+                        }
+
+                        idx += name.length;
+                        name = this.tDecoder.decode(new Uint8Array(name));
+
+                        //Parse the image now
+                        let imageData = [];
+                        while (imageData.length < bytesPerLayer) {
+                            const stripSize = (data[idx + 1] << 8) + (data[idx + 2]);
+                            const stripColor = [
+                                data[idx + 3],
+                                data[idx + 4],
+                                data[idx + 5],
+                                data[idx + 6]
+                            ];
+
+                            let extended = Array(stripSize);
+                            extended.fill(stripColor);
+                            imageData.push(extended);
+                            imageData = imageData.flat(2);
+
+                            idx += 6;
+                        }
+
+                        this.createLayer(name, true);
+
+                        //Set layer data
+                        this.layers[layer + 1].dataRaw = new ImageData(new Uint8ClampedArray(imageData.flat(4)), 64, 64);
+                        this.layers[layer + 1].blendMode = blendMode;
+
+                        this.updateLayer(layer + 1);
+                    }
+
+                    this.setLayer(1).then(() => {
+                        this.removeLayer(0)
+                        this.setLayer(0);
                     });
                 });
             }
+            else console.error("Artimus File invalid!");
+        }
 
-            image.src = this.fileReader.result;
+        importTypes = {
+            "artimus": "readAsArrayBuffer"
+        };
+
+        importFromPC(image) {
+            let extension = image.name.split(".");
+            extension = extension[extension.length - 1];
+            
+            this.fileReader.onload = () => { this.onImageLoad(this.fileReader.result, extension); };
+            this.fileReader[this.importTypes[extension] || "readAsDataURL"](image);
+        }
+
+        onImageLoad(data, extension) {
+            switch (extension) {
+                case "art":
+                case "artimus":
+                    this.importArtimus(data);
+                    break;
+            
+                default:
+                    const image = new Image();
+                    image.onload = () => {
+                        this.new(image.width, image.height, () => {
+                            this.setLayer(0, () => {
+                                this.GL.drawImage(image, 0, 0);
+                            });
+                        });
+                    }
+
+                    image.src = data;
+                    break;
+            }
         }
 
         //Artimus data
         exportArtimus() {
-            //Just a simple measure of how many bytes we will need to take up
-            let bytesPerLayer = this.width * this.height * 4;
-            const layerCount = this.layers.length;
-            
-            //==-- HEADER FORMAT --==//
-            //Magic  : 4 bytes : Should be COFE
-            //Format : 1 byte  : For versioning and revisions
-            //Width  : 3 bytes
-            //Height : 3 bytes
-            //Layers : 2 bytes
-            let data = [
-                ...this.magic,
-                1,
+            return new Promise((resolve, reject) => {
+                //Just a simple measure of how many bytes we will need to take up
+                let bytesPerLayer = this.width * this.height * 4;
+                const layerCount = this.layers.length;
                 
-                //Conver both width and height into their 3 byte components
-                (this.width & 0xff0000) >> 16,
-                (this.width & 0x00ff00) >> 8,
-                (this.width & 0x0000ff),
-                
-                (this.height & 0xff0000) >> 16,
-                (this.height & 0x00ff00) >> 8,
-                (this.height & 0x0000ff),
+                //==-- HEADER FORMAT --==//
+                //Magic  : 4 bytes : Should be COFE
+                //Format : 1 byte  : For versioning and revisions
+                //Width  : 3 bytes
+                //Height : 3 bytes
+                //Layers : 2 bytes
+                let data = [
+                    ...this.magic,
+                    1,
+                    
+                    //Conver both width and height into their 3 byte components
+                    (this.width & 0xff0000) >> 16,
+                    (this.width & 0x00ff00) >> 8,
+                    (this.width & 0x0000ff),
+                    
+                    (this.height & 0xff0000) >> 16,
+                    (this.height & 0x00ff00) >> 8,
+                    (this.height & 0x0000ff),
 
-                //And the layer count
-                (layerCount & 0xff00) >> 8,
-                (layerCount & 0x00ff),
-            ];
+                    //And the layer count
+                    (layerCount & 0xff00) >> 8,
+                    (layerCount & 0x00ff),
+                ];
 
-            //==-- LAYER FORMAT --==//
-            //Name Length : 3 bytes : Nobody should be more than 16777216 bytes... Right?
-            //Blend Mode  : 1 byte
-            //Name String : N bytes
-            //Data        : A bytes
-            for (let layerID in this.layers) {
-                const {name, blendMode, dataRaw} = this.layers[layerID];
-                const encodedName = this.tEncoder.encode(name);
-                
-                //Add layer header
-                data.push(
-                    (encodedName.length & 0xff0000) >> 16,
-                    (encodedName.length & 0x00ff00) >> 8,
-                    (encodedName.length & 0x0000ff),
+                //==-- LAYER FORMAT --==//
+                //Name Length : 3 bytes : Nobody should be more than 16777216 bytes... Right?
+                //Blend Mode  : 1 byte
+                //Name String : N bytes
+                //Data        : A bytes
+                for (let layerID in this.layers) {
+                    const {name, blendMode, dataRaw} = this.layers[layerID];
+                    const encodedName = this.tEncoder.encode(name);
+                    
+                    //Add layer header
+                    data.push(
+                        (encodedName.length & 0xff0000) >> 16,
+                        (encodedName.length & 0x00ff00) >> 8,
+                        (encodedName.length & 0x0000ff),
 
-                    this.blendModes.indexOf(blendMode) || 0,
-                    ...encodedName,
-                );
+                        this.blendModes.indexOf(blendMode) || 0,
+                        ...encodedName,
+                    );
 
-                //Now parse the layer data
-                const colours = dataRaw.data;
-                let colour = [-1, -1, -1, -1];
-                let count = 0;
+                    //Now parse the layer data
+                    const colours = dataRaw.data;
+                    let colour = [-1, -1, -1, -1];
+                    let count = 0;
 
-                console.log(`Reading ${bytesPerLayer} bytes, for ${name}`);
+                    console.log(`Reading ${bytesPerLayer} bytes, for ${name}`);
 
-                //==-- DATA FORMAT --==//
-                //COUNT : 2 bytes
-                //COLOR : 4 bytes
-                for (let i = 0; i < bytesPerLayer; i+=4) {
-                    //Count colours
-                    if ((
-                        colour[0] == colours[i] &&
-                        colour[1] == colours[i + 1] &&
-                        colour[2] == colours[i + 2] &&
-                        colour[3] == colours[i + 3]) &&
-                        (count + 1) < Math.pow(2, 16)
-                    ) count++;
-                    else {
-                        //If the colour is not the same, or we are almost out of space we can begin anew
-                        if (count > 0) {
-                            data.push(
-                                (count & 0xff00) >> 8,
-                                (count & 0x00ff),
+                    //==-- DATA FORMAT --==//
+                    //COUNT : 2 bytes
+                    //COLOR : 4 bytes
+                    for (let i = 0; i < bytesPerLayer; i+=4) {
+                        //Count colours
+                        if ((
+                            colour[0] == colours[i] &&
+                            colour[1] == colours[i + 1] &&
+                            colour[2] == colours[i + 2] &&
+                            colour[3] == colours[i + 3]) &&
+                            (count + 1) < Math.pow(2, 16)
+                        ) count++;
+                        else {
+                            //If the colour is not the same, or we are almost out of space we can begin anew
+                            if (count > 0) {
+                                data.push(
+                                    (count & 0xff00) >> 8,
+                                    (count & 0x00ff),
 
-                                ...colour
-                            )
+                                    ...colour
+                                )
+                            }
+
+                            //The begin anew part
+                            colour = [colours[i], colours[i + 1], colours[i + 2], colours[i + 3]];
+                            count = 1;
                         }
-
-                        //The begin anew part
-                        colour = [colours[i], colours[i + 1], colours[i + 2], colours[i + 3]];
-                        count = 1;
                     }
+
+                    //Push the data once we hit the edge
+                    data.push(
+                        (count & 0xff00) >> 8,
+                        (count & 0x00ff),
+
+                        ...colour
+                    )
                 }
 
-                //Push the data once we hit the edge
-                data.push(
-                    (count & 0xff00) >> 8,
-                    (count & 0x00ff),
-
-                    ...colour
-                )
-            }
-
-            //With the slight, and somewhat strange compression I added above I'm sure this will be good
-            const file = new Uint8Array(data);
+                //With the slight, and somewhat strange compression I added above I'm sure this will be good
+                const file = new Uint8Array(data);
+                this.fileReader.onload = () => resolve(this.fileReader.result);
+                this.fileReader.readAsDataURL(new Blob([file]));
+            });
         }
 
         //Export
@@ -1260,20 +1354,24 @@ window.artimus = {
                     switch (format) {
                         case "art":
                         case "artimus":
-                            return this.exportArtimus();
+                            return this.exportArtimus().then(item => resolve(item));
                         
                         default:
-                            return this.compositeCanvas.toDataURL(this.extensionIDtoMIME[format] || this.extensionIDtoMIME.png);
+                            return resolve(this.compositeCanvas.toDataURL(this.extensionIDtoMIME[format] || this.extensionIDtoMIME.png));
                     }
                 });
             });
         }
 
         exportToPC(format) {
+            format = format || "artimus";
+
             const link = document.createElement("a");
-            link.href = this.export(format);
-            link.download = "picture.png";
-            link.click();
+            this.export(format).then(value => {
+                link.href = value;
+                link.download = `picture.${format}`;
+                link.click();
+            });
         }
     },
 
