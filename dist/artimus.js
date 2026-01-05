@@ -269,6 +269,41 @@ window.artimus = {
         selectionPath = new Path2D();
         hasSelection = false;
 
+        //Objects and data needed for the artimus format
+        tEncoder = new TextEncoder();
+        tDecoder = new TextDecoder();
+        magic = Array.from("COFE", char => String(char).charCodeAt(0));
+
+        //Mostly used in saving but can be used for other purposes, like making a list of global composite operations
+        blendModes = [
+            "source-over",
+            "source-in",
+            "source-out",
+            "source-atop",
+            "destination-over",
+            "destination-in",
+            "destination-out",
+            "destination-atop",
+            "lighter",
+            "copy",
+            "xor",
+            "multiply",
+            "screen",
+            "overlay",
+            "darken",
+            "lighten",
+            "color-dodge",
+            "color-burn",
+            "hard-light",
+            "soft-light",
+            "difference",
+            "exclusion",
+            "hue",
+            "saturation",
+            "color",
+            "luminosity",
+        ]
+
         updatePosition() {
             //Setup some CSS
             this.quickVar(this.container, {
@@ -795,34 +830,40 @@ window.artimus = {
 
         //Layer manipulation, for use inside of the library itself but exposed for people to use for their own purposes
         setLayer(ID, then) {
-            if (typeof ID == "string") {
-                const locID = this.layers.findIndex((layer) => layer.name == ID);
-                if (locID != -1) ID = locID;
-            }
+            return new Promise((resolve, reject) => {
+                if (typeof ID == "string") {
+                    const locID = this.layers.findIndex((layer) => layer.name == ID);
+                    if (locID != -1) ID = locID;
+                }
 
-            if (typeof ID == "number") {
-                //Save current data to the layer position
-                const oldLayer = this.layers[this.#currentLayer];
-                const label = oldLayer.label;
+                if (typeof ID == "number") {
+                    //Save current data to the layer position
+                    const oldLayer = this.layers[this.#currentLayer];
+                    const label = oldLayer.label;
 
-                //Clean up data and save layer data to previous layer.
-                this.layers[this.#currentLayer].dataRaw = this.GL.getImageData(0, 0, this.width, this.height);
-                this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
+                    //Clean up data and save layer data to previous layer.
+                    this.layers[this.#currentLayer].dataRaw = this.GL.getImageData(0, 0, this.width, this.height);
+                    this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
 
-                this.updateLayer(this.#currentLayer, () => {
-                    this.#currentLayer = ID;
+                    this.updateLayer(this.#currentLayer, () => {
+                        this.#currentLayer = ID;
 
-                    //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
-                    const current = this.layers[this.#currentLayer];
-                    this.GL.putImageData(current.dataRaw, 0, 0);
-                    this.layerHistory = [this.GL.getImageData(0, 0, this.width, this.height)];
+                        //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
+                        const current = this.layers[this.#currentLayer];
+                        this.GL.putImageData(current.dataRaw, 0, 0);
+                        this.layerHistory = [this.GL.getImageData(0, 0, this.width, this.height)];
 
-                    label.className = this.layerClass;
-                    current.label.className = this.layerClass + this.layerClassSelected;
+                        label.className = this.layerClass;
+                        current.label.className = this.layerClass + this.layerClassSelected;
 
-                    if (then) then();
-                });
-            }
+                        if (then) then();
+                        resolve();
+                    });
+                }
+                else {
+                    reject(`Couldn't find or update layer ${ID}`);
+                }
+            });
         }
 
         getLayer(ID) {
@@ -941,16 +982,22 @@ window.artimus = {
         }
 
         updateLayer(ID, then) {
-            if (typeof ID == "string") {
-                const locID = this.layers.findIndex((layer) => layer.name == ID);
-                if (locID != -1) ID = locID;
-            }
+            return new Promise((resolve, reject) => {
+                if (typeof ID == "string") {
+                    const locID = this.layers.findIndex((layer) => layer.name == ID);
+                    if (locID != -1) ID = locID;
+                }
 
-            if (typeof ID == "number") {
-                this.layers[ID].updateBitmap().then(newBitmap => {
-                    if (then) then(newBitmap);
-                });
-            }
+                if (typeof ID == "number") {
+                    this.layers[ID].updateBitmap().then(newBitmap => {
+                        if (then) then(newBitmap);
+                        resolve(newBitmap);
+                    });
+                }
+                else {
+                    reject(`Couldn't find or update layer ${ID}`);
+                }
+            });
         }
 
         //For updating the undo history
@@ -1102,15 +1149,129 @@ window.artimus = {
             image.src = this.fileReader.result;
         }
 
-        export() {
-            //Before the frame gets render this already gets obliterated lol, so it's a no notice export
-            this.renderComposite();
-            return this.compositeCanvas.toDataURL();
+        //Artimus data
+        exportArtimus() {
+            //Just a simple measure of how many bytes we will need to take up
+            let bytesPerLayer = this.width * this.height * 4;
+            const layerCount = this.layers.length;
+            
+            //==-- HEADER FORMAT --==//
+            //Magic  : 4 bytes : Should be COFE
+            //Format : 1 byte  : For versioning and revisions
+            //Width  : 3 bytes
+            //Height : 3 bytes
+            //Layers : 2 bytes
+            let data = [
+                ...this.magic,
+                1,
+                
+                //Conver both width and height into their 3 byte components
+                (this.width & 0xff0000) >> 16,
+                (this.width & 0x00ff00) >> 8,
+                (this.width & 0x0000ff),
+                
+                (this.height & 0xff0000) >> 16,
+                (this.height & 0x00ff00) >> 8,
+                (this.height & 0x0000ff),
+
+                //And the layer count
+                (layerCount & 0xff00) >> 8,
+                (layerCount & 0x00ff),
+            ];
+
+            //==-- LAYER FORMAT --==//
+            //Name Length : 3 bytes : Nobody should be more than 16777216 bytes... Right?
+            //Blend Mode  : 1 byte
+            //Name String : N bytes
+            //Data        : A bytes
+            for (let layerID in this.layers) {
+                const {name, blendMode, dataRaw} = this.layers[layerID];
+                const encodedName = this.tEncoder.encode(name);
+                
+                //Add layer header
+                data.push(
+                    (encodedName.length & 0xff0000) >> 16,
+                    (encodedName.length & 0x00ff00) >> 8,
+                    (encodedName.length & 0x0000ff),
+
+                    this.blendModes.indexOf(blendMode) || 0,
+                    ...encodedName,
+                );
+
+                //Now parse the layer data
+                const colours = dataRaw.data;
+                let colour = [-1, -1, -1, -1];
+                let count = 0;
+
+                console.log(`Reading ${bytesPerLayer} bytes, for ${name}`);
+
+                //==-- DATA FORMAT --==//
+                //COUNT : 2 bytes
+                //COLOR : 4 bytes
+                for (let i = 0; i < bytesPerLayer; i+=4) {
+                    //Count colours
+                    if ((
+                        colour[0] == colours[i] &&
+                        colour[1] == colours[i + 1] &&
+                        colour[2] == colours[i + 2] &&
+                        colour[3] == colours[i + 3]) &&
+                        (count + 1) < Math.pow(2, 16)
+                    ) count++;
+                    else {
+                        //If the colour is not the same, or we are almost out of space we can begin anew
+                        if (count > 0) {
+                            data.push(
+                                (count & 0xff00) >> 8,
+                                (count & 0x00ff),
+
+                                ...colour
+                            )
+                        }
+
+                        //The begin anew part
+                        colour = [colours[i], colours[i + 1], colours[i + 2], colours[i + 3]];
+                        count = 1;
+                    }
+                }
+
+                //Push the data once we hit the edge
+                data.push(
+                    (count & 0xff00) >> 8,
+                    (count & 0x00ff),
+
+                    ...colour
+                )
+            }
+
+            //With the slight, and somewhat strange compression I added above I'm sure this will be good
+            const file = new Uint8Array(data);
         }
 
-        exportToPC() {
+        //Export
+        export(format) {
+            return new Promise((resolve, reject) => {
+                format = format || "artimus";
+
+                //Just render the frame, and update the layer
+                this.renderComposite();
+
+                //Force update it aswell
+                this.setLayer(this.currentLayer).then(() => {
+                    switch (format) {
+                        case "art":
+                        case "artimus":
+                            return this.exportArtimus();
+                        
+                        default:
+                            return this.compositeCanvas.toDataURL(this.extensionIDtoMIME[format] || this.extensionIDtoMIME.png);
+                    }
+                });
+            });
+        }
+
+        exportToPC(format) {
             const link = document.createElement("a");
-            link.href = this.export();
+            link.href = this.export(format);
             link.download = "picture.png";
             link.click();
         }
