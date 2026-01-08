@@ -242,14 +242,14 @@ window.artimus = {
         //Scrolling
         #scrollX = 0;
         set scrollX(value) {
-            this.#scrollX = value;
+            this.#scrollX = Math.min(Math.max(this.width / -2, value), this.width / 2);
             this.updatePosition();
         }
         get scrollX() { return this.#scrollX; }
 
         #scrollY = 0;
         set scrollY(value) {
-            this.#scrollY = value;
+            this.#scrollY = Math.min(Math.max(this.height / -2, value), this.height / 2);
             this.updatePosition();
         }
         get scrollY() { return this.#scrollY; }
@@ -261,6 +261,7 @@ window.artimus = {
         }
         get zoom() { return this.#zoom; }
 
+        //Tools
         #tool = ""
         toolFunction = {};
         set tool(value) {
@@ -280,6 +281,7 @@ window.artimus = {
 
         toolProperties = {};
 
+        //Canvas
         #width = 300;
         set width(value) { this.resize(value, this.height); }
         get width() { return this.#width; }
@@ -296,9 +298,11 @@ window.artimus = {
             return this.#currentLayer;
         }
 
+        //History
         layerHistory = [];
         historyIndex = 0;
 
+        //CSS classes
         toolClass = "artimus-button artimus-sideBarButton artimus-tool ";
         layerClass = "artimus-button artimus-sideBarButton artimus-layer ";
         toolClassSelected = "artimus-sideBarButton-selected artimus-tool-selected ";
@@ -320,8 +324,8 @@ window.artimus = {
                 "scrollX": `${this.scrollX}px`,
                 "scrollY": `${this.scrollY}px`,
                 "zoom": this.zoom,
-                "canvasWidth": this.width,
-                "canvasHeight": this.height
+                "canvasWidth": `${this.width}px`,
+                "canvasHeight": `${this.height}px`
             });
         }
 
@@ -1104,6 +1108,8 @@ window.artimus = {
             this.gridGL.fillStyle = this.gridPattern;
             this.gridGL.fillRect(0, 0, this.width, this.height);
 
+            this.scrollX = this.scrollX;
+            this.scrollY = this.scrollY;
             this.updatePosition();
         }
 
@@ -1122,6 +1128,9 @@ window.artimus = {
         }
 
         new(width, height, then) {
+            this.scrollX = 0;
+            this.scrollY = 0;
+
             //Remove layers
             this.#currentLayer = 0;
             for (let ID = this.layers.length - 1; ID > 0; ID--) {
