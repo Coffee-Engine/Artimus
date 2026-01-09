@@ -1177,7 +1177,51 @@ window.artimus = {
             });
         }
 
-        //For updating the undo history
+        colorsOfLayer(ID, includeAlpha) {
+            ID = this.getLayerIndex(ID);
+
+            if (typeof ID == "number") {
+                const dataRaw = this.layers[ID].dataRaw;
+
+                includeAlpha = (typeof includeAlpha == "boolean") ? includeAlpha : true;
+
+                //Faster than a generator and a map.filter to use data.reduce
+                let layerColours = dataRaw.data.reduce((ac, _, ind) => {
+                    //Check for two things, we are the R value, and that we aren't alpha if we are not looking for alpha
+                    if (ind % 4 == 0 && (includeAlpha || dataRaw.data[ind + 3] > 0)) ac.add((
+                        (includeAlpha) ? (dataRaw.data[ind + 3] << 24 >>> 0) : 0 + 
+                        (dataRaw.data[ind + 2] << 16 >>> 0) + 
+                        (dataRaw.data[ind + 1] << 8 >>> 0) + 
+                        dataRaw.data[ind]
+                    ));
+                    return ac;
+                }, new Set());
+
+                console.log(layerColours);
+
+                //Map the value back. ^ up there is really noisy
+                if (includeAlpha) {
+                    layerColours = [...layerColours].map((val) => [
+                        val & 0x000000ff,
+                        (val & 0x0000ff00) >>> 8,
+                        (val & 0x00ff0000) >>> 16,
+                        (val & 0xff000000) >>> 24
+                    ]);
+                }
+                else {
+                    layerColours = [...layerColours].map((val) => [
+                        val & 0x000000ff,
+                        (val & 0x0000ff00) >>> 8,
+                        (val & 0x00ff0000) >>> 16
+                    ]);
+                }
+
+                return layerColours;
+            }
+
+            return [];
+        }
+
         updateLayerHistory() {
             if (this.historyIndex > 0) {
                 this.layerHistory.splice(0, this.historyIndex);
@@ -1328,7 +1372,14 @@ window.artimus = {
         //      COLOR : 1 byte
         //2 : Single Color : 1 colour max, yknow this one is self explanitory...
         //     COLOR : 4 bytes
+        //3 : Single Color, w alpha : 1 colour max, yknow this one is self explanitory...
+        //      -- Header
+        //      COLOR : 3 bytes
+        //      -- Contents
+        //      COUNT : 2 bytes
+        //      ALPHA : 1 byte
         encodingModes = [
+            //FC
             (data, bytesPerLayer, palette, colours) => {
                 let colour = [-1, -1, -1, -1];
                 let count = 0;
@@ -1439,6 +1490,49 @@ window.artimus = {
                 data.push(...palette[0]);
                 return 4;
             },
+
+            //1 color with alpha channel
+            (data, bytesPerLayer, palette, colours) => {
+                let alpha = -1;
+                let count = 0;
+                let savedBytes = 0;
+
+                //Start from 0 to get full range
+                data.push(...palette[0]);
+
+                for (let i = 0; i < bytesPerLayer; i+=4) {
+                    //Count colours
+                    if ((alpha == colours[i + 3]) &&
+                        (count + 1) < Math.pow(2, 16)
+                    ) count++;
+                    else {
+                        //If the alpha is not the same, or we are almost out of space we can begin anew
+                        if (count > 0) {
+                            data.push(
+                                (count & 0xff00) >> 8,
+                                (count & 0x00ff),
+                                alpha
+                            )
+                        }
+                        
+                        savedBytes += 7;
+
+                        //The begin anew part
+                        alpha = colours[i + 3];
+                        count = 1;
+                    }
+                }
+
+                //Push the data once we hit the edge
+                data.push(
+                    (count & 0xff00) >> 8,
+                    (count & 0x00ff),
+                    alpha
+                )
+
+                savedBytes += 6;
+                return savedBytes;
+            }
         ]
 
         //These align with encoding modes
@@ -1500,7 +1594,27 @@ window.artimus = {
                 imageData.set(extended.flat(2), 0);
 
                 return index + 4;
-            }
+            },
+            
+            (data, imageData, index, bytesPerLayer) => {
+                let filled = 0;
+
+                const colour = [data[index + 1], data[index + 2], data[index + 3]]
+                index += 3;
+
+                while (filled < bytesPerLayer) {
+                    const stripSize = (data[index + 1] << 8) + (data[index + 2]);
+
+                    let extended = Array(stripSize);
+                    extended.fill([...colour, data[index + 3]]);
+                    imageData.set(extended.flat(2), filled);
+                    filled += stripSize * 4;
+
+                    index += 3;
+                }
+
+                return index;
+            },
         ]
 
         //These align with the artimus format
@@ -1727,30 +1841,17 @@ window.artimus = {
 
                     //Get colors for determining an encoding method. See VV for a list
                                                                 //==-- MODES --==//
-                    //Faster than a generator and a map.filter to use data.reduce
-                    let layerColours = dataRaw.data.reduce((ac, _, ind) => {
-                        if (ind % 4 == 0) ac.add((
-                            (dataRaw.data[ind + 3] << 24 >>> 0) + 
-                            (dataRaw.data[ind + 2] << 16 >>> 0) + 
-                            (dataRaw.data[ind + 1] << 8 >>> 0) + 
-                            dataRaw.data[ind]
-                        ));
-                        return ac;
-                    }, new Set());
-
-                    //Appearently according to DDG I've gone and searched for something similar on stack overflow. thanks DDG
-                    layerColours = [...layerColours].map((val) => [
-                        val & 0x000000ff,
-                        (val & 0x0000ff00) >>> 8,
-                        (val & 0x00ff0000) >>> 16,
-                        (val & 0xff000000) >>> 24
-                    ]);
+                    let layerColours = this.colorsOfLayer(Number(layerID));
+                    let noAlphaColours = this.colorsOfLayer(Number(layerID), false);
+                    let preferAlpha = true;
 
                     //Find the mode finally
                     let encodingMode = 0;
-                    if (layerColours.length == 1) encodingMode = 2
-                    else if (layerColours.length <= 256) encodingMode = 1;
-
+                    if (layerColours.length == 1) encodingMode = 2; // Solid colour
+                    else if (noAlphaColours.length == 1) { preferAlpha = false; encodingMode = 3; }// Single Colour w Alpha
+                    else if (layerColours.length <= 256) encodingMode = 1; // Paletted
+                    
+                    console.log(`Saving layer ${name} with mode ${encodingMode}`)
                     //Add layer header
                     data.push(
                         (encodedName.length & 0xff0000) >> 16,
@@ -1767,7 +1868,7 @@ window.artimus = {
                     //Now parse the layer data
                     console.log(`Reading ${bytesPerLayer} bytes, for ${name}`);
 
-                    const savedBytes = this.encodingModes[encodingMode](data, bytesPerLayer, layerColours, dataRaw.data) || "unknown";
+                    const savedBytes = this.encodingModes[encodingMode](data, bytesPerLayer, (preferAlpha) ? layerColours : noAlphaColours, dataRaw.data) || "unknown";
 
                     console.log(`Layer ${name} compressed to ${savedBytes} bytes`);
                 }
