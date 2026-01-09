@@ -258,8 +258,10 @@ window.artimus = {
         get scrollY() { return this.#scrollY; }
 
         #zoom = 2;
+        invZoom = 1;
         set zoom(value) {
             this.#zoom = Math.max(Math.min(value, 25), 0.25);
+            this.invZoom = 1 / this.#zoom;
             this.updatePosition();
         }
         get zoom() { return this.#zoom; }
@@ -587,6 +589,195 @@ window.artimus = {
             this.updatePosition();
         }
 
+        //Control stuffs
+        fingersDown = 0;
+        panning = false;
+        controlSets = {
+            kbMouse: {
+                mouseDown: (event) => {
+                    switch (event.button) {
+                        case 0:
+                            if (event.target != this.canvas) return;
+                            if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
+                            this.toolDown = true;
+                            break;
+
+                        case 2:
+                            if (event.target != this.canvas) return;
+                            const [red, green, blue, alpha] = this.GL.getImageData(...this.getCanvasPosition(event.clientX, event.clientY, true), 1, 1).data;
+                            const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
+
+                            //The three typical colours
+                            this.toolProperties.strokeColor = converted;
+                            this.toolProperties.fillColor = converted;
+                            this.toolProperties.color = converted;
+
+                            //Refresh options
+                            this.refreshToolOptions();
+                            break;
+
+                        case 1:
+                            this.panning = true;
+                            break;
+                    
+                        default:
+                            break;
+                    }
+                },
+
+                mouseUp: (event) => {
+                    switch (event.button) {
+                        case 0:
+                            const position = this.getCanvasPosition(event.clientX, event.clientY);
+                            if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
+                            if (this.toolFunction.preview) {
+                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                            }
+                            
+                            //For the undoing
+                            if (this.toolDown && this.tool) this.updateLayerHistory();
+                            this.toolDown = false; 
+                            break;
+                        
+                        case 1:
+                            this.panning = false;
+                            break;
+                    
+                        default:
+                            break;
+                    }
+                    
+                    
+                },
+
+                mouseMove: (event) => {
+                    if (this.panning) {
+                        this.scrollX += event.movementX * this.invZoom;
+                        this.scrollY += event.movementY * this.invZoom;
+                    }
+
+                    const position = this.getCanvasPosition(event.clientX, event.clientY);
+                    
+                    if (this.toolFunction.preview) {
+                        //For previews
+                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                    }
+
+                    if (this.toolDown && this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
+                },
+
+                mouseWheel: (event) => {
+                    if (event.ctrlKey) {
+                        event.preventDefault();
+                        this.zoom += event.deltaY / -100;
+                    }
+                    else if (event.shiftKey) {
+                        this.scrollX -= (event.deltaY) * this.invZoom;
+                        this.scrollY -= (event.deltaX) * this.invZoom;
+                        this.zoom += event.deltaZ / -100;
+                    }
+                    else {
+                        this.scrollX -= (event.deltaX) * this.invZoom;
+                        this.scrollY -= (event.deltaY) * this.invZoom;
+                        this.zoom += event.deltaZ / -100;
+                    }
+                }
+            },
+
+            //Mobile support
+            touch: {
+                lastDrewX: 0,
+                lastDrewY: 0,
+                touches: {},
+                
+                fingerDown: (event) => {
+                    event.preventDefault();
+                    this.fingersDown++;
+
+                    //Update the touches
+                    for (let touchID in Array.from(event.changedTouches)) {
+                        const touch = event.changedTouches[touchID];
+                        
+                        this.controlSets.touch.touches[touch.identifier] = {
+                            lx: touch.clientX,
+                            ly: touch.clientY
+                        }
+                    }
+                },
+
+                fingerMove: (event) => {
+                    const firstTouch = event.changedTouches[0];
+                    const touches = Array.from(event.changedTouches);
+                    
+                    switch ((this.toolFunction) ? this.fingersDown : 0) {
+                        //Panning
+                        default:
+                            for (let touchID in touches) {
+                                const touch = touches[touchID];
+                                const heldData = this.controlSets.touch.touches[touch.identifier];
+                                this.scrollX += (touch.clientX - heldData.lx) * (this.invZoom / this.fingersDown);
+                                this.scrollY += (touch.clientY - heldData.ly) * (this.invZoom / this.fingersDown);
+                            }
+                            break;
+
+                        //Drawing
+                        case 1:
+                            if (event.target != this.canvas) return;
+
+                            const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
+                            const heldData = this.controlSets.touch.touches[touch.identifier];
+
+                            //Initilize drawing if we haven't
+                            if (!this.toolDown) {
+                                if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.GL, ...position, this.toolProperties);
+                                this.toolDown = true;
+                            }
+                            else {
+                                const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
+                    
+                                if (this.toolFunction.preview) {
+                                    //For previews
+                                    this.previewGL.clearRect(0, 0, this.width, this.height);
+                                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                                }
+
+                                if (this.toolDown && this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, (firstTouch.clientX - heldData.lx) * this.invZoom, (firstTouch.clientY - heldData.ly) * this.invZoom, this.toolProperties);
+                            }
+
+                            this.controlSets.touch.lastDrewX = firstTouch.clientX;
+                            this.controlSets.touch.lastDrewY = firstTouch.clientY;
+                            break;
+                    }
+                    
+                    //Update the touches
+                    for (let touchID in Array.from(event.changedTouches)) {
+                        const touch = event.changedTouches[touchID];
+                        
+                        this.controlSets.touch.touches[touch.identifier] = {
+                            lx: touch.clientX,
+                            ly: touch.clientY
+                        }
+                    }
+                    event.preventDefault();
+                },
+
+                fingerUp: (event) => {
+                    this.fingersDown--;
+
+                    if (this.fingersDown == 0 && this.toolDown) {
+                        if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(this.controlSets.touch.lastDrewX, this.controlSets.touch.lastDrewY), this.toolProperties);
+                        if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
+                        
+                        //For the undoing
+                        if (this.tool) this.updateLayerHistory();
+                        this.toolDown = false; 
+                    }
+                }
+            }
+        }
+
         addControls() {
             //Drawing
             this.canvas.addEventListener("contextmenu", (event) => {
@@ -594,106 +785,14 @@ window.artimus = {
                 event.stopPropagation();
             });
 
-            this.canvas.addEventListener("mousedown", (event) => {
-                switch (event.button) {
-                    case 0:
-                        if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
-                        this.toolDown = true;
-                        break;
+            this.canvasArea.addEventListener("mousedown", this.controlSets.kbMouse.mouseDown);
+            this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
+            this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
+            this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
 
-                    case 2:
-                        const [red, green, blue, alpha] = this.GL.getImageData(...this.getCanvasPosition(event.clientX, event.clientY, true), 1, 1).data;
-                        const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
-
-                        //The three typical colours
-                        this.toolProperties.strokeColor = converted;
-                        this.toolProperties.fillColor = converted;
-                        this.toolProperties.color = converted;
-
-                        //Refresh options
-                        this.refreshToolOptions();
-                        break;
-                
-                    default:
-                        break;
-                }
-            });
-
-            //For instances of the mouse being up or gone we want to clear the preview GL.
-            this.canvas.addEventListener("mouseup", (event) => {
-                if (event.button != 0) return;
-                
-                const position = this.getCanvasPosition(event.clientX, event.clientY);
-                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
-                if (this.toolFunction.preview) {
-                    this.previewGL.clearRect(0, 0, this.width, this.height);
-                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
-                }
-                
-                //For the undoing
-                if (this.toolDown && this.tool) this.updateLayerHistory();
-                this.toolDown = false; 
-            });
-            this.canvas.addEventListener("mouseout", (event) => { 
-                const position = this.getCanvasPosition(event.clientX, event.clientY);
-                if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
-                if (this.toolFunction.preview) {
-                    this.previewGL.clearRect(0, 0, this.width, this.height);
-                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
-                }
-                //For the undoing
-                if (this.toolDown && this.tool) this.updateLayerHistory();
-                this.toolDown = false;
-            });
-            this.canvas.addEventListener("mousemove", (event) => {
-                const position = this.getCanvasPosition(event.clientX, event.clientY);
-                
-                if (this.toolFunction.preview) {
-                    //For previews
-                    this.previewGL.clearRect(0, 0, this.width, this.height);
-                    this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
-                }
-
-                if (this.toolDown && this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, event.movementX / this.zoom, event.movementY / this.zoom, this.toolProperties);
-            });
-
-            //Add movement
-            this.container.addEventListener("mousedown", (event) => {
-                if (event.button == 1) {
-                    const moveEvent = (event) => {
-                        this.scrollX += event.movementX / this.zoom;
-                        this.scrollY += event.movementY / this.zoom;
-                    }
-
-                    const upEvent = (event) => {
-                        if (event.button == 1) {
-                            document.removeEventListener("mousemove", moveEvent);
-                            document.removeEventListener("mouseup", upEvent);
-                        }
-                    }
-
-                    //Bind events
-                    document.addEventListener("mousemove", moveEvent);
-                    document.addEventListener("mouseup", upEvent)
-                }
-            });
-
-            this.canvasArea.addEventListener("wheel", (event) => {
-                if (event.ctrlKey) {
-                    event.preventDefault();
-                    this.zoom += event.deltaY / -100;
-                }
-                else if (event.shiftKey) {
-                    this.scrollX -= (event.deltaY) / this.zoom;
-                    this.scrollY -= (event.deltaX) / this.zoom;
-                    this.zoom += event.deltaZ / -100;
-                }
-                else {
-                    this.scrollX -= (event.deltaX) / this.zoom;
-                    this.scrollY -= (event.deltaY) / this.zoom;
-                    this.zoom += event.deltaZ / -100;
-                }
-            }, { passive: false });
+            this.canvasArea.addEventListener("touchstart", this.controlSets.touch.fingerDown);
+            this.canvasArea.addEventListener("touchmove", this.controlSets.touch.fingerMove);
+            this.canvasArea.addEventListener("touchend", this.controlSets.touch.fingerUp);
 
             document.addEventListener("keydown", (event) => {
                 if (event.key.toLowerCase() == "z" && event.ctrlKey) {
