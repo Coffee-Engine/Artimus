@@ -1629,11 +1629,11 @@ window.artimus = {
                     //Get colors for determining an encoding method. See VV for a list
                                                                 //==-- MODES --==//
                     let layerColours = Array.from(dataRaw.data).map((val, idx, arr) => (idx % 4 == 0) ? (
-                        //Dumb evil JS bit hack
-                                (arr[idx + 3] << 24 >>> 0) + 
-                                (arr[idx + 2] << 16 >>> 0) + 
-                                (arr[idx + 1] << 8 >>> 0) + 
-                                arr[idx]) 
+                        //Dumb evil JS bit hack, but convert to a number
+                            (arr[idx + 3] << 24 >>> 0) + 
+                            (arr[idx + 2] << 16 >>> 0) + 
+                            (arr[idx + 1] << 8 >>> 0) + 
+                            arr[idx]) 
                         : null).filter(val => (val != null));
 
                     //Appearently according to DDG I've gone and searched for something similar on stack overflow. thanks DDG
