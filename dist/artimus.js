@@ -1632,8 +1632,8 @@ window.artimus = {
                     let layerColours = dataRaw.data.reduce((ac, _, ind) => {
                         if (ind % 4 == 0) ac.push((
                             (dataRaw.data[ind + 3] << 24 >>> 0) + 
-                            (dataRaw.data[ind + 2] << 24 >>> 0) + 
-                            (dataRaw.data[ind + 1] << 24 >>> 0) + 
+                            (dataRaw.data[ind + 2] << 16 >>> 0) + 
+                            (dataRaw.data[ind + 1] << 8 >>> 0) + 
                             dataRaw.data[ind]
                         ));
                         return ac;
@@ -1646,6 +1646,8 @@ window.artimus = {
                         (val & 0x00ff0000) >>> 16,
                         (val & 0xff000000) >>> 24
                     ]);
+
+                    console.log(layerColours);
 
                     //Find the mode finally
                     let encodingMode = 0;
