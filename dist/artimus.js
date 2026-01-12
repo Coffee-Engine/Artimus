@@ -139,6 +139,7 @@ window.artimus = {
         }
 
         properties = {};
+        constructive = true;
     },
     
     layer: class {
@@ -293,6 +294,8 @@ window.artimus = {
         #height = 150;
         set height(value) { this.resize(this.width, value); }
         get height() { return this.#height; }
+        
+        dirty = true;
 
         //Layers
         layerHiddenAnimation = 0;
@@ -488,7 +491,10 @@ window.artimus = {
         renderLoop(delta) {
             this.fullviewGL.drawImage(this.gridCanvas, 0, 0);
 
-            this.renderComposite();
+            if (this.dirty) {
+                this.renderComposite();
+                this.dirty = false;
+            }
 
             this.fullviewGL.drawImage(this.compositeCanvas, 0, 0);
 
@@ -637,7 +643,10 @@ window.artimus = {
                             }
                             
                             //For the undoing
-                            if (this.toolDown && this.tool) this.updateLayerHistory();
+                            if (this.toolDown && this.tool && this.toolFunction.constructive) {
+                                this.updateLayerHistory();
+                                this.dirty = true;
+                            }
                             this.toolDown = false; 
                             break;
                         
@@ -666,7 +675,10 @@ window.artimus = {
                         this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                     }
 
-                    if (this.toolDown && this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
+                    if (this.toolDown && this.toolFunction.mouseMove) {
+                        this.toolFunction.mouseMove(this.GL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
+                        if (this.toolFunction.constructive) this.dirty = true;
+                    }
                 },
 
                 mouseWheel: (event) => {
@@ -1170,6 +1182,7 @@ window.artimus = {
                     this.layers[ID].updateBitmap().then(newBitmap => {
                         if (then) then(newBitmap);
                         resolve(newBitmap);
+                        this.dirty = true;
                     });
                 }
                 else {
