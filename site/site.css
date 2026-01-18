@@ -89,6 +89,17 @@ cugi-dropdown:active {
     display: flex;
 }
 
+.popup-top {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+}
+
+.popup-title {
+    text-align: center;
+    padding: 0px;
+    margin:0px
+}
+
 .popup > h1 {
     margin: 0px;
 }

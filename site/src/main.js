@@ -4,8 +4,31 @@ window.editor = {
         height: 240
     },
 
+    popup: document.getElementById("popupContent"),
+    popupTitle: document.getElementById("popupTitle"),
+
     language: {}
 };
+
+fetch("lang/english.json").then(result => result.text()).then(text => {
+    //Parse the language file.
+    editor.language = JSON.parse(text);
+
+    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
+    editor.workspace.resize(0, 0);
+    artimus.globalRefreshTools();
+})
+
+editor.openModal = (name, contents, hasClose) => {
+    hasClose = hasClose == true;
+
+    if (typeof contents == "function") contents(editor.popup);
+    document.body.style.setProperty("--modal-interaction", "all");
+    document.body.style.setProperty("--modal-opacity", "100%");
+
+    editor.popup.innerHTML = "";
+    editor.popupTitle.innerText = name || "popup";
+}
 
 editor.closeModal = () => {
     document.body.style.setProperty("--modal-interaction", "none");
@@ -66,13 +89,3 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 }
 
 artimus.translate = (item, context) => (editor.language[`artimus.${context}.${item}`] || `artimus.${context}.${item}`);
-
-fetch("lang/english.json").then(result => result.text()).then(text => {
-    //Parse the language file.
-    editor.language = JSON.parse(text);
-
-    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
-    editor.popup = document.getElementById("popupContent");
-    editor.workspace.resize(0, 0);
-    artimus.globalRefreshTools();
-})

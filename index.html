@@ -24,10 +24,6 @@
     <script src="dist/tools/selectionLasso.js"></script>
     <script src="dist/tools/jumble.js"></script>
     
-    <script src="site/src/main.js"></script>
-    <script src="site/src/themes.js"></script>
-    <script src="site/src/settings.js"></script>
-    
     <div class="main-grid">
         <div class="top-bar">
             <cugi-dropdown>File
@@ -74,7 +70,10 @@
     </div>
     <div class="modal-background">
         <div id="popup" class="popup">
-            <div class="popup-top"><button onclick="editor.closeModal();" class="popup-close">✖</button></div>
+            <div class="popup-top">
+                <button onclick="editor.closeModal();" class="popup-close">✖</button>
+                <p class="popup-title" id="popupTitle">Welcome</p>
+            </div>
             <div id="popupContent">
                 <img src="site/Logo_NoGraffiti.png" class="LOGO"></img>
                 <p>A web based art editor and library created by ObviousStudios and open sourced under the MIT liscense</p>
@@ -87,5 +86,9 @@
             </div>
         </div>
     </div>
+
+    <script src="site/src/main.js"></script>
+    <script src="site/src/themes.js"></script>
+    <script src="site/src/settings.js"></script>
 </body>
 </html>

@@ -2,7 +2,9 @@ window.artimus = {
     tools: {},
     maxHistory: 10,
 
+    //I probably need to make a better solution for replacing and modifying these? Maybe some build script?
     defaultArrow: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="67.79628" height="19.99114" viewBox="0,0,67.79628,19.99114"><g transform="translate(-206.10043,-170.79353)"><g fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-miterlimit="10"><path d="M272.39671,189.28467c-0.45144,-8.7306 -24.09936,-17.06276 -32.46692,-16.99068c-7.9521,0.06851 -31.96292,7.81916 -32.32935,16.92539c-0.00186,0.04618 16.25066,-3.22684 32.24773,-3.1737c16.40198,0.05449 32.55854,3.43226 32.54855,3.23898z" /></g></g></svg>`,
+    hideIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="58" height="58" viewBox="0,0,58,58"><g transform="translate(-211,-151)"><g stroke-miterlimit="10"><path d="M264.91616,181.7c4.38014,-2.9052 -6.38446,-0.74738 -11.43352,-3.76823c-5.30721,-3.1753 -9.39066,-8.63177 -13.65934,-8.63177c-4.09095,0 -13.12294,0.85076 -18.29409,3.81852c-5.61379,3.2218 -8.36188,5.26545 -7.21305,8.58148c2.92024,8.42912 16.07033,9 24.10714,9c8.76638,0 17.33691,-2.92717 26.49286,-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M250.4,180c0,-2.33846 -2.78686,-4.29491 -4.11265,-6.02382c-1.89933,-2.47682 -2.90475,-4.27618 -6.28735,-4.27618c-5.74376,0 -10.4,4.61147 -10.4,10.3c0,5.68853 4.65624,10.3 10.4,10.3c5.74376,0 10.4,-4.61147 10.4,-10.3z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="butt"/><path d="M211,209v-58h58v58z" fill="none" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
 
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
@@ -1079,11 +1081,15 @@ window.artimus = {
             //This button changes depending on whether or not the layer was hidden
             const hideButton = document.createElement("button");
             hideButton.className = "artimus-button artimus-layerButton";
-            hideButton.innerText = "👁";
+            hideButton.appendChild(this.elementFromString(artimus.hideIcon));
             hideButton.onclick = () => {
                 this.setLayerVisibility(element.targetLayer, !this.getLayerVisibility(element.targetLayer));
                 hideButton.className = "artimus-button artimus-layerButton " + ((this.getLayerVisibility(element.targetLayer)) ? "" : "artimus-button-selected")
+                
+                this.dirty = true;
             }
+
+            hideButton.children[0].classList = "artimus-hideIcon";
 
             //This is the thing that holds the buttons that allow 
             // you to move the layer up and down, 
