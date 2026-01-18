@@ -1216,15 +1216,13 @@ window.artimus = {
                 let layerColours = dataRaw.data.reduce((ac, _, ind) => {
                     //Check for two things, we are the R value, and that we aren't alpha if we are not looking for alpha
                     if (ind % 4 == 0 && (includeAlpha || dataRaw.data[ind + 3] > 0)) ac.add((
-                        (includeAlpha) ? (dataRaw.data[ind + 3] << 24 >>> 0) : 0 + 
+                        ((includeAlpha) ? (dataRaw.data[ind + 3] << 24 >>> 0) : 0) + 
                         (dataRaw.data[ind + 2] << 16 >>> 0) + 
                         (dataRaw.data[ind + 1] << 8 >>> 0) + 
                         dataRaw.data[ind]
                     ));
                     return ac;
                 }, new Set());
-
-                console.log(layerColours);
 
                 //Map the value back. ^ up there is really noisy
                 if (includeAlpha) {
@@ -1242,6 +1240,8 @@ window.artimus = {
                         (val & 0x00ff0000) >>> 16
                     ]);
                 }
+
+                console.log(layerColours)
 
                 return layerColours;
             }
@@ -1461,6 +1461,7 @@ window.artimus = {
                 let savedBytes = 0;
 
                 //Start from 0 to get full range
+                console.log(palette)
                 data.push(palette.length - 1);
                 data.push(palette.flat(1));
 
@@ -1600,6 +1601,8 @@ window.artimus = {
                     palette.push([data[index + 1], data[index + 2], data[index + 3], data[index + 4]]);
                     index += 4;
                 }
+
+                console.log(palette);
 
                 while (filled < bytesPerLayer) {
                     const stripSize = (data[index + 1] << 8) + (data[index + 2]);
@@ -1826,7 +1829,6 @@ window.artimus = {
             else console.error("Artimus File invalid!");
         }
 
-
         exportArtimus() {
             return new Promise((resolve, reject) => {
                 //Just a simple measure of how many bytes we will need to take up
@@ -1879,7 +1881,7 @@ window.artimus = {
                     if (layerColours.length == 1) encodingMode = 2; // Solid colour
                     else if (noAlphaColours.length == 1) { preferAlpha = false; encodingMode = 3; }// Single Colour w Alpha
                     else if (layerColours.length <= 256) encodingMode = 1; // Paletted
-                    
+
                     console.log(`Saving layer ${name} with mode ${encodingMode}`)
                     //Add layer header
                     data.push(
