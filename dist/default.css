@@ -51,6 +51,8 @@ body {
 
 .artimus-canvas {
     image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
 
     transform: translate(-50%, -50%) scale(var(--zoom)) translate(var(--scrollX), var(--scrollY));
     position: absolute;
