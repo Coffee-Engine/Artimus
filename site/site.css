@@ -149,3 +149,37 @@ cugi-dropdown:active {
 .popup-close:hover {
     background-color: var(--artimus-background-2);
 }
+
+.artimus-font-list {
+    margin-top: 8px;
+    background-color: var(--artimus-background-2);
+    
+    display: flex;
+    flex-direction: column;
+
+    max-height: 75vh;
+
+    padding: 8px;
+    overflow-y: scroll;
+}
+
+.artimus-font-button {
+    font-size: 24px;
+    background-color: var(--artimus-button-normal);
+
+    border-width: 0px;
+    transition: 300ms background-color;
+
+    margin-bottom: 2px;
+    margin-top: 2px;
+    border-radius: 16px;
+}
+
+.artimus-font-button:hover {
+    background-color: var(--artimus-button-hover);
+}
+
+.artimus-font-button:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color;
+}

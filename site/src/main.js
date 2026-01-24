@@ -22,11 +22,11 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
 editor.openModal = (name, contents, hasClose) => {
     hasClose = hasClose == true;
 
+    editor.popup.innerHTML = "";
     if (typeof contents == "function") contents(editor.popup);
     document.body.style.setProperty("--modal-interaction", "all");
     document.body.style.setProperty("--modal-opacity", "100%");
 
-    editor.popup.innerHTML = "";
     editor.popupTitle.innerText = name || "popup";
 }
 
@@ -89,3 +89,32 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 }
 
 artimus.translate = (item, context) => (editor.language[`artimus.${context}.${item}`] || `artimus.${context}.${item}`);
+
+artimus.fontPopup = (workspace) => {
+    return new Promise((resolve) => {
+        workspace.getFonts().then(fonts => {
+            editor.openModal("Choose a font", (popup) => {
+                const innerList = document.createElement("div");
+                innerList.className = "artimus-font-list"
+
+                for (let fontID in fonts) {
+                    const button = document.createElement("button");
+                    
+                    button.innerText = fonts[fontID].family;
+                    button.className = "artimus-font-button";
+
+                    button.style.fontFamily = fonts[fontID].family;
+
+                    button.onclick = () => {
+                        resolve(fonts[fontID].family);
+                        editor.closeModal();
+                    }
+
+                    innerList.appendChild(button);
+                }
+
+                popup.appendChild(innerList);
+            })
+        })
+    })
+}

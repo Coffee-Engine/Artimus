@@ -80,6 +80,10 @@ window.artimus = {
         return item;
     },
 
+    fontPopup: (workspace) => {
+        return new Promise((resolve) => { resolve("Monospace") });
+    },
+
     //Should probably make a default one but for now this works.
     layerPropertyMenu: (workspace, layer) => {},
 
@@ -385,7 +389,14 @@ window.artimus = {
         //fonts grab a small assorted list of fonts.
         getFonts() {
             return new Promise((resolve, reject) => {
-                if (window.queryLocalFonts) window.queryLocalFonts().then((fontList) => resolve(fontList));
+                if (window.queryLocalFonts) window.queryLocalFonts().then((fontList) => resolve([
+                    { family: "Serif", fullName: "Serif", postscriptName: "Serif", style: "Regular" },
+                    { family: "Sans-serif", fullName: "Sans-serif", postscriptName: "Sans-serif", style: "Regular" },
+                    { family: "Monospace", fullName: "Monospace", postscriptName: "Monospace", style: "Regular" },
+                    { family: "Cursive", fullName: "Cursive", postscriptName: "Cursive", style: "Regular" },
+                    { family: "Fantasy", fullName: "Fantasy", postscriptName: "Fantasy", style: "Regular" },
+                    ...fontList
+                ]));
                 else resolve([
                     { family: "Serif", fullName: "Serif", postscriptName: "Serif", style: "Regular" },
                     { family: "Sans-serif", fullName: "Sans-serif", postscriptName: "Sans-serif", style: "Regular" },
@@ -417,6 +428,23 @@ window.artimus = {
                 const CUGIScript = document.createElement("script");
                 CUGIScript.src = "https://coffee-engine.github.io/CUGI/dist/CUGI.js";
                 document.body.appendChild(CUGIScript);
+            }
+
+            //The cugi font input
+            CUGI.types["artimus-font"] = (data) => {
+                const { target, key } = data;
+                const button = document.createElement("button");
+
+                button.innerText = target[key];
+                
+                button.onclick = () => {
+                    artimus.fontPopup(this).then(font => {
+                        target[key] = font;
+                        button.innerText = target[key];
+                    })
+                }
+
+                return button;
             }
 
             this.createLayout();
@@ -736,7 +764,7 @@ window.artimus = {
 
                     if (this.toolFunction.keyPressed) {
                         if (this.toolFunction.keyPressed(this.GL, event, this.toolProperties)) event.preventDefault();
-                        
+
                         this.previewGL.clearRect(0, 0, this.width, this.height);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
                     }

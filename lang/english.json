@@ -8,6 +8,7 @@
     "artimus.tool.sheetTool": "Atlas Editor",
     "artimus.tool.rectangle": "Rectangle",
     "artimus.tool.circle": "Circle",
+    "artimus.tool.text": "Text",
     "artimus.tool.jumble": "Jumble",
     "artimus.tool.selectionRectangle": "Selection Rectangle",
     "artimus.tool.selectionCircle": "Selection Circle",
@@ -26,6 +27,7 @@
     "artimus.toolProperty.respectTransparency": "Do Transparency",
     "artimus.toolProperty.pierceTransparency": "Pierce Transparency",
 
+    "artimus.toolProperty.font": "Font",
     "artimus.toolProperty.textSize": "Text Size",
     "artimus.toolProperty.lineSpacing": "Line Size",
     
