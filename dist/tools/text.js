@@ -72,6 +72,11 @@ artimus.tools.text = class extends artimus.tool {
                     gl.strokeRect(toolProperties.x + markerOffset, y - (lineHeight - 2), 1, lineHeight - 3);
 
                     if (toolProperties.pixelBrush) gl.filter = this.cssFilter;
+
+
+                    //Fix stroke style if need be
+                    gl.strokeStyle = toolProperties.strokeColor;
+                    gl.lineWidth = toolProperties.strokeSize;
                 }
             }
 
