@@ -155,7 +155,7 @@ artimus.tools.text = class extends artimus.tool {
                         if (event.shiftKey) {
                             if (text.charAt(toolProperties.pointerPosition - 1) == " ") {
                                 for (let i = 0; i < 4; i++) {
-                                    toolProperties.text = this.removeCharactersAt(text, toolProperties.pointerPosition, 1);
+                                    toolProperties.text = this.removeCharactersAt(toolProperties.text, toolProperties.pointerPosition, 1);
                                     toolProperties.pointerPosition--;
                                     if (toolProperties.text.charAt(toolProperties.pointerPosition - 1) != " ") break;
                                 }
