@@ -4,14 +4,14 @@ artimus.tools.selectionCircle = class extends artimus.tool {
     get icon() { return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="117.67375" height="117.67375" viewBox="0,0,117.67375,117.67375"><g transform="translate(-181.16313,-121.16312)"><g stroke-miterlimit="10"><path d="M181.16313,238.83687v-117.67375h117.67375v117.67375z" fill="none" stroke="none" stroke-width="0" /><path d="M192.04716,179.99999c0,-26.48362 21.46922,-47.95284 47.95284,-47.95284c26.48362,0 47.95284,21.46922 47.95284,47.95284c0,26.48362 -21.46922,47.95284 -47.95284,47.95284c-26.48362,0 -47.95284,-21.46922 -47.95284,-47.95284z" fill="none" stroke="currentColor" stroke-width="5" stroke-dasharray="16 8" /></g></g></svg><!--rotationCenter:58.83687282811721:58.836882828117226-->'; }
     
     mouseDown(gl, x, y, toolProperties) {
-        toolProperties.start = [x, y];
+        this.start = [x, y];
     }
 
     mouseUp(gl, x, y, toolProperties) {
-        if (toolProperties.start) {
-            if (toolProperties.start[0] == x && toolProperties.start[1] == y) this.workspace.clearSelection();
+        if (this.start) {
+            if (this.start[0] == x && this.start[1] == y) this.workspace.clearSelection();
             else {
-                const [sx, sy] = toolProperties.start;
+                const [sx, sy] = this.start;
                 let cx = (x + sx) / 2;
                 let cy = (y + sy) / 2;
 
@@ -34,12 +34,12 @@ artimus.tools.selectionCircle = class extends artimus.tool {
             }
         }
 
-        toolProperties.start = null;
+        this.start = null;
     }
 
     preview(gl, x, y, toolProperties) {
-        if (toolProperties.start) {
-            let [sx, sy] = toolProperties.start;
+        if (this.start) {
+            let [sx, sy] = this.start;
             let [ex, ey] = [x, y];
             const hx = (x + sx) / 2;
             const hy = (y + sy) / 2;

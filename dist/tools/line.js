@@ -2,7 +2,7 @@ artimus.tools.line = class extends artimus.tool {
     get icon() { return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="117.67375" height="117.67375" viewBox="0,0,117.67375,117.67375"><g transform="translate(-181.16313,-121.16312)"><g fill="none" stroke-miterlimit="10"><path d="M181.16313,238.83687v-117.67375h117.67375v117.67375z" stroke="none" stroke-width="0" stroke-linecap="butt"/><path d="M195.20082,210.85752l89.59837,-61.71506" stroke="currentColor" stroke-width="9.5" stroke-linecap="round"/></g></g></svg><!--rotationCenter:58.83687282811721:58.836882828117226-->'; }
     
     mouseDown(gl, x, y, toolProperties) {
-        toolProperties.start = [x, y];
+        this.start = [x, y];
     }
 
     drawLine(gl, sx, sy, ex, ey, toolProperties) {
@@ -35,13 +35,13 @@ artimus.tools.line = class extends artimus.tool {
     }
 
     mouseUp(gl, x, y, toolProperties) {
-        this.drawLine(gl, ...toolProperties.start, x, y, toolProperties);
-        toolProperties.start = null;
+        this.drawLine(gl, ...this.start, x, y, toolProperties);
+        this.start = null;
     }
 
     preview(gl, x, y, toolProperties) {
-        if (toolProperties.start) {
-            this.drawLine(gl, ...toolProperties.start, x, y, toolProperties);
+        if (this.start) {
+            this.drawLine(gl, ...this.start, x, y, toolProperties);
         }
         else {
             this.drawLine(gl, x, y, x + 0.1, y + 0.1, toolProperties);

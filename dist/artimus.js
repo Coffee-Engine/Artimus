@@ -134,9 +134,14 @@ window.artimus = {
             this.workspace = workspace;
         }
 
-        mouseDown() {}
-        mouseUp() {}
-        preview() {}
+        mouseDown(gl, x, y, toolProperties) {}
+        mouseMove(gl, x, y, vx, vy, toolProperties) {}
+        mouseUp(gl, x, y, toolProperties) {}
+        preview(gl, x, y, toolProperties) {}
+        
+        selected(gl, previewGL, toolProperties) {}
+        deselected(gl, previewGL, toolProperties) {}
+
         CUGI() { return [] }
 
         inSelection(gl, x, y) {
@@ -274,13 +279,18 @@ window.artimus = {
 
         //Tools
         #tool = ""
-        toolFunction = {};
+        toolFunction = new artimus.tool();
         set tool(value) {
+            //Make sure the tool function gets the deselection notification if possible
+            if (this.toolFunction && this.toolFunction.deselected) this.toolFunction.deselected(this.GL, this.previewGL, this.toolProperties);
+
             if (artimus.tools[value]) this.toolFunction = new artimus.tools[value]();
-            else this.toolFunction = {};
+            else this.toolFunction = new artimus.tool();
             this.toolFunction.workspace = this;
 
+            //Then call the selection signal after properties.
             this.toolProperties = Object.assign({},this.toolFunction.properties, this.toolProperties);
+            if (this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.GL, this.previewGL, this.toolProperties);
 
             this.#tool = value;
             this.refreshToolOptions();
@@ -324,6 +334,7 @@ window.artimus = {
         layerClassSelected = "artimus-button-selected artimus-layer-selected ";
 
         //Selection stuff
+        #selection = [];
         set selection(value) { this.setSelection(value); }
         get selection() { return this.#selection; }
 
@@ -333,10 +344,19 @@ window.artimus = {
         selectionMaxX = 0;
         selectionMaxY = 0;
 
-        #selection = [];
         selectionAnimation = 0;
         selectionPath = new Path2D();
         hasSelection = false;
+        
+        #selectionOnPreview = false
+        set selectionOnPreview(value) {
+            if (value == true) this.applySelectionToPreview();
+            else this.clearSelectionFromPreview();
+        }
+
+        get selectionOnPreview() {
+            return this.#selectionOnPreview;
+        }
 
         //And finally...
         projectStorage = {};
@@ -1066,6 +1086,22 @@ window.artimus = {
             else {
                 this.GL.restore();
                 this.hasSelection = false;
+            }
+        }
+
+        applySelectionToPreview() {
+            if (this.selection.length > 0) {
+                if (!this.selectionOnPreview) this.previewGL.save();
+                this.previewGL.clip(this.selectionPath, "evenodd");
+                this.#selectionOnPreview = true;
+            }
+            else this.clearSelectionFromPreview();
+        }
+
+        clearSelectionFromPreview() {
+            if (this.selectionOnPreview) {
+                this.previewGL.restore();
+                this.#selectionOnPreview = false;
             }
         }
 

@@ -40,7 +40,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
         this.checkForEraserMode(toolProperties);
 
         //Then start drawing
-        toolProperties.linePos = [x,y];
+        this.linePos = [x,y];
 
         //The three types
         if (toolProperties.isEraser) this.eraserCircular(gl, x, y, toolProperties);
@@ -56,12 +56,9 @@ artimus.tools.paintBrush = class extends artimus.tool {
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
+        const linePos = [...this.linePos];
+        const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
         if (toolProperties.isEraser) {
-            //For non-AA line drawing;
-            const linePos = toolProperties.linePos;
-            const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
-
-
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
                 const rx = Math.floor((linePos[0] + (x - linePos[0]) * i));
@@ -70,14 +67,9 @@ artimus.tools.paintBrush = class extends artimus.tool {
                 this.eraserCircular(gl, rx, ry, toolProperties);
             }
             
-            toolProperties.linePos = [x,y];
+            this.linePos = [x,y];
         }
         else if (toolProperties.pixelBrush) {
-            //For non-AA line drawing;
-            const linePos = toolProperties.linePos;
-            const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
-
-
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
                 const rx = Math.floor((linePos[0] + (x - linePos[0]) * i));
@@ -86,13 +78,10 @@ artimus.tools.paintBrush = class extends artimus.tool {
                 this.drawCircular(gl, rx, ry, toolProperties);
             }
             
-            toolProperties.linePos = [x,y];
+            this.linePos = [x,y];
         }
         //Smooth brush
         else {
-            const {linePos} = toolProperties;
-            const distance = Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
-
             //Assure we don't overdraw
             if (distance > 1) {
                 gl.lineTo(x,y);
@@ -101,7 +90,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
                 gl.closePath(); //! We do it in this order or else firefox throws a fit.
                 gl.beginPath();
                 gl.moveTo(x,y);
-                toolProperties.linePos = [x,y];
+                this.linePos = [x,y];
             }
         }
     }
@@ -115,7 +104,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
             gl.closePath();
         }
 
-        toolProperties.linePos = null;
+        this.linePos = null;
     }
 
     preview(gl, x, y, toolProperties) {
@@ -130,7 +119,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
         this.checkForEraserMode(toolProperties);
 
         //For the smooth brush
-        if (toolProperties.isEraser && !toolProperties.linePos) {
+        if (toolProperties.isEraser && !this.linePos) {
             gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
             gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
             gl.lineWidth = 2;

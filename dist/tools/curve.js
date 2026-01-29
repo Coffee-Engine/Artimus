@@ -3,14 +3,14 @@ artimus.tools.curve = class extends artimus.tools.line {
     
     mouseDown(gl, x, y, toolProperties) {
         if (toolProperties.state == 0) {
-            toolProperties.start = [x, y];
-            toolProperties.end = [x, y];
+            this.start = [x, y];
+            this.end = [x, y];
         }
     }
 
     mouseMove(gl, x, y, toolProperties) {
         if (toolProperties.state == 0) {
-            toolProperties.end = [x, y];
+            this.end = [x, y];
         }
     }
 
@@ -63,20 +63,20 @@ artimus.tools.curve = class extends artimus.tools.line {
 
     mouseUp(gl, x, y, toolProperties) {
         if (toolProperties.state == 1) {
-            this.drawLine(gl, ...toolProperties.start, ...toolProperties.end, x, y, toolProperties);
-            toolProperties.start = null;
+            this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);
+            this.start = null;
             toolProperties.state = 0;
         }
         else {
-            toolProperties.end = [x, y];
+            this.end = [x, y];
             toolProperties.state = 1;
         }
     }
 
     preview(gl, x, y, toolProperties) {
-        if (toolProperties.start) {
-            if (toolProperties.state == 0) this.drawLine(gl, ...toolProperties.start, x, y, x, y, toolProperties);
-            else this.drawLine(gl, ...toolProperties.start, ...toolProperties.end, x, y, toolProperties);
+        if (this.start) {
+            if (toolProperties.state == 0) this.drawLine(gl, ...this.start, x, y, x, y, toolProperties);
+            else this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);
         }
         else {
             this.drawLine(gl, x, y, x + 0.1, y + 0.1, x, y, toolProperties);

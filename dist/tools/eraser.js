@@ -13,7 +13,7 @@ artimus.tools.eraser = class extends artimus.tool {
     }
 
     mouseDown(gl, x, y, toolProperties) {
-        toolProperties.linePos = [x,y];
+        this.linePos = [x,y];
 
         //Calculations
         const halfSize = Math.floor(toolProperties.strokeSize / 2);
@@ -37,11 +37,11 @@ artimus.tools.eraser = class extends artimus.tool {
             else gl.clearRect(rx,ry,strokeSize,strokeSize);
         }
 
-        toolProperties.linePos = [x,y];
+        this.linePos = [x,y];
     }
 
     mouseUp(gl, x, y, toolProperties) {
-        toolProperties.linePos = null;
+        this.linePos = null;
     }
 
     preview(gl, x, y, toolProperties) {
@@ -50,7 +50,7 @@ artimus.tools.eraser = class extends artimus.tool {
         const rx = x - halfSize;
         const ry = y - halfSize;
 
-        if (!toolProperties.linePos) {
+        if (!this.linePos) {
             if (toolProperties.circular) {
                 gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
                 gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
