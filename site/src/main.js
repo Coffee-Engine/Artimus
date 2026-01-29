@@ -95,22 +95,26 @@ artimus.fontPopup = (workspace) => {
         workspace.getFonts().then(fonts => {
             editor.openModal("Choose a font", (popup) => {
                 const innerList = document.createElement("div");
+                let fontSet = new Set();
                 innerList.className = "artimus-font-list"
 
                 for (let fontID in fonts) {
-                    const button = document.createElement("button");
-                    
-                    button.innerText = fonts[fontID].family;
-                    button.className = "artimus-font-button";
+                    if (!fontSet.has(fonts[fontID].family)) {
+                        fontSet.add(fonts[fontID].family);
 
-                    button.style.fontFamily = fonts[fontID].family;
+                        const button = document.createElement("button");
+                        
+                        button.innerText = fonts[fontID].family;
+                        button.className = "artimus-font-button";
+                        button.style.fontFamily = fonts[fontID].family;
 
-                    button.onclick = () => {
-                        resolve(fonts[fontID].family);
-                        editor.closeModal();
+                        button.onclick = () => {
+                            resolve(fonts[fontID].family);
+                            editor.closeModal();
+                        }
+
+                        innerList.appendChild(button);
                     }
-
-                    innerList.appendChild(button);
                 }
 
                 popup.appendChild(innerList);

@@ -30,6 +30,8 @@
     "artimus.toolProperty.font": "Font",
     "artimus.toolProperty.textSize": "Text Size",
     "artimus.toolProperty.lineSpacing": "Line Size",
+    "artimus.toolProperty.bold": "Bold",
+    "artimus.toolProperty.italic": "Italic",
     
     "artimus.toolProperty.radius": "Radius",
     "artimus.toolProperty.points": "Points",

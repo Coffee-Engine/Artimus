@@ -324,7 +324,16 @@ window.artimus = {
         layerClassSelected = "artimus-button-selected artimus-layer-selected ";
 
         //Selection stuff
-        selection = [];
+        set selection(value) { this.setSelection(value); }
+        get selection() { return this.#selection; }
+
+        selectionMinX = 0;
+        selectionMinY = 0;
+
+        selectionMaxX = 0;
+        selectionMaxY = 0;
+
+        #selection = [];
         selectionAnimation = 0;
         selectionPath = new Path2D();
         hasSelection = false;
@@ -988,7 +997,7 @@ window.artimus = {
 
         //For selections
         setSelection(newSelection) {
-            if (this.selection.length == 0) this.GL.save();
+            if (this.#selection.length == 0) this.GL.save();
             else {
                 this.GL.restore();
                 this.GL.save();
@@ -1013,12 +1022,27 @@ window.artimus = {
                 return this.clearSelection();
             }
 
-            this.selection = newSelection;
+            this.#selection = newSelection;
+
+            //Prepare for measurement
+            this.selectionMinX = Infinity;
+            this.selectionMinY = Infinity;
+            this.selectionMaxX = -Infinity;
+            this.selectionMaxY = -Infinity;
+
+            for (let i = 0; i < this.selection.length; i+=2) {
+                if (this.#selection[i] < this.selectionMinX) { this.selectionMinX = this.#selection[i] }
+                if (this.#selection[i + 1] < this.selectionMinY) { this.selectionMinY = this.#selection[i + 1] }
+
+                if (this.#selection[i] > this.selectionMaxX) { this.selectionMaxX = this.#selection[i] }
+                if (this.#selection[i + 1] > this.selectionMaxY) { this.selectionMaxY = this.#selection[i + 1] }
+            }
+
             this.updateSelectionPath();
         }
 
         clearSelection() {
-            this.selection = [];
+            this.#selection = [];
             this.selectionAnimation = 0;
             this.updateSelectionPath();
         }

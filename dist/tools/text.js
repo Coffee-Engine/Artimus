@@ -44,6 +44,9 @@ artimus.tools.text = class extends artimus.tool {
         gl.lineWidth = toolProperties.strokeSize;
         gl.font = `${toolProperties.textSize}px ${toolProperties.font}`;
 
+        if (toolProperties.bold) gl.font = `bold ${gl.font}`;
+        if (toolProperties.italic) gl.font = `italic ${gl.font}`;
+
         //Ready the linemen
         const split = toolProperties.text.split("\n");
         const lineHeight = gl.measureText("■").width * toolProperties.lineSpacing;
@@ -213,8 +216,12 @@ artimus.tools.text = class extends artimus.tool {
 
     CUGI(artEditor) { return [
         { target: artEditor.toolProperties, key: "font", type: "artimus-font"},
+        { target: artEditor.toolProperties, key: "bold", type: "boolean" },
+        { target: artEditor.toolProperties, key: "italic", type: "boolean" },
+
         { target: artEditor.toolProperties, key: "textSize", type: "int", min: 1 },
         { target: artEditor.toolProperties, key: "lineSpacing", type: "float" },
+
         { target: artEditor.toolProperties, key: "fillColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 0 },
@@ -223,6 +230,8 @@ artimus.tools.text = class extends artimus.tool {
 
     properties = {
         font: "Monospace",
+        bold: false,
+        italic: false,
         textSize: 24,
         lineSpacing: 1.5,
         fillColor: "#000000",
