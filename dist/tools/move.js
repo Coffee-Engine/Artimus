@@ -2,6 +2,8 @@ artimus.tools.move = class extends artimus.tool {
     get icon() { return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="70.5" height="70.5" viewBox="0,0,70.5,70.5"> <g transform="translate(-204.75002,-144.75)">    <g data-paper-data="{&quot;isPaintingLayer&quot;:true}" fill-rule="nonzero" stroke="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" style="mix-blend-mode: normal">        <path d="M204.75003,215.25v-70.5h70.5v70.5z" fill="none" stroke-width="0"/>        <path d="M220.9868,205.17696c1.77179,-0.89842 3.45323,-2.83003 3.92284,-4.18449c0.48941,-2.20805 2.09187,-5.70927 4.03585,-6.94886c1.41138,-1.79045 6.7982,-2.72387 8.25105,-0.51354c3.63129,2.41038 4.42564,4.90457 4.65906,6.97496c0.87449,2.30301 -2.19833,6.25534 -4.02505,7.55363c-2.70649,1.77061 -6.09868,1.76254 -9.25182,2.13584c-3.36677,0.39859 -5.03047,-0.4888 -7.98273,-1.41774c-0.53432,-0.4212 -3.55958,-2.15572 -3.34232,-2.965c0.23096,-0.8603 2.73102,-0.52502 3.38089,-0.60196l0.28441,-0.03367c0,0 0.02808,-0.00332 0.06782,0.00082z" fill="currentColor" stroke-width="0.5"/>        <path d="M254.7307,185.57527c-5.41655,12.21861 -8.83657,10.44178 -13.17454,8.51874c-4.33797,-1.92303 -7.95119,-3.26405 -2.53464,-15.48266c5.41655,-12.21861 17.81172,-30.68787 22.14969,-28.76483c4.33797,1.92304 -1.02396,23.51014 -6.4405,35.72876z" fill="currentColor" stroke-width="0"/></g></g></svg><!--rotationCenter:35.249975000000006:35.25000499999999-->'; }
     constructive = false;
 
+    tp = (Math.PI * 2);
+
     updatePositions() {
         let { selectionMinX, selectionMinY, selectionMaxX, selectionMaxY } = this.workspace;
 
@@ -72,6 +74,14 @@ artimus.tools.move = class extends artimus.tool {
 
     isInCircle(x, y, cx, cy, radius) { return Math.sqrt(Math.pow(cx - x, 2) + Math.pow(cy - y, 2)) <= radius; }
 
+    drawCircle(gl, x, y, radius, fill) {
+        gl.beginPath();
+        gl.ellipse(x + 0.5, y + 0.5, radius, radius, 0, 0, 2 * Math.PI);
+        if (fill) gl.fill();
+        gl.stroke();
+        gl.closePath();
+    }
+
     mouseDown(gl, x, y, toolProperties) {
         if (this.ready) {
             this.dragging = true;
@@ -101,6 +111,10 @@ artimus.tools.move = class extends artimus.tool {
             if (this.rotating) {
                 //Find offset angle
                 this.angle = Math.atan2(this.cy - y, this.cx - x) - this.initialAngle;
+                if (this.shiftHeld) {
+                    this.angle = (Math.floor((this.angle / this.tp) * 15) / 15) * this.tp;
+                }
+                
                 const sin = Math.sin(-this.angle);
                 const cos = Math.cos(-this.angle);
 
@@ -143,13 +157,6 @@ artimus.tools.move = class extends artimus.tool {
         }        
     }
 
-    drawCircle(gl, x, y, radius, fill) {
-        gl.beginPath();
-        gl.ellipse(x + 0.5, y + 0.5, radius, radius, 0, 0, 2 * Math.PI);
-        if (fill) gl.fill();
-        gl.stroke();
-        gl.closePath();
-    }
 
     preview(gl, x, y, toolProperties) {
 
@@ -160,10 +167,22 @@ artimus.tools.move = class extends artimus.tool {
         
         gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
         gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
+        gl.lineWidth = 1;
+
         this.drawCircle(gl, this.x, this.y, 3, this.isInCircle(x, y, this.x, this.y, 3));
         this.drawCircle(gl, this.x + this.width, this.y, 3, this.isInCircle(x, y, this.x + this.width, this.y, 3));
         this.drawCircle(gl, this.x + this.width, this.y + this.height, 3, this.isInCircle(x, y, this.x + this.width, this.y + this.height, 3));
         this.drawCircle(gl, this.x, this.y + this.height, 3, this.isInCircle(x, y, this.x, this.y + this.height, 3));
+
+        //Create bounding outline
+        gl.beginPath();
+        gl.moveTo(this.x, this.y);
+        gl.lineTo(this.x + this.width, this.y);
+        gl.lineTo(this.x + this.width, this.y + this.height);
+        gl.lineTo(this.x, this.y + this.height);
+        gl.lineTo(this.x, this.y);
+        gl.stroke();
+        gl.closePath();
     }
 
     properties = {
