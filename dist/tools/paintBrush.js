@@ -56,8 +56,8 @@ artimus.tools.paintBrush = class extends artimus.tool {
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
-        const linePos = [...this.linePos];
-        const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
+        const linePos = this.linePos;
+        let distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
         if (toolProperties.isEraser) {
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
@@ -83,6 +83,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
         //Smooth brush
         else {
             //Assure we don't overdraw
+            distance = 1 / distance;
             if (distance > 1) {
                 gl.lineTo(x,y);
                 gl.stroke();

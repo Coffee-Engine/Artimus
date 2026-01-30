@@ -130,13 +130,17 @@ window.artimus = {
     tool: class {
         get icon() { return ""; }
 
-        constructor(workspace) {
-            this.workspace = workspace;
-        }
+        constructor(workspace) { this.workspace = workspace; }
+
+        get shiftHeld() { return this.workspace.shiftHeld; }
 
         mouseDown(gl, x, y, toolProperties) {}
         mouseMove(gl, x, y, vx, vy, toolProperties) {}
         mouseUp(gl, x, y, toolProperties) {}
+
+        keyPressed(gl, event, toolProperties) {}
+        keyReleased(gl, event, toolProperties) {}
+
         preview(gl, x, y, toolProperties) {}
         
         selected(gl, previewGL, toolProperties) {}
@@ -791,8 +795,21 @@ window.artimus = {
                         }
                     }
 
+                    if (event.key.toLowerCase() == "shift") { this.shiftHeld = true; }
+
                     if (this.toolFunction.keyPressed) {
                         if (this.toolFunction.keyPressed(this.GL, event, this.toolProperties)) event.preventDefault();
+
+                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
+                    }
+                },
+
+                keyReleased: (event) => {
+                    if (event.key.toLowerCase() == "shift") { this.shiftHeld = false; }
+
+                    if (this.toolFunction.keyReleased) {
+                        if (this.toolFunction.keyReleased(this.GL, event, this.toolProperties)) event.preventDefault();
 
                         this.previewGL.clearRect(0, 0, this.width, this.height);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
@@ -910,6 +927,7 @@ window.artimus = {
             this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
+            document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);
 
             this.canvasArea.addEventListener("touchstart", this.controlSets.touch.fingerDown);
             this.canvasArea.addEventListener("touchmove", this.controlSets.touch.fingerMove);
@@ -1358,8 +1376,6 @@ window.artimus = {
                         (val & 0x00ff0000) >>> 16
                     ]);
                 }
-
-                console.log(layerColours)
 
                 return layerColours;
             }
