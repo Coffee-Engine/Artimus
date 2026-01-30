@@ -24,7 +24,9 @@ artimus.tools.eraser = class extends artimus.tool {
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
-        const {linePos, strokeSize} = toolProperties;
+        const strokeSize = toolProperties.strokeSize;
+        const linePos = this.linePos;
+
         const halfSize = Math.floor(strokeSize / 2);
         const distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
 
@@ -51,7 +53,7 @@ artimus.tools.eraser = class extends artimus.tool {
         const ry = y - halfSize;
 
         if (!this.linePos) {
-            if (toolProperties.circular) {
+            if (toolProperties.circular && toolProperties.strokeSize > 3) {
                 gl.fillStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-inline");
                 gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-eraser-outline");
                 gl.lineWidth = 2;
