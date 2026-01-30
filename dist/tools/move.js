@@ -13,6 +13,23 @@ artimus.tools.move = class extends artimus.tool {
         this.height = (this.workspace.hasSelection) ? selectionMaxY - selectionMinY : this.workspace.height;
     }
 
+    updateHistory() {
+        if (this.historyPosition < this.undoQueue.length - 1) this.undoQueue.splice(this.historyPosition + 1, this.undoQueue.length);
+
+        this.undoQueue.push({
+            angle: this.angle,
+            offsetAngle: this.offsetAngle,
+            imageX: this.imageX,
+            imageY: this.imageY,
+            imageWidth: this.imageWidth,
+            imageHeight: this.imageHeight,
+            selection: [...this.workspace.selection]
+        });
+
+        this.historyPosition = this.undoQueue.length - 1;
+        console.log(this.historyPosition);
+    }
+
     drawImage(gl) {
         //Calculate values needed for our matrix
         const sin = Math.sin(this.angle - this.offsetAngle);
@@ -38,21 +55,23 @@ artimus.tools.move = class extends artimus.tool {
             selectionMinX = 0; selectionMinY = 0;
             selectionMaxX = this.workspace.width; selectionMaxY = this.workspace.height;
         }
-        
-        this.angle = 0;
-        this.offsetAngle = 0;
-        this.initialAngle = 0;
 
         createImageBitmap(this.imageData).then(bitmap => {
             this.bitmap = bitmap;
             this.ready = true;
             this.updatePositions();
 
-            //So we don't offset the image while rotating
+            //Setup initial variables
             this.imageX = this.x;
             this.imageY = this.y;
             this.imageWidth = this.width;
             this.imageHeight = this.height;
+        
+            this.angle = 0;
+            this.offsetAngle = 0;
+            this.initialAngle = 0;
+            this.undoQueue = [];
+            this.historyPosition = 0;
 
             gl.clearRect(
                 selectionMinX,
@@ -60,6 +79,8 @@ artimus.tools.move = class extends artimus.tool {
                 selectionMaxX - selectionMinX,
                 selectionMaxY - selectionMinY
             );
+            
+            this.updateHistory();
 
             this.preview(previewGL, ...this.workspace.lastPosition, toolProperties);
             this.workspace.dirty = true;
@@ -152,12 +173,29 @@ artimus.tools.move = class extends artimus.tool {
     mouseUp(gl, x, y, toolProperties) {
         if (this.ready) {
             this.dragging = false;
-        }        
+            this.updateHistory();
+        }
     }
 
+    undo(gl, previewGL, toolProperties) {
+        if (this.historyPosition > 0) this.historyPosition -= 1;
+        console.log(this.historyPosition);
+
+        //Undo.
+        this.workspace.selection = this.undoQueue[this.historyPosition].selection;
+        this.angle = this.undoQueue[this.historyPosition].angle;
+        this.offsetAngle = this.undoQueue[this.historyPosition].offsetAngle;
+        this.imageX = this.undoQueue[this.historyPosition].imageX;
+        this.imageY = this.undoQueue[this.historyPosition].imageY;
+        this.imageWidth = this.undoQueue[this.historyPosition].imageWidth;
+        this.imageHeight = this.undoQueue[this.historyPosition].imageHeight;
+
+        this.updatePositions();
+
+        return true;
+    }
 
     preview(gl, x, y, toolProperties) {
-
         //Set the image and draw the matrix
         this.workspace.applySelectionToPreview();
         this.drawImage(gl);
