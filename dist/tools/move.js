@@ -186,10 +186,32 @@ artimus.tools.move = class extends artimus.tool {
                     const stretchX = (this.resizedWidth / this.initialWidth);
                     const stretchY = (this.resizedHeight / this.initialHeight);
 
-                    this.matrix[0] = this.initialMatrix[0] * stretchX;
-                    this.matrix[1] = this.initialMatrix[1] * stretchX;
-                    this.matrix[2] = this.initialMatrix[2] * stretchY;
-                    this.matrix[3] = this.initialMatrix[3] * stretchY;
+                    //Get matrix ready for multiplication
+                    const from = [
+                        this.initialMatrix[0],
+                        this.initialMatrix[1],
+                        this.initialMatrix[4] - this.cx,
+                        this.initialMatrix[2],
+                        this.initialMatrix[3],
+                        this.initialMatrix[5] - this.cy
+                    ]
+
+                    const toMatrix = [
+                        stretchX, 0, 0,
+                        0, stretchY, 0,
+                        0, 0, 1
+                    ]
+
+                    //Multiply, for some reason canvas 2d matrixs are down oriented in terms of the direction the array goes so that is one reason from exists.
+                    this.matrix[0] = (from[0] * toMatrix[0]) + (from[1] * toMatrix[3]) + (from[2] * toMatrix[6]);
+                    this.matrix[2] = (from[0] * toMatrix[1]) + (from[1] * toMatrix[4]) + (from[2] * toMatrix[7]);
+                    this.matrix[4] = (from[0] * toMatrix[2]) + (from[1] * toMatrix[5]) + (from[2] * toMatrix[8]);
+                    this.matrix[1] = (from[3] * toMatrix[0]) + (from[4] * toMatrix[3]) + (from[5] * toMatrix[6]);
+                    this.matrix[3] = (from[3] * toMatrix[1]) + (from[4] * toMatrix[4]) + (from[5] * toMatrix[7]);
+                    this.matrix[5] = (from[3] * toMatrix[2]) + (from[4] * toMatrix[5]) + (from[5] * toMatrix[8]);
+
+                    this.matrix[4] += this.cx;
+                    this.matrix[5] += this.cy;
 
                     const selection = this.workspace.selection;
 
@@ -209,7 +231,6 @@ artimus.tools.move = class extends artimus.tool {
                     //Find offset angle
                     this.angle = Math.atan2(this.cy - y, this.cx - x) - this.initialAngle;
                     if (this.shiftHeld) this.angle = (Math.floor((this.angle / this.tp) * 24) / 24) * this.tp;
-                    console.log(this.angle);
                     
                     const sin = Math.sin(-this.angle);
                     const cos = Math.cos(-this.angle);
@@ -221,8 +242,10 @@ artimus.tools.move = class extends artimus.tool {
 
                     this.matrix[4] = this.initialMatrix[4] - this.cx;
                     this.matrix[5] = this.initialMatrix[5] - this.cy;
-                    this.matrix[4] = (this.matrix[5] * sin + this.matrix[4] * cos) + this.cx;
-                    this.matrix[5] = (this.matrix[5] * cos - this.matrix[4] * sin) + this.cy;
+
+                    let old = this.matrix[4];
+                    this.matrix[4] = (this.matrix[5] * sin) + (old * cos) + this.cx;
+                    this.matrix[5] = (this.matrix[5] * cos) - (old * sin) + this.cy;
 
                     //Move selection points
                     const selection = this.workspace.selection;
@@ -240,7 +263,7 @@ artimus.tools.move = class extends artimus.tool {
                     break;}
             
                 default:
-                    //Move the image and the selection pointss
+                    //Move the image and the selection points
                     this.matrix[4] += vx;
                     this.matrix[5] += vy;
 
