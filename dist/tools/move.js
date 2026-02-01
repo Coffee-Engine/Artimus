@@ -186,12 +186,26 @@ artimus.tools.move = class extends artimus.tool {
                     const stretchX = (this.resizedWidth / this.initialWidth);
                     const stretchY = (this.resizedHeight / this.initialHeight);
 
+                    if (this.dx != 0) {
+                        this.matrix[0] = this.initialMatrix[0] * stretchX;
+                        this.matrix[2] = this.initialMatrix[2] * stretchX;
+                        this.matrix[4] = ((this.initialMatrix[4] - this.cx) * stretchX) + this.cx;
+                    }
+
+                    if (this.dy != 0) {
+                        this.matrix[1] = this.initialMatrix[1] * stretchY;
+                        this.matrix[3] = this.initialMatrix[3] * stretchY;
+                        this.matrix[5] = ((this.initialMatrix[5] - this.cy) * stretchY) + this.cy;
+                    }
+
+                    /*
+
                     //Get matrix ready for multiplication
                     const from = [
                         this.initialMatrix[0],
-                        this.initialMatrix[1],
-                        this.initialMatrix[4] - this.cx,
                         this.initialMatrix[2],
+                        this.initialMatrix[4] - this.cx,
+                        this.initialMatrix[1],
                         this.initialMatrix[3],
                         this.initialMatrix[5] - this.cy
                     ]
@@ -212,6 +226,8 @@ artimus.tools.move = class extends artimus.tool {
 
                     this.matrix[4] += this.cx;
                     this.matrix[5] += this.cy;
+
+                    */
 
                     const selection = this.workspace.selection;
 
