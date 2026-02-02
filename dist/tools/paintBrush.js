@@ -84,7 +84,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
         else {
             //Assure we don't overdraw
             distance = 1 / distance;
-            if (distance > 1) {
+            if (distance > 0.5) {
                 gl.lineTo(x,y);
                 gl.stroke();
 

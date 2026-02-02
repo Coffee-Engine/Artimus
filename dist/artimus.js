@@ -366,6 +366,8 @@ window.artimus = {
             return this.#selectionOnPreview;
         }
 
+        lastPosition = [ 0, 0 ];
+
         //And finally...
         projectStorage = {};
 
@@ -823,8 +825,7 @@ window.artimus = {
 
             //Mobile support
             touch: {
-                lastDrewX: 0,
-                lastDrewY: 0,
+                lastDrew: [0,0],
                 touches: {},
                 
                 fingerDown: (event) => {
@@ -862,15 +863,13 @@ window.artimus = {
                             if (event.target != this.canvas) return;
 
                             const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
-                            const heldData = this.controlSets.touch.touches[touch.identifier];
 
                             //Initilize drawing if we haven't
                             if (!this.toolDown) {
-                                if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.GL, ...position, this.toolProperties);
+                                if (this.toolFunction.mouseDown) this.toolFunction.mouseDown(this.GL, ...position, this.toolProperties);
                                 this.toolDown = true;
                             }
                             else {
-                                const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
                     
                                 if (this.toolFunction.preview) {
                                     //For previews
@@ -878,11 +877,13 @@ window.artimus = {
                                     this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                                 }
 
-                                if (this.toolDown && this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, (firstTouch.clientX - heldData.lx) * this.invZoom, (firstTouch.clientY - heldData.ly) * this.invZoom, this.toolProperties);
+                                if (this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, position[0] - this.controlSets.touch.lastDrew[0], position[1] - this.controlSets.touch.lastDrew[1], this.toolProperties);
                             }
 
-                            this.controlSets.touch.lastDrewX = firstTouch.clientX;
-                            this.controlSets.touch.lastDrewY = firstTouch.clientY;
+                            if (this.toolFunction.constructive) this.dirty = true;
+
+                            this.lastPosition = position;
+                            this.controlSets.touch.lastDrew = position;
                             break;
                     }
                     
@@ -902,10 +903,14 @@ window.artimus = {
                     this.fingersDown--;
 
                     if (this.fingersDown == 0 && this.toolDown) {
-                        if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.getCanvasPosition(this.controlSets.touch.lastDrewX, this.controlSets.touch.lastDrewY), this.toolProperties);
-                        if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
+                        if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                        if (this.toolFunction.preview) {
+                            this.previewGL.clearRect(0, 0, this.width, this.height);
+                            this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                        }
                         
                         //For the undoing
+                        if (this.toolFunction.constructive) this.dirty = true;
                         if (this.tool) this.updateLayerHistory();
                         this.toolDown = false; 
                     }
@@ -929,6 +934,7 @@ window.artimus = {
             this.canvasArea.addEventListener("mousedown", this.controlSets.kbMouse.mouseDown);
             this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
             this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
+            this.canvasArea.addEventListener("pointermove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
             document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);
@@ -1606,7 +1612,6 @@ window.artimus = {
                 let savedBytes = 0;
 
                 //Start from 0 to get full range
-                console.log(palette)
                 data.push(palette.length - 1);
                 data.push(palette.flat(1));
 
@@ -1746,8 +1751,6 @@ window.artimus = {
                     palette.push([data[index + 1], data[index + 2], data[index + 3], data[index + 4]]);
                     index += 4;
                 }
-
-                console.log(palette);
 
                 while (filled < bytesPerLayer) {
                     const stripSize = (data[index + 1] << 8) + (data[index + 2]);
