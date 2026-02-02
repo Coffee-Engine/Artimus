@@ -50,9 +50,12 @@ body {
 }
 
 .artimus-canvas {
-    image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
+
+    /* Weird chromium Win-11 bug */
+    filter: blur(0);
 
     transform: translate(-50%, -50%) scale(var(--zoom)) translate(var(--scrollX), var(--scrollY));
     position: absolute;

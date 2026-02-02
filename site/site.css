@@ -131,7 +131,11 @@ cugi-dropdown:active {
 }
 
 .LOGO {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
     image-rendering: pixelated;
+    /* Weird chromium Win-11 bug */
+    filter: blur(0);
 }
 
 .popup-close {
