@@ -933,7 +933,7 @@ window.artimus = {
 
             this.canvasArea.addEventListener("mousedown", this.controlSets.kbMouse.mouseDown);
             this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
-            this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
+            //this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("pointermove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
