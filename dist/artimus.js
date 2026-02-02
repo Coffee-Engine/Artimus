@@ -914,6 +914,19 @@ window.artimus = {
                         if (this.tool) this.updateLayerHistory();
                         this.toolDown = false; 
                     }
+                },
+
+                //Experimental S-Pen support, unsure about other stylus devices.
+                penMove: (event) => {
+                    //Mostly air action here.
+                    if (event.pointerType == "pen" && event.pressure == 0) {
+                        const position = this.getCanvasPosition(event.clientX, event.clientY);
+                        if (this.toolFunction.preview) {
+                            //For previews
+                            this.previewGL.clearRect(0, 0, this.width, this.height);
+                            this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                        }
+                    }
                 }
             }
         }
@@ -933,8 +946,7 @@ window.artimus = {
 
             this.canvasArea.addEventListener("mousedown", this.controlSets.kbMouse.mouseDown);
             this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
-            //this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
-            this.canvasArea.addEventListener("pointermove", this.controlSets.kbMouse.mouseMove);
+            this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
             document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);
@@ -942,6 +954,7 @@ window.artimus = {
             this.canvasArea.addEventListener("touchstart", this.controlSets.touch.fingerDown);
             this.canvasArea.addEventListener("touchmove", this.controlSets.touch.fingerMove);
             this.canvasArea.addEventListener("touchend", this.controlSets.touch.fingerUp);
+            this.canvasArea.addEventListener("pointermove", this.controlSets.touch.penMove);
         }
 
         refreshTranslation() {
