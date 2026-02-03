@@ -7,7 +7,64 @@ window.editor = {
     popup: document.getElementById("popupContent"),
     popupTitle: document.getElementById("popupTitle"),
 
-    language: {}
+    language: {},
+
+    modal: class {
+        constructor(name, contents, hasClose) {
+            this.background = document.createElement("div");
+            this.background.className = "modal-background";
+            this.background.style.pointerEvents = "all";
+
+            this.window = document.createElement("div");
+            this.window.className = "popup";
+
+            this.taskbar = document.createElement("div");
+            this.taskbar.className = "popup-top";
+
+            this.content = document.createElement("div");
+            this.content.className = "popup-content";
+
+            this.title = document.createElement("p");
+            this.title.className = "popup-title";
+            this.title.innerText = name;
+
+            this.background.appendChild(this.window);
+            this.window.appendChild(this.taskbar);
+            this.taskbar.appendChild(this.title);
+            this.window.appendChild(this.content);
+
+            document.body.appendChild(this.background);
+            
+            this.background.style.setProperty("--modal-opacity", "100%");
+            
+            if (hasClose) {
+                this.closeButton = document.createElement("button");
+                this.closeButton.className = "popup-close";
+                this.closeButton.onclick = () => {
+                    this.close();
+                }
+                
+                fetch("site/images/close.svg").then(res => res.text()).then(text => {
+                    if (this.closeButton) {
+                        this.closeButton.appendChild(artimus.elementFromString(text));
+                        this.closeButton.children[0].style.width = "100%";
+                        this.closeButton.children[0].style.height = "100%";
+                    }
+                })
+
+                this.taskbar.appendChild(this.closeButton);
+            }
+
+            switch (typeof contents) {
+                case "function": contents(this.content, this); break;
+                case "string": this.content.innerHTML = contents; break;
+                case "object": this.content.appendChild(contents); break;
+
+                default:
+                    break;
+            }
+        }
+    }
 };
 
 fetch("lang/english.json").then(result => result.text()).then(text => {
@@ -23,7 +80,15 @@ editor.openModal = (name, contents, hasClose) => {
     hasClose = hasClose == true;
 
     editor.popup.innerHTML = "";
-    if (typeof contents == "function") contents(editor.popup);
+    switch (typeof contents) {
+        case "function": contents(editor.popup); break;
+        case "string": editor.popup.innerHTML = contents; break;
+        case "object": editor.popup.appendChild(CUGI.createList(contents)); break;
+    
+        default:
+            break;
+    }
+
     document.body.style.setProperty("--modal-interaction", "all");
     document.body.style.setProperty("--modal-opacity", "100%");
 

@@ -1,6 +1,6 @@
 body {
     --modal-interaction: all;
-    --modal-opacity: 100%;
+    --modal-opacity: 0%;
 }
 
 .main-grid {
@@ -69,7 +69,7 @@ cugi-dropdown:active {
     position: absolute; 
     
     width: 400px;
-    padding: 16px;
+    padding: 0px;
     
     top: 50%; 
     left: 50%;
@@ -77,6 +77,8 @@ cugi-dropdown:active {
     transform: translate(-50%, -50%);
 
     background-color: var(--artimus-background-1);
+
+    overflow: hidden;
     border-radius: 16px;
 }
 
@@ -90,11 +92,13 @@ cugi-dropdown:active {
 }
 
 .popup-top {
-    display: grid;
-    grid-template-columns: 32px 1fr;
+    display: flex;
+    background-color: var(--artimus-background-2);
+    padding: 4px;
 }
 
 .popup-title {
+    flex-grow: 1;
     text-align: center;
     padding: 0px;
     margin:0px
@@ -142,6 +146,10 @@ cugi-dropdown:active {
     border-radius: 100%;
     border-width: 2px;
     border-style: solid;
+
+    height: 24px;
+    aspect-ratio: 1;
+    border-radius: 8px;
 
     background-color: var(--artimus-background-1);
     border-color: var(--artimus-background-3);

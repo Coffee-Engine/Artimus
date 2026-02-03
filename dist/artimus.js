@@ -10,6 +10,18 @@ window.artimus = {
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
 
+    //Host/Parasite relationship
+    host: document.createElement("div"),
+
+    elementFromString: (element) => {
+        artimus.host.innerHTML = element;
+
+        //Remove the parasite
+        const parasite = artimus.host.children[0];
+        artimus.host.removeChild(parasite);
+        return parasite;
+    },
+
     getCSSVariable: (variable) => {
         return getComputedStyle(document.body).getPropertyValue(`--artimus-${variable}`);
     },
@@ -446,18 +458,6 @@ window.artimus = {
             })
         }
 
-        //Host/Parasite relationship
-        host = document.createElement("div");
-
-        elementFromString(element) {
-            this.host.innerHTML = element;
-
-            //Remove the parasite
-            const parasite = this.host.children[0];
-            this.host.removeChild(parasite);
-            return parasite;
-        }
-
         //Now for the meat and potatoes
         constructor() {
             //Look for existing CUGI if one doesn't exist, add it.
@@ -850,6 +850,7 @@ window.artimus = {
 
                     let firstTouch = event.changedTouches[0];
                     const touches = Array.from(event.changedTouches);
+                    console.log(event.touches, event);
                     
                     switch ((this.toolFunction) ? this.fingersDown : 0) {
                         //2 Finger movement.
@@ -1062,7 +1063,7 @@ window.artimus = {
                     let icon = null;
 
                     //For svgs
-                    if (tool.icon.startsWith("<svg version=\"")) icon = this.elementFromString(tool.icon);
+                    if (tool.icon.startsWith("<svg version=\"")) icon = artimus.elementFromString(tool.icon);
                     else {
                         icon = document.createElement("img");
                         icon.src = tool.icon;
@@ -1303,7 +1304,7 @@ window.artimus = {
             //This button changes depending on whether or not the layer was hidden
             const hideButton = document.createElement("button");
             hideButton.className = "artimus-button artimus-layerButton";
-            hideButton.appendChild(this.elementFromString(artimus.hideIcon));
+            hideButton.appendChild(artimus.elementFromString(artimus.hideIcon));
             hideButton.onclick = () => {
                 this.setLayerVisibility(element.targetLayer, !this.getLayerVisibility(element.targetLayer));
                 hideButton.className = "artimus-button artimus-layerButton " + ((this.getLayerVisibility(element.targetLayer)) ? "" : "artimus-button-selected")
@@ -1321,7 +1322,7 @@ window.artimus = {
 
             const upButton = document.createElement("button");
             upButton.className = "artimus-button artimus-layerButton artimus-layerButton-thin";
-            upButton.appendChild(this.elementFromString(artimus.defaultArrow));
+            upButton.appendChild(artimus.elementFromString(artimus.defaultArrow));
             upButton.onclick = () => {
                 this.moveLayer(element.targetLayer, 1);
             }
@@ -1330,7 +1331,7 @@ window.artimus = {
 
             const downButton = document.createElement("button");
             downButton.className = "artimus-button artimus-layerButton artimus-layerButton-thin";
-            downButton.appendChild(this.elementFromString(artimus.defaultArrow));
+            downButton.appendChild(artimus.elementFromString(artimus.defaultArrow));
             downButton.onclick = () => {
                 this.moveLayer(element.targetLayer, -1);
             }
