@@ -5,7 +5,7 @@
   "start_url": ".",
   
   "display": "fullscreen",
-  "display_override": "fullscreen",
+  "display_override": ["fullscreen", "minimal-ui"],
   
   "prefer_related_applications": false,
   "background_color": "#aaaaff",
