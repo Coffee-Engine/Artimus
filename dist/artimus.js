@@ -827,6 +827,7 @@ window.artimus = {
             touch: {
                 lastDrew: [0,0],
                 touches: {},
+                hadMoved: false,
                 
                 fingerDown: (event) => {
                     event.preventDefault();
@@ -852,6 +853,8 @@ window.artimus = {
                     switch ((this.toolFunction) ? this.fingersDown : 0) {
                         //2 Finger movement.
                         case 2:{
+                            this.controlSets.touch.hadMoved = true;
+
                             firstTouch = this.controlSets.touch.touches[0];
                             const secondTouch = this.controlSets.touch.touches[1];
 
@@ -887,6 +890,8 @@ window.artimus = {
 
                         //Panning
                         default:
+                            this.controlSets.touch.hadMoved = true;
+                            
                             for (let touchID in touches) {
                                 const touch = touches[touchID];
                                 const heldData = this.controlSets.touch.touches[touch.identifier];
@@ -898,6 +903,17 @@ window.artimus = {
                         //Drawing
                         case 1:
                             if (event.target != this.canvas) return;
+
+                            //Give a 8 pixel buffer if we had moved before we start drawing again,
+                            //Just to make sure the person wants to draw.
+                            if (this.controlSets.touch.hadMoved) {
+                                if (Math.sqrt(
+                                    Math.pow(firstTouch.clientX - this.controlSets.touch.touches[firstTouch.identifier].lx, 2) + 
+                                    Math.pow(firstTouch.clientY - this.controlSets.touch.touches[firstTouch.identifier].ly, 2)
+                                ) < 8) {
+                                    return;
+                                }
+                            }
 
                             const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
 
@@ -939,17 +955,22 @@ window.artimus = {
                 fingerUp: (event) => {
                     this.fingersDown--;
 
-                    if (this.fingersDown == 0 && this.toolDown) {
-                        if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...this.controlSets.touch.lastDrew, this.toolProperties);
-                        if (this.toolFunction.preview) {
-                            this.previewGL.clearRect(0, 0, this.width, this.height);
-                            this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                    if (this.fingersDown == 0) {
+                        if (this.toolDown) {
+                            if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.GL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                            if (this.toolFunction.preview) {
+                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                            }
+                            
+                            //For the undoing
+                            if (this.toolFunction.constructive) this.dirty = true;
+                            if (this.tool) this.updateLayerHistory();
+
+                            this.toolDown = false; 
                         }
-                        
-                        //For the undoing
-                        if (this.toolFunction.constructive) this.dirty = true;
-                        if (this.tool) this.updateLayerHistory();
-                        this.toolDown = false; 
+
+                        if (this.controlSets.touch.hadMoved) this.controlSets.touch.hadMoved = false;
                     }
                 },
 
