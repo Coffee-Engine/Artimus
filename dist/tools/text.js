@@ -18,7 +18,7 @@ artimus.tools.text = class extends artimus.tool {
         this.x = x;
         this.y = y;
 
-        this.mouseDown = true;
+        this.mouseIsDown = true;
 
         if (!this.typing) {
             this.text = "";
@@ -28,17 +28,17 @@ artimus.tools.text = class extends artimus.tool {
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
-        if (this.mouseDown) {
+        if (this.mouseIsDown) {
             this.x = x;
             this.y = y;
         }
     }
 
     mouseUp(gl, x, y, toolProperties) {
-        if (this.mouseDown) {
+        if (this.mouseIsDown) {
             this.x = x;
             this.y = y;
-            this.mouseDown = false;
+            this.mouseIsDown = false;
         }
     }
 
@@ -221,6 +221,7 @@ artimus.tools.text = class extends artimus.tool {
             return true;
         }
     }
+    
 
     preview(gl, x, y, toolProperties) {
         if (this.typing) this.renderText(gl, toolProperties, true);
