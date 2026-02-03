@@ -7,23 +7,39 @@ artimus.tools.paintBrush = class extends artimus.tool {
     }
 
     eraserCircular(gl, x, y, toolProperties) {
-        const radius = toolProperties.strokeSize / 2;
+        //No
+        if (toolProperties.strokeSize < 5) {
+            const radius = Math.floor(toolProperties.strokeSize / 2);
+            const move = Math.floor(toolProperties.strokeSize)
+            gl.clearRect(x - radius, y - radius, move, move);
+            return;
+        }
+
+        const radius = Math.floor(toolProperties.strokeSize / 2);
         const stepSize = Math.max(1, 90 / toolProperties.strokeSize);
-        
+
         for (let i = 0; i < 90; i+=stepSize) {
-            const width = Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius);
-            const height = Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius)
+            const width = Math.round(Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius));
+            const height = Math.round(Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius));
             gl.clearRect(x - width, y - height, width * 2, height * 2);
         }
     }
 
     drawCircular(gl, x, y, toolProperties) {
-        const radius = toolProperties.strokeSize / 2;
+        //No
+        if (toolProperties.strokeSize < 5) {
+            const radius = Math.floor(toolProperties.strokeSize / 2);
+            const move = Math.floor(toolProperties.strokeSize)
+            gl.fillRect(x - radius, y - radius, move, move);
+            return;
+        }
+
+        const radius = Math.floor(toolProperties.strokeSize / 2);
         const stepSize = Math.max(1, 90 / toolProperties.strokeSize);
 
         for (let i = 0; i < 90; i+=stepSize) {
-            const width = Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius);
-            const height = Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius)
+            const width = Math.round(Math.max(1, Math.sin(artimus.degreeToRad(i)) * radius));
+            const height = Math.round(Math.max(1, Math.cos(artimus.degreeToRad(i)) * radius));
             gl.fillRect(x - width, y - height, width * 2, height * 2);
         }
     }

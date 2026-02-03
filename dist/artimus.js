@@ -839,7 +839,8 @@ window.artimus = {
                         
                         this.controlSets.touch.touches[touch.identifier] = {
                             lx: touch.clientX,
-                            ly: touch.clientY
+                            ly: touch.clientY,
+                            obj: touch
                         }
                     }
                 },
@@ -854,6 +855,13 @@ window.artimus = {
                         //2 Finger movement.
                         case 2:{
                             this.controlSets.touch.hadMoved = true;
+                            
+                            //Update the touches
+                            for (let touchID in Array.from(event.changedTouches)) {
+                                const touch = event.changedTouches[touchID];
+                                
+                                this.controlSets.touch.touches[touch.identifier].obj = touch;
+                            }
 
                             firstTouch = this.controlSets.touch.touches[0];
                             const secondTouch = this.controlSets.touch.touches[1];
@@ -877,14 +885,15 @@ window.artimus = {
                                 const newDist = Math.sqrt(Math.pow(secondTouch.obj.clientX - firstTouch.obj.clientX, 2) + Math.pow(secondTouch.obj.clientY - firstTouch.obj.clientY, 2))
                             
                                 // (change) / ((MinorAxis) / 2.5)
-                                const zoomAmnt = (newDist - lastDist) / (((window.innerWidth < window.innerHeight) ? window.innerWidth : window.innerHeight) / 2.5);
+                                const zoomAmnt = 
+                                (newDist - lastDist) / 
+                                (((window.innerWidth < window.innerHeight) ? window.innerWidth : window.innerHeight) / 
+                                    (2.5 * this.zoom));
                             
                                 this.zoom += zoomAmnt;
                             }
-                            else {
-                                this.scrollX += (firstVelocity[0] + secondVelocity[0]) * (this.invZoom / this.fingersDown);
-                                this.scrollY += (firstVelocity[1] + secondVelocity[1]) * (this.invZoom / this.fingersDown);
-                            }
+                            this.scrollX += (firstVelocity[0] + secondVelocity[0]) * (this.invZoom / this.fingersDown);
+                            this.scrollY += (firstVelocity[1] + secondVelocity[1]) * (this.invZoom / this.fingersDown);
 
                             break;}
 
@@ -906,14 +915,7 @@ window.artimus = {
 
                             //Give a 8 pixel buffer if we had moved before we start drawing again,
                             //Just to make sure the person wants to draw.
-                            if (this.controlSets.touch.hadMoved) {
-                                if (Math.sqrt(
-                                    Math.pow(firstTouch.clientX - this.controlSets.touch.touches[firstTouch.identifier].lx, 2) + 
-                                    Math.pow(firstTouch.clientY - this.controlSets.touch.touches[firstTouch.identifier].ly, 2)
-                                ) < 8) {
-                                    return;
-                                }
-                            }
+                            if (this.controlSets.touch.hadMoved) return;
 
                             const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
 
