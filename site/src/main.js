@@ -178,5 +178,5 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     artimus.globalRefreshTools();
 
 
-    new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 50, hasClose: false });
+    new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
 });
