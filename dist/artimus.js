@@ -498,10 +498,10 @@ window.artimus = {
             this.compositeCanvas = document.createElement("canvas");
             this.gridCanvas = document.createElement("canvas");
 
-            this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true });
-            this.fullviewGL = this.canvas.getContext("2d", { alpha: false, desynchronized: true });
-            this.compositeGL = this.compositeCanvas.getContext("2d");
-            this.previewGL = this.previewCanvas.getContext("2d");
+            this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
+            this.fullviewGL = this.canvas.getContext("2d", { alpha: false});
+            this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
+            this.previewGL = this.previewCanvas.getContext("2d", { desynchronized: true });
             this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
 
             this.resize(640, 480);
@@ -518,9 +518,8 @@ window.artimus = {
                 if (!workspace) return;
 
                 workspace.renderLoop.call(workspace, (ts - start) / 1000);
-                requestAnimationFrame(loop);
-
                 start = ts;
+                requestAnimationFrame(loop);
             }
 
             //Setup our grid then loop
