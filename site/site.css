@@ -68,9 +68,8 @@ cugi-dropdown:active {
 .popup {
     position: absolute; 
     
-    width: 400px;
     padding: 0px;
-    
+
     top: 50%; 
     left: 50%;
 
@@ -80,6 +79,10 @@ cugi-dropdown:active {
 
     overflow: hidden;
     border-radius: 16px;
+
+    --mult-size: max(1vw, 8px);
+    width: calc(var(--mult-size) * var(--window-width));
+    height: calc(var(--mult-size) * var(--window-height));
 }
 
 .popup #popupContent {
@@ -197,4 +200,12 @@ cugi-dropdown:active {
 .artimus-font-button:active {
     background-color: var(--artimus-button-click);
     transition: 0ms background-color;
+}
+
+@media screen and (min-width: 100vh) {
+    .popup {
+        --mult-size: max(1vh, 8px);
+        width: calc(var(--mult-size) * var(--window-width));
+        height: calc(var(--mult-size) * var(--window-height));
+    }
 }

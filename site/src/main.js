@@ -10,12 +10,20 @@ window.editor = {
     language: {},
 
     modal: class {
-        constructor(name, contents, hasClose) {
+        constructor(name, contents, options) {
+            options = Object.assign({
+                hasClose: true,
+                width: 40,
+                height: 40
+            }, options);
+
             this.background = document.createElement("div");
             this.background.className = "modal-background";
             this.background.style.pointerEvents = "all";
 
             this.window = document.createElement("div");
+            this.window.style.setProperty("--window-width", options.width);
+            this.window.style.setProperty("--window-height", options.height);
             this.window.className = "popup";
 
             this.taskbar = document.createElement("div");
@@ -37,7 +45,7 @@ window.editor = {
             
             this.background.style.setProperty("--modal-opacity", "100%");
             
-            if (hasClose) {
+            if (options.hasClose) {
                 this.closeButton = document.createElement("button");
                 this.closeButton.className = "popup-close";
                 this.closeButton.onclick = () => {
@@ -63,6 +71,11 @@ window.editor = {
                 default:
                     break;
             }
+        }
+        
+        close() {
+            this.background.parentElement.removeChild(this.background);
+            delete this;
         }
     }
 };
