@@ -692,7 +692,7 @@ window.artimus = {
             let red = 255; let green = 255; let blue = 255; let alpha = 255;
 
             if (artimus.pickType == "composite") [red, green, blue, alpha] = this.compositeGL.getImageData(...this.getCanvasPosition(x, y, true), 1, 1).data;
-            else [red, green, blue, alpha] = this.GL.getImageData(...this.getCanvasPosition(x, y, true), 1, 1).data;
+            else [red, green, blue, alpha] = this.GL.getImageData(x, y, 1, 1).data;
             const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
             return converted;
         }
@@ -711,11 +711,12 @@ window.artimus = {
                             break;
 
                         case 2:
+                            if (!this.toolFunction) return;
+                            if (!this.toolFunction.colorProperties) return;
                             if (event.target != this.canvas) return;
-                            const color = this.pickColorAt(event.clientX, event.clientY);
+                            const color = this.pickColorAt(...this.getCanvasPosition(event.clientX, event.clientY, true));
 
-                            console.log(color, this.toolFunction.colorProperties);
-                            //The three typical colours
+                            //Loop colors
                             for (let key in this.toolFunction.colorProperties) {
                                 this.toolProperties[this.toolFunction.colorProperties[key]] = color;
                             }
@@ -1000,14 +1001,15 @@ window.artimus = {
                         }
 
                         if (event.buttons == 1) {
+                            if (!this.toolFunction) return;
+                            if (!this.toolFunction.colorProperties) return;
                             if (event.target != this.canvas) return;
-                            const [red, green, blue, alpha] = this.GL.getImageData(...this.getCanvasPosition(event.clientX, event.clientY, true), 1, 1).data;
-                            const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
+                            const color = this.pickColorAt(...this.getCanvasPosition(event.clientX, event.clientY, true));
 
-                            //The three typical colours
-                            this.toolProperties.strokeColor = converted;
-                            this.toolProperties.fillColor = converted;
-                            this.toolProperties.color = converted;
+                            //Loop colors
+                            for (let key in this.toolFunction.colorProperties) {
+                                this.toolProperties[this.toolFunction.colorProperties[key]] = color;
+                            }
 
                             //Refresh options
                             this.refreshToolOptions();
