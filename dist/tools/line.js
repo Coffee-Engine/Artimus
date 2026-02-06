@@ -9,17 +9,19 @@ artimus.tools.line = class extends artimus.tool {
         if (toolProperties.pixelBrush) {
             const strokeSize = toolProperties.strokeSize;
             const halfSize = Math.floor(strokeSize / 2);
-            const distance = 1 / Math.sqrt(Math.pow(sx - ex, 2.0) + Math.pow(sy - ey, 2.0));
+            const distance = 1 / Math.ceil(Math.sqrt(Math.pow(sx - ex, 2.0) + Math.pow(sy - ey, 2.0)));
 
             gl.fillStyle = toolProperties.strokeColor;
 
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
-                const rx = Math.floor((sx + (ex - sx) * i) - halfSize);
-                const ry = Math.floor((sy + (ey - sy) * i) - halfSize);
+                const rx = Math.round((sx + (ex - sx) * i) - halfSize);
+                const ry = Math.round((sy + (ey - sy) * i) - halfSize);
 
                 gl.fillRect(rx,ry,strokeSize,strokeSize);
             }
+
+            gl.fillRect(ex - halfSize, ey - halfSize,strokeSize,strokeSize);
         }
         else {
             gl.strokeStyle = toolProperties.strokeColor;
@@ -44,7 +46,7 @@ artimus.tools.line = class extends artimus.tool {
             this.drawLine(gl, ...this.start, x, y, toolProperties);
         }
         else {
-            this.drawLine(gl, x, y, x + 0.1, y + 0.1, toolProperties);
+            this.drawLine(gl, x, y, x, y, toolProperties);
         }
     }
 
