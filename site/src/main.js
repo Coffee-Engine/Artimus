@@ -222,17 +222,16 @@ editor.newFile = (forced) => {
             resolution.innerText = `${preset.width}x${preset.height}`;
             resolution.title = name.innerText;            
 
-            //Preview stuff
-            if (preset.height < preset.width) {
+            if (preset.width > preset.height) {
                 preview.style.width = "100%";
-                preview.style.height = "auto";
+                preview.style.height = `${(preset.height/preset.width) * 100}%`;
             }
             else {
-                preview.style.width = "auto";
+                preview.style.width = `${(preset.width/preset.height) * 100}%`;
                 preview.style.height = "100%";
             }
 
-            preview.style.aspectRatio = `${preset.width}/${preset.height}`;
+            //preview.style.aspectRatio = `${preset.width}/${preset.height}`;
             
             //Finally add all the elements
             previewContainer.appendChild(preview);

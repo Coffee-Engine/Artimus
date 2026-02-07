@@ -261,7 +261,7 @@ cugi-dropdown:active {
     border-radius: 8px;
 
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 33.3333% 33.3333% 33.3333%;
 
     overflow-x: hidden;
     overflow-y: scroll;
@@ -270,7 +270,7 @@ cugi-dropdown:active {
 .newFile-preset {
     display: grid;
     grid-template-rows: 1fr 24px 16px;
-    aspect-ratio: 4/5;
+    aspect-ratio: 8/11;
 
     margin: 4px;
     border-radius: 8px;
@@ -283,8 +283,8 @@ cugi-dropdown:active {
     border-radius: 8px;
     background-color: var(--artimus-background-2);
 
-    aspect-ratio: 1;
     width: calc(100% - 24px);
+    height: calc(100% - 24px);
 
     display: flex;
     justify-content: center;
