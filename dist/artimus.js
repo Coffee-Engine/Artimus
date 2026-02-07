@@ -116,6 +116,18 @@ window.artimus = {
         "webp": "image/webp",
     },
 
+    resizeAnchors: {
+        TOP_LEFT: [0, 0],
+        TOP_MIDDLE: [0.5, 0],
+        TOP_RIGHT: [1, 0],
+        MIDDLE_LEFT: [0, 0.5],
+        MIDDLE: [0.5, 0.5],
+        MIDDLE_RIGHT: [1, 0.5],
+        BOTTOM_LEFT: [0, 1],
+        BOTTOM_MIDDLE: [0.5, 1],
+        BOTTOM_RIGHT: [1, 1],
+    },
+
     //Mostly used in saving but can be used for other purposes, like making a list of global composite operations
     blendModes: [
         "source-over",
@@ -249,19 +261,29 @@ window.artimus = {
             delete this;
         }
 
-        resize(active, width, height, editingData) {
+        resize(active, anchor, width, height, editingData) {
             const layer = (active) ? editingData : this;
+            if (width == layer.width && height == layer.height) return;
 
             //Get needed attributes for the transfer
             const output = new ImageData(width, height);
-            const readWidth = Math.min(width, layer.width);
-            const readHeight = Math.min(height, layer.height);
+
+            const writeOffsetX = Math.floor((anchor[0] * width) - (anchor[0] * layer.width));
+            const writeOffsetY = Math.floor((anchor[1] * height) - (anchor[1] * layer.height));
 
             //Transfer data
-            for (let y = 0; y < readHeight; y++) {
-                for (let x = 0; x < readWidth; x++) {
+            for (let y = 0; y < layer.height; y++) {
+                for (let x = 0; x < layer.width; x++) {
+                    //Pointer stuffs
+                    const pointerX = writeOffsetX + x;
+                    const pointerY = writeOffsetY + y;
+
+                    //Then get the position
+                    if (pointerX < 0 || pointerY < 0 || pointerX >= width || pointerY >= height) continue;
+
+                    //Now we do the stuff we need to
                     const lID = ((y * layer.width) + x) * 4;
-                    const oID = ((y * output.width) + x) * 4;
+                    const oID = ((pointerY * output.width) + pointerX) * 4;
                     output.data[oID] = layer.data[lID];
                     output.data[oID + 1] = layer.data[lID + 1];
                     output.data[oID + 2] = layer.data[lID + 2];
@@ -1564,14 +1586,14 @@ window.artimus = {
             to.label = from.label;
         }
 
-        resizeLayer(ID, width, height, editingData) {
+        resizeLayer(ID, anchor, width, height, editingData) {
             if (typeof ID == "string") {
                 const locID = this.layers.findIndex((layer) => layer.name == ID);
                 if (locID != -1) ID = locID;
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resize(ID == this.currentLayer, width, height, editingData);
+                this.layers[ID].resize(ID == this.currentLayer, anchor, width, height, editingData);
             }
         }
 
@@ -1600,15 +1622,22 @@ window.artimus = {
         }
 
         //Now for the stuff people want to interact with
-        resize(width, height) {
+        resize(width, height, anchor) {
+            //Get anchor data
+            anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
+            if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
+
+            //Copy the data
+            anchor = [...(anchor)];
+
             if (width < 1 || typeof width != "number") width = 1;
             if (height < 1 || typeof height != "number") height = 1;
 
-            this.#width = width;
-            this.#height = height;
-
             //Get editing data before resizing due to resizing removing all image data;
             const editingData = (this.GL) ? this.GL.getImageData(0, 0, this.width, this.height) : null;
+
+            this.#width = width;
+            this.#height = height;
 
             this.canvas.width = width;
             this.canvas.height = height;
@@ -1627,7 +1656,7 @@ window.artimus = {
 
             //resize layers
             for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayer(index, this.#width, this.#height, editingData);
+                this.resizeLayer(index, anchor, this.#width, this.#height, editingData);
             }
 
             //Finally set smoothing
@@ -1643,6 +1672,8 @@ window.artimus = {
             this.scrollX = this.scrollX;
             this.scrollY = this.scrollY;
             this.updatePosition();
+
+            this.dirty = true;
         }
 
         undo() {

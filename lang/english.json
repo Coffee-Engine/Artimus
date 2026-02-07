@@ -61,7 +61,7 @@
         "<p>Things may break or be unstable.</p>",
         "<p>If you are fine with this and want to try this web demo click the \"I'm ready!\" button below!</p>",
         
-        "<button class=\"artimus-button\" onclick=\"editor.workspace.new(640, 480); editor.modals[editor.modals.length - 1].close();\">I'm ready!</button>"
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.newFile(true);\">I'm ready!</button>"
     ],
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",

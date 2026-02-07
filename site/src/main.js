@@ -340,7 +340,5 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     editor.workspace.resize(0, 0);
     artimus.globalRefreshTools();
 
-
-    editor.newFile(true);
-    //new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+    new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
 });
