@@ -250,6 +250,10 @@ cugi-dropdown:active {
     grid-template-columns: 65% 35%;
 }
 
+.popup-resizeFile {
+    height: 100%;
+}
+
 .newFile-presets {
     margin: 8px;
     padding: 4px;
@@ -377,4 +381,22 @@ cugi-dropdown:active {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.resizeFile-previewAnchor {
+    --speed: 100ms;
+
+    position: relative;
+
+    left: var(--anchor-x);
+    top: var(--anchor-y);
+
+    width: 16px;
+    height: 16px;
+
+    background-color: var(--artimus-icon);
+    transform: translate(-50%, -50%);
+
+    border-radius: 100%;
+    transition: var(--speed) left, var(--speed) top;
 }

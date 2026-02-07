@@ -68,5 +68,8 @@
     "artimus.modal.layerProperty.blendMode": "Blend Mode",
 
     "artimus.modal.newFile.title": "New File",
-    "artimus.modal.newFile.create": "Create!"
+    "artimus.modal.newFile.create": "Create!",
+
+    "artimus.modal.resizeFile.title": "Resize",
+    "artimus.modal.resizeFile.resize": "Resize!"
 }
