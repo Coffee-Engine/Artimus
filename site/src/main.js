@@ -411,10 +411,12 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 
         const blendMode = document.createElement("select");
         blendMode.className = "layerProperties-blendMode";
+        const blendModePreview = document.createElement("img");
+        blendModePreview.className = "layerProperties-blendModePreview";
 
         const blendModeHolder = document.createElement("div");
         blendModeHolder.className = "layerProperties-CenterHolder layerProperties-BlendModeHolder";
-
+        
         const transparencyInput = document.createElement("input");
         const transparencySlider = document.createElement("input");
         transparencyInput.className = "layerProperties-transparencyInput";
@@ -428,6 +430,8 @@ artimus.layerPropertyMenu = (workspace, layer) => {
         doneButton.className = "artimus-button";
 
         nameHolder.appendChild(name);
+
+        blendModeHolder.appendChild(blendModePreview);
         blendModeHolder.appendChild(blendMode);
         
         BMTHolder.appendChild(transparencyInput);
@@ -474,6 +478,11 @@ artimus.layerPropertyMenu = (workspace, layer) => {
         }
 
         blendMode.value = layer.blendMode;
+        blendModePreview.src = `site/images/blendPreviews/${blendMode.value}.png`;
+
+        blendMode.onchange = () => {
+            blendModePreview.src = `site/images/blendPreviews/${blendMode.value}.png`;
+        }
 
         //Set needed attributes
         doneButton.onclick = () => {

@@ -421,6 +421,19 @@ cugi-dropdown:active {
     align-items: center;
 }
 
+.layerProperties-BlendModeHolder {
+    flex-direction: row;
+}
+
+.layerProperties-blendModePreview {
+    height: calc(var(--small-side) * 5);
+
+    background-color: var(--artimus-background-2);
+    border-radius: 25%;
+    margin: 4px;
+    padding: 4px;
+}
+
 .layerProperties-doneButtonHolder {
     flex-grow:1;
     display: flex;
