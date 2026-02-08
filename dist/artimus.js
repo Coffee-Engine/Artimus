@@ -1541,6 +1541,16 @@ window.artimus = {
             return layer;
         }
 
+        duplicateLayer(name, noSwitch) {
+            const oldLayer = this.layers.find(layer => layer.name === name);
+            const newLayer = new artimus.layer(this.canvas.width, this.canvas.height, oldLayer.name + " copy", this, noSwitch);
+
+            newLayer.dataRaw.data.set(oldLayer.dataRaw.data); // Copy the image data between the layers
+            newLayer.alpha = oldLayer.alpha;
+            newLayer.visibility = oldLayer.visibility;
+            newLayer.blendMode = oldLayer.blendMode;
+        }
+
         _createLayerElement(layerData) {
             const element = document.createElement("div");
             element.className = "artimus-layerWrapper";
@@ -1557,7 +1567,8 @@ window.artimus = {
             label.CUGI_CONTEXT = () => {
                 return [
                     { type: "button", text: "delete", onclick: () => this.removeLayer(element.targetLayer) },
-                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) }
+                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) },
+                    { type: "button", text: "duplicate", onclick: () => this.duplicateLayer(element.targetLayer, false)}
                 ]
             }
 

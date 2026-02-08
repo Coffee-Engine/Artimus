@@ -47,6 +47,7 @@
 
     "artimus.layerDropdown.delete": "Delete",
     "artimus.layerDropdown.properties": "Properties",
+    "artimus.layerDropdown.duplicate": "Duplicate",
 
     "artimus.blendModes.source-over": "Source over",
     "artimus.blendModes.source-in": "Source in",
