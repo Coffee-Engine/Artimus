@@ -40,40 +40,14 @@
                 <cugi-option>{ type: "button", text: "Save", onclick: () => {
                     artimus.activeWorkspaces[0].exportToPC();
                 }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Save to", onclick: () => {
+                <cugi-option>{ type: "button", text: "Save as", onclick: () => {
                     artimus.activeWorkspaces[0].exportToPC("artimus", true);
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Export as PNG", onclick: () => {
                     artimus.activeWorkspaces[0].exportToPC("png");
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Load", onclick: () => {
-                    // Not yet widely available, so we will need to check we can use the file system access API
-                    if (Object.prototype.hasOwnProperty.call(window, "showOpenFilePicker")) window.showOpenFilePicker({
-                        id: "artimus_file_location",
-                        multiple: false,
-                        startIn: "documents",
-                        types: [
-                            {
-                                "image/*": [".png", ".gif", ".jpeg", ".jpg", ".artimus"]
-                            }
-                        ]
-                    }).then(fsHandle => {
-                        artimus.activeWorkspaces[0].fileSystemHandle = fsHandle[0];
-                        fsHandle[0].getFile().then(file => artimus.activeWorkspaces[0].importFromPC(file));
-                    });
-
-                    else {
-                        const fileInput = document.createElement("input");
-                        fileInput.type = "file";
-                        fileInput.accept = "image/*, .artimus";
-
-                        fileInput.onchange = () => {
-                            artimus.activeWorkspaces[0].importFromPC(fileInput.files[0]);
-                        };
-
-                        fileInput.click();                        
-                    }
-
+                    artimus.activeWorkspaces[0].importFromPC();
                 }}</cugi-option>
             </cugi-dropdown>
             <cugi-dropdown>Edit

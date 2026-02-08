@@ -2325,12 +2325,41 @@ window.artimus = {
         // Will be set upon file save/load
         fileSystemHandle = null;
 
-        importFromPC(image) {
+        importFromImage(image) {
             let extension = image.name.split(".");
             extension = extension[extension.length - 1];
             
             this.fileReader.onload = () => { this.onImageLoad(this.fileReader.result, extension); };
             this.fileReader[this.importTypes[extension] || "readAsDataURL"](image);
+        }
+
+        importFromPC() {
+            // Not yet widely available, so we will need to check we can use the file system access API
+            if (window.showSaveFilePicker) window.showOpenFilePicker({
+                id: "artimus_file_location",
+                multiple: false,
+                startIn: "documents",
+                types: [
+                    {
+                        "image/*": [".png", ".gif", ".jpeg", ".jpg", ".artimus"]
+                    }
+                ]
+            }).then(fsHandle => {
+                artimus.activeWorkspaces[0].fileSystemHandle = fsHandle[0];
+                fsHandle[0].getFile().then(file => artimus.activeWorkspaces[0].importFromImage(file));
+            });
+
+            else {
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*, .artimus";
+
+                fileInput.onchange = () => {
+                    artimus.activeWorkspaces[0].importFromImage(fileInput.files[0]);
+                };
+
+                fileInput.click();                        
+            }
         }
 
         onImageLoad(data, extension) {
@@ -2381,7 +2410,7 @@ window.artimus = {
 
             this.export(format).then(value => {
                 // Not yet widely available, so we will need to check we can use the file system access API
-                if (Object.prototype.hasOwnProperty.call(window, "showSaveFilePicker")) {
+                if (window.showSaveFilePicker) {
                     // Fetch the dataURL to convert it to a byte stream
                     fetch(value).then(response => response.arrayBuffer().then(async buffer => {
                         let fileName;
