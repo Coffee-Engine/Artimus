@@ -7,10 +7,117 @@ artimus.tools.paintBucket = class extends artimus.tool {
 
     mixMult = 1 / 255;
 
+    colorAt(data, x, y, width) {
+        const targetCoord = this.coordToColourID(x, y, width);
+        return [
+            data[targetCoord],
+            data[targetCoord + 1],
+            data[targetCoord + 2],
+            data[targetCoord + 3]
+        ];
+    }
+
+    compareColor(data, x, y, width, targetColor, toolProperties) {
+        const compareColor = this.colorAt(data, x, y, width);
+        if (targetColor[3] == 0 && toolProperties.respectTransparency) return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && compareColor[3] == targetColor[3]) || compareColor[3] < 240;
+        else return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && targetColor[3] == compareColor[3]);
+    }
+
     mouseDown(gl, x, y, toolProperties) {
         //Get image data as array here so we don't run continous calls
         const {data, width, height} = gl.getImageData(0,0, gl.canvas.width, gl.canvas.height);
         const myColor = artimus.HexToRGB(toolProperties.fillColor);
+        
+        const targetColor = this.colorAt(data, x, y, width);
+        if (targetColor[0] == myColor.r && targetColor[1] == myColor.g && targetColor[2] == myColor.b && targetColor[3] == myColor.a) return;
+
+        const paintQueue = [[ x,y ]];
+        while (paintQueue.length > 0) {
+            let [rx, ry] = paintQueue[0];
+
+            if (rx < 0 || rx >= width || ry < 0 || ry >= height) {
+                paintQueue.splice(0, 1);
+                continue;
+            };
+
+            let lowerBlocked = true;
+            let upperBlocked = true;
+            for (let wx = rx; wx < width; wx++) {
+                //Get color
+                if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
+                    let targetCoord = this.coordToColourID(wx, ry, width);
+                    data[targetCoord] = myColor.r;
+                    data[targetCoord + 1] = myColor.g;
+                    data[targetCoord + 2] = myColor.b;
+                    data[targetCoord + 3] = myColor.a;
+                    
+                    if (!lowerBlocked) {
+                        if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
+                    }
+                    else {
+                        if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
+                            data[targetCoord + 2] = 255;
+                            paintQueue.push([wx, ry + 1]);
+                            lowerBlocked = false;
+                        }
+                        else data[targetCoord + 1] = 255;
+                    }
+                    
+                    if (!upperBlocked) {
+                        if (!this.compareColor(data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
+                    }
+                    else {
+                        if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
+                            data[targetCoord + 2] = 255;
+                            paintQueue.push([wx, ry - 1]);
+                            upperBlocked = false;
+                        }
+                        else data[targetCoord + 1] = 255;
+                    }
+                }
+                else break;
+            }
+
+            for (let wx = rx - 1; wx >= 0; wx--) {
+                //Get color
+                if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
+                    let targetCoord = this.coordToColourID(wx, ry, width);
+                    data[targetCoord] = myColor.r;
+                    data[targetCoord + 1] = myColor.g;
+                    data[targetCoord + 2] = myColor.b;
+                    data[targetCoord + 3] = myColor.a;
+                    
+                    if (!lowerBlocked) {
+                        if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
+                    }
+                    else {
+                        if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
+                            data[targetCoord + 2] = 255;
+                            paintQueue.push([wx, ry + 1]);
+                            lowerBlocked = false;
+                        }
+                        else data[targetCoord + 1] = 255;
+                    }
+                    
+                    if (!upperBlocked) {
+                        if (!this.compareColor(data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
+                    }
+                    else {
+                        if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
+                            data[targetCoord + 2] = 255;
+                            paintQueue.push([wx, ry - 1]);
+                            upperBlocked = false;
+                        }
+                        else data[targetCoord + 1] = 255;
+                    }
+                }
+                else break;
+            }
+
+            paintQueue.splice(0, 1);
+        }
+
+        /*
         
         //Get the target colour
         let targetCoord = this.coordToColourID(x, y, width);
@@ -80,6 +187,7 @@ artimus.tools.paintBucket = class extends artimus.tool {
 
             paintQueue.splice(0, 1);
         }
+        */
 
         //Blit
         gl.putImageData(new ImageData(data, width, height), 0, 0);
