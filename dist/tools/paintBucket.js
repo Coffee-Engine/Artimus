@@ -27,8 +27,9 @@ artimus.tools.paintBucket = class extends artimus.tool {
         //Get image data as array here so we don't run continous calls
         const {data, width, height} = gl.getImageData(0,0, gl.canvas.width, gl.canvas.height);
         const myColor = artimus.HexToRGB(toolProperties.fillColor);
-        
+
         const targetColor = this.colorAt(data, x, y, width);
+        console.log(myColor, targetColor)
         if (targetColor[0] == myColor.r && targetColor[1] == myColor.g && targetColor[2] == myColor.b && targetColor[3] == myColor.a) return;
 
         const paintQueue = [[ x,y ]];
@@ -46,21 +47,22 @@ artimus.tools.paintBucket = class extends artimus.tool {
                 //Get color
                 if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
-                    data[targetCoord] = myColor.r;
-                    data[targetCoord + 1] = myColor.g;
-                    data[targetCoord + 2] = myColor.b;
-                    data[targetCoord + 3] = myColor.a;
+                    const mix = myColor.a / 255;
+
+                    data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
+                    data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
+                    data[targetCoord + 2] += (myColor.b - data[targetCoord + 2]) * mix;
+                    if (myColor.a < 255) data[targetCoord + 3] += myColor.a;
+                    else data[targetCoord + 3] = myColor.a;
                     
                     if (!lowerBlocked) {
                         if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
                     }
                     else {
                         if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
-                            data[targetCoord + 2] = 255;
                             paintQueue.push([wx, ry + 1]);
                             lowerBlocked = false;
                         }
-                        else data[targetCoord + 1] = 255;
                     }
                     
                     if (!upperBlocked) {
@@ -68,11 +70,9 @@ artimus.tools.paintBucket = class extends artimus.tool {
                     }
                     else {
                         if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
-                            data[targetCoord + 2] = 255;
                             paintQueue.push([wx, ry - 1]);
                             upperBlocked = false;
                         }
-                        else data[targetCoord + 1] = 255;
                     }
                 }
                 else break;
@@ -82,21 +82,22 @@ artimus.tools.paintBucket = class extends artimus.tool {
                 //Get color
                 if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
-                    data[targetCoord] = myColor.r;
-                    data[targetCoord + 1] = myColor.g;
-                    data[targetCoord + 2] = myColor.b;
-                    data[targetCoord + 3] = myColor.a;
+                    const mix = myColor.a / 255;
+
+                    data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
+                    data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
+                    data[targetCoord + 2] += (myColor.b - data[targetCoord + 2]) * mix;
+                    if (myColor.a < 255) data[targetCoord + 3] += myColor.a;
+                    else data[targetCoord + 3] = myColor.a;
                     
                     if (!lowerBlocked) {
                         if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
                     }
                     else {
                         if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
-                            data[targetCoord + 2] = 255;
                             paintQueue.push([wx, ry + 1]);
                             lowerBlocked = false;
                         }
-                        else data[targetCoord + 1] = 255;
                     }
                     
                     if (!upperBlocked) {
@@ -104,11 +105,9 @@ artimus.tools.paintBucket = class extends artimus.tool {
                     }
                     else {
                         if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: false})) {
-                            data[targetCoord + 2] = 255;
                             paintQueue.push([wx, ry - 1]);
                             upperBlocked = false;
                         }
-                        else data[targetCoord + 1] = 255;
                     }
                 }
                 else break;
