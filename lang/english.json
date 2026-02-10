@@ -108,5 +108,17 @@
     "artimus.modal.settings.title": "Settings",
     "artimus.modal.settings.theme": "Theme",
     "artimus.modal.settings.maxHistory": "History Length",
-    "artimus.modal.settings.preferredFormat": "Preferred Format"
+    "artimus.modal.settings.preferredFormat": "Preferred Format",
+
+    "artimus.modal.exportFile.defaultName": "Picture",
+    "artimus.modal.exportFile.formatText": "Format",
+    "artimus.modal.exportFile.formatDescription.png": "A well supported transparent image format with a small file size",
+    "artimus.modal.exportFile.formatDescription.jpeg": "An old, well supported, opaque image format with tiny files.",
+    "artimus.modal.exportFile.formatDescription.jpg": "An old, well supported, opaque image format with tiny files, and one less letter.",
+    "artimus.modal.exportFile.formatDescription.webp": "A sometimes lossy, transparent, some-what supported image format.",
+
+    "artimus.modal.exportFile.qualityText": "Quality",
+    "artimus.modal.exportFile.size": "Size",
+    "artimus.modal.exportFile.background": "Background",
+    "artimus.modal.exportFile.export": "Export"
 }

@@ -13,6 +13,8 @@ window.artimus = {
     propertiesIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="70.5" height="70.5" viewBox="0,0,70.5,70.5"><g transform="translate(-204.75001,-144.75)"><g stroke="none" stroke-width="0" stroke-miterlimit="10"><path d="M204.75001,215.25v-70.5h70.5v70.5z" fill="none"/><path d="M220.30727,180c0,-10.876 8.81673,-19.69273 19.69274,-19.69273c10.876,0 19.69274,8.81673 19.69274,19.69274c0,10.876 -8.81674,19.69274 -19.69274,19.69274c-10.876,0 -19.69273,-8.81673 -19.69273,-19.69273zM239.5721,191.93641c6.2132,0 11.25,-5.0368 11.25,-11.25c0,-6.2132 -5.0368,-11.25 -11.25,-11.25c-6.2132,0 -11.25,5.0368 -11.25,11.25c0,6.2132 5.0368,11.25 11.25,11.25z" fill="currentColor"/><path d="M266.32682,174.76257v10.47486h-16.46326c0.61623,-1.39146 0.95854,-2.93126 0.95854,-4.55102c0,-2.1737 -0.61649,-4.20342 -1.68416,-5.92384z" fill="currentColor"/><path d="M213.67319,185.23743v-10.47486h16.33307c-1.06767,1.72042 -1.68416,3.75014 -1.68416,5.92384c0,1.61976 0.34231,3.15956 0.95854,4.55102z" fill="currentColor"/><path d="M254.91245,157.68071l7.40684,7.40684l-12.06382,12.06382c-1.15757,-3.50021 -3.98726,-6.23919 -7.54291,-7.27077z" fill="currentColor"/><path d="M225.08755,202.31929l-7.40684,-7.40684l11.08557,-11.08557c1.03158,3.55565 3.77056,6.38534 7.27077,7.54291z" fill="currentColor"/><path d="M234.76257,153.67319h10.47486l0,17.29172c-1.66381,-0.9717 -3.59955,-1.52849 -5.66533,-1.52849c-1.72074,0 -3.35125,0.38633 -4.80953,1.07698z" fill="currentColor"/><path d="M245.23743,206.32681h-10.47486l0,-15.46738c1.45828,0.69065 3.08879,1.07698 4.80953,1.07698c2.06579,0 4.00153,-0.55679 5.66533,-1.52849z" fill="currentColor"/><path d="M217.68071,165.08756l7.40684,-7.40684l12.0253,12.0253c-3.65263,0.81448 -6.63562,3.40493 -7.99565,6.81804z" fill="currentColor"/><path d="M262.31929,194.91244l-7.40684,7.40684l-11.17799,-11.17799c3.4131,-1.36003 6.00356,-4.34302 6.81804,-7.99565z" fill="currentColor"/></g></g></svg>`,
     layerIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="66.48045" height="66.48045" viewBox="0,0,66.48045,66.48045"><g transform="translate(-206.75978,-146.75978)"><g stroke-miterlimit="10"><path d="M213.21429,179.5871h53.57143" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M213.21429,167.4753h3.35793" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M233.91977,167.4753h8.04121" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M260.59712,167.4753h6.18859" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M213.21429,191.38834h29.85166" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M258.87232,191.38834h7.91339" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><g><path d="M225.22727,172.35537v-9.60744" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M219.33884,164.71074l5.88843,-10.02066l5.88843,10.02066z" fill="currentColor" stroke="none" stroke-width="0" stroke-linecap="butt"/></g><g><path d="M250.95041,187.64463v9.60744" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M256.83884,195.28926l-5.88843,10.02066l-5.88843,-10.02066z" fill="currentColor" stroke="none" stroke-width="0" stroke-linecap="butt"/></g><path d="M206.75978,213.24022v-66.48045h66.48045v66.48045z" fill="none" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
 
+    exportCanvas: document.createElement("canvas"),
+
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
 
@@ -262,6 +264,8 @@ window.artimus = {
         //Eww
         "webp": "image/webp",
     },
+
+    lossyFormats: [ "jpeg", "jpg", "webp" ],
 
     resizeAnchors: {
         TOP_LEFT: [0, 0],
@@ -2531,7 +2535,14 @@ window.artimus = {
             }
         }
 
-        export(format) {
+        export(format, options) {
+            options = Object.assign({
+                sizeMul: 1,
+                background: false,
+                backgroundColor: "#000000",
+                quality: 1
+            }, options);
+
             return new Promise((resolve, reject) => {
                 format = format || "artimus";
 
@@ -2546,16 +2557,32 @@ window.artimus = {
                             return this.exportArtimus().then(item => resolve(item));
                         
                         default:
-                            return resolve(this.compositeCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png));
+                            artimus.exportCanvas.width = Math.max(1, Math.min(8192, this.width * options.sizeMul));
+                            artimus.exportCanvas.height = Math.max(1, Math.min(8192, this.height * options.sizeMul));
+
+                            artimus.exportGL.fillStyle = options.backgroundColor || "#000000";
+                            if (options.background) artimus.exportGL.fillRect(0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+                            else artimus.exportGL.clearRect(0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+
+                            //Draw the final composite
+                            artimus.exportGL.drawImage(this.compositeCanvas, 0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+
+                            resolve(artimus.exportCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png, options.quality));
+                            
+                            //Reset export canvas and return;
+                            artimus.exportCanvas.width = 1;
+                            artimus.exportCanvas.height = 1;
+                            return;
                     }
                 });
             });
         }
 
-        exportToPC(format, forceDialogue) {
+        exportToPC(format, options) {
             format = format || "artimus";
+            const { forceDialogue, name } = options || {};
 
-            this.export(format).then(value => {
+            this.export(format, options).then(value => {
                 // Not yet widely available, so we will need to check we can use the file system access API
                 if (window.showSaveFilePicker) {
                     // Fetch the dataURL to convert it to a byte stream
@@ -2571,7 +2598,7 @@ window.artimus = {
                             window.showSaveFilePicker({
                                 id: "artimus_file_location",
                                 startIn: "documents",
-                                suggestedName: `picture.${format}`,
+                                suggestedName: `${name || "picture"}.${format}`,
                                 types: [
                                     {
                                         accept: {
@@ -2601,7 +2628,7 @@ window.artimus = {
                     // This browser doesn't support saving with a file system dialogue
                     const link = document.createElement("a");
                     link.href = value;
-                    link.download = `picture.${format}`;
+                    link.download = `${name || "picture"}.${format}`;
                     link.click();
                 }
 
@@ -2626,3 +2653,7 @@ window.artimus = {
         return workspace;
     }
 }
+
+artimus.exportCanvas.width = 1;
+artimus.exportCanvas.height = 1;
+artimus.exportGL = artimus.exportCanvas.getContext("2d");

@@ -41,10 +41,10 @@
                     artimus.activeWorkspaces[0].exportToPC();
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Save as", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC("artimus", true);
+                    artimus.activeWorkspaces[0].exportToPC("artimus", { forceDialogue: true });
                 }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Export as PNG", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC("png");
+                <cugi-option>{ type: "button", text: "Export", onclick: () => {
+                    editor.exportMenu();
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Load", onclick: () => {
                     artimus.activeWorkspaces[0].importFromPC();

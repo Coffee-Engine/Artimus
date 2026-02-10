@@ -99,6 +99,13 @@ window.editor = {
 
             delete this;
         }
+    },
+
+    quickP: (text, cls) => {
+        const p = document.createElement("p");
+        p.innerText = text;
+        p.className = cls || "";
+        return p;
     }
 };
 
