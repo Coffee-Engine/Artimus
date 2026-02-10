@@ -118,7 +118,8 @@ editor.exportMenu = () => {
                 background: backgroundEnabled.checked,
                 backgroundColor: backgroundColor.value,
                 sizeMul: Number(size.value),
-                quality: Number(formatQuality.value)
+                quality: Number(formatQuality.value),
+                forceDialogue: true
             });
         }
     }, { width: 20, height: 50 })
