@@ -1,13 +1,13 @@
 /* ? Scrollbars ? */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 4.5pt; }
 ::-webkit-scrollbar-track { 
     background: var(--artimus-background-2);
-    border-radius: 4px;
+    border-radius: 3pt;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--artimus-icon);
-  border-radius: 4px;
+  border-radius: 3pt;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--artimus-button-selected); }
 
@@ -21,37 +21,37 @@
 
 /* ? General size stuff ? */
 body {
-    --small-side: max(min(1vw, 1vh), 6px);
+    --small-side: max(min(1vw, 1vh), 6pt);
     color: var(--artimus-text);
 }
 
 /* ? Main UI ? */
 .main-grid {
     display: grid;
-    grid-template-rows: 24px calc(100vh - 24px);
+    grid-template-rows: 18pt calc(100vh - 18pt);
 
     position: absolute;
     width: 100%;
     height: 100%;
 
-    top: 0px;
-    left: 0px;
+    top: 0pt;
+    left: 0pt;
 }
 
 .top-bar {
     background-color: var(--artimus-background-2);
-    border-bottom-width: 4px;
+    border-bottom-width: 3pt;
     border-bottom-style: solid;
     border-bottom-color: var(--artimus-background-1);
 
     display: flex;
 
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 6pt;
+    padding-right: 6pt;
 }
 
 .top-bar > p {
-    margin: 0px;
+    margin: 0pt;
 }
 
 cugi-dropdown {
@@ -78,8 +78,8 @@ cugi-dropdown:active {
     width: 100%;
     height: 100%;
 
-    top: 0px;
-    left: 0px;
+    top: 0pt;
+    left: 0pt;
 
     background-color: #00000055;
 
@@ -89,7 +89,7 @@ cugi-dropdown:active {
 .popup {
     position: absolute; 
     
-    padding: 0px;
+    padding: 0pt;
 
     top: 50%; 
     left: 50%;
@@ -99,7 +99,7 @@ cugi-dropdown:active {
     background-color: var(--artimus-background-1);
 
     overflow: hidden;
-    border-radius: 16px;
+    border-radius: 12pt;
 
     width: calc(var(--small-side) * var(--window-width));
     height: calc(var(--small-side) * var(--window-height));
@@ -118,9 +118,9 @@ cugi-dropdown:active {
 }
 
 .popup-content button {
-    border-bottom-width: 4px;
-    border-left-width: 2px;
-    border-right-width: 2px;
+    border-bottom-width: 3pt;
+    border-left-width: 1.5pt;
+    border-right-width: 1.5pt;
 }
 
 .popup .CUGI-PropertyHolder {
@@ -130,7 +130,7 @@ cugi-dropdown:active {
 .popup-top {
     display: flex;
     background-color: var(--artimus-background-2);
-    padding: 4px;
+    padding: 3pt;
 }
 
 .popup-title {
@@ -139,12 +139,12 @@ cugi-dropdown:active {
     text-align: center;
     align-self: center;
 
-    padding: 0px;
-    margin:0px
+    padding: 0pt;
+    margin: 0pt
 }
 
 .popup > h1 {
-    margin: 0px;
+    margin: 0pt;
 }
 
 .CUGI-Button {
@@ -153,14 +153,14 @@ cugi-dropdown:active {
     transition: 300ms background-color;
     width: auto;
 
-    border-width: 2px;
+    border-width: 1.5pt;
     border-style: solid;
     border-color: var(--artimus-button-hover);
-    border-radius: 16px;
+    border-radius: 12pt;
 }
 
 .CUGI-Popup .CUGI-Button {
-    border-width: 0px;
+    border-width: 0pt;
     width: 100%;
 }
 
@@ -188,12 +188,12 @@ cugi-dropdown:active {
 
 .popup-close {
     border-radius: 100%;
-    border-width: 2px;
+    border-width: 1.5pt;
     border-style: solid;
 
-    height: 24px;
+    height: 18pt;
     aspect-ratio: 1;
-    border-radius: 8px;
+    border-radius: 6pt;
 
     background-color: var(--artimus-background-1);
     border-color: var(--artimus-background-3);
@@ -219,7 +219,7 @@ cugi-dropdown:active {
 
     max-height: 75vh;
 
-    border-radius: 16px;
+    border-radius: 12pt;
     overflow-y: scroll;
     overflow-x: hidden;
 }
@@ -228,12 +228,12 @@ cugi-dropdown:active {
     font-size: calc(var(--small-side) * 2);
     background-color: var(--artimus-button-normal);
 
-    border-width: 0px;
+    border-width: 0pt;
     transition: 300ms background-color;
 
-    margin-bottom: 2px;
-    margin-top: 2px;
-    border-radius: 16px;
+    margin-bottom: 1.5pt;
+    margin-top: 1.5pt;
+    border-radius: 12pt;
 }
 
 .artimus-font-button:hover {
@@ -255,10 +255,10 @@ cugi-dropdown:active {
 }
 
 .newFile-presets {
-    margin: 8px;
-    padding: 4px;
+    margin: 6pt;
+    padding: 3pt;
     background-color: var(--artimus-background-2);
-    border-radius: 8px;
+    border-radius: 6pt;
 
     display: grid;
     grid-template-columns: 33.3333% 33.3333% 33.3333%;
@@ -269,22 +269,22 @@ cugi-dropdown:active {
 
 .newFile-preset {
     display: grid;
-    grid-template-rows: 1fr 24px 16px;
+    grid-template-rows: 1fr 18pt 12pt;
     aspect-ratio: 8/11;
 
-    margin: 4px;
-    border-radius: 8px;
+    margin: 3pt;
+    border-radius: 6pt;
     background-color: var(--artimus-background-1);
 }
 
 .newFile-presetPreviewContainer {
-    margin: 4px;
-    padding: 8px;
-    border-radius: 8px;
+    margin: 3pt;
+    padding: 6pt;
+    border-radius: 6pt;
     background-color: var(--artimus-background-2);
 
-    width: calc(100% - 24px);
-    height: calc(100% - 24px);
+    width: calc(100% - 18pt);
+    height: calc(100% - 18pt);
 
     display: flex;
     justify-content: center;
@@ -293,13 +293,13 @@ cugi-dropdown:active {
 
 .newFile-presetPreview {
     border-color: var(--artimus-icon);
-    border-width: 2px;
+    border-width: 1.5pt;
     border-style: solid;
-    border-radius: 8px;
+    border-radius: 6pt;
 }
 
 .newFile-presetName {
-    font-size: 14px;
+    font-size: 10.5pt;
 
     overflow: hidden;
     white-space: nowrap;
@@ -307,7 +307,7 @@ cugi-dropdown:active {
 }
 
 .newFile-presetResolution {
-    font-size: 10px;
+    font-size: 7.5pt;
 }
 
 .newFile-tuning {
@@ -316,9 +316,9 @@ cugi-dropdown:active {
 }
 
 .newFile-tuning-previewHolder {
-    margin: 8px;
-    padding: 8px;
-    border-radius: 8px;
+    margin: 6pt;
+    padding: 6pt;
+    border-radius: 6pt;
     background-color: var(--artimus-background-2);
 
     display: flex;
@@ -328,22 +328,22 @@ cugi-dropdown:active {
 
 .newFile-tuning-preview {
     border-color: var(--artimus-icon);
-    border-width: 2px;
+    border-width: 1.5pt;
     border-style: solid;
-    border-radius: 8px;
+    border-radius: 6pt;
 
     transition: 300ms width, 300ms height;
 }
 
 .newFile-flip {
     border-radius: 100%;
-    border-width: 2px;
+    border-width: 1.5pt;
     border-style: solid;
 
-    height: calc(100% - 16px);
-    margin: 8px;
+    height: calc(100% - 12pt);
+    margin: 6pt;
     aspect-ratio: 1;
-    border-radius: 8px;
+    border-radius: 6pt;
 
     background-color: var(--artimus-background-1);
     border-color: var(--artimus-background-3);
@@ -391,8 +391,8 @@ cugi-dropdown:active {
     left: var(--anchor-x);
     top: var(--anchor-y);
 
-    width: 16px;
-    height: 16px;
+    width: 12pt;
+    height: 12pt;
 
     background-color: var(--artimus-icon);
     transform: translate(-50%, -50%);
@@ -403,12 +403,12 @@ cugi-dropdown:active {
 
 .layerProperties-BMTHolder {
     display: grid;
-    margin: 4px;
+    margin: 3pt;
     grid-template-columns: 30% 70%;
 }
 
 .popup-layerProperties {
-    padding: 4px;
+    padding: 3pt;
 
     display: flex;
     flex-direction: column;
@@ -430,8 +430,8 @@ cugi-dropdown:active {
 
     background-color: var(--artimus-background-2);
     border-radius: 25%;
-    margin: 4px;
-    padding: 4px;
+    margin: 3pt;
+    padding: 3pt;
 }
 
 .layerProperties-doneButtonHolder {
@@ -444,7 +444,7 @@ cugi-dropdown:active {
 .popup-exportFile {
     display:flex;
     flex-direction: column;
-    padding: 8px;
+    padding: 6pt;
 }
 
 .exportFile-formatDescription {
@@ -453,7 +453,7 @@ cugi-dropdown:active {
 }
 
 .exportFile-labelText {
-    margin-bottom: 2px;
+    margin-bottom: 1.5pt;
     font-size: larger;
 }
 
@@ -462,7 +462,7 @@ cugi-dropdown:active {
 }
 
 .exportFile-finalSize {
-    margin: 0px;
+    margin: 0pt;
 }
 
 .exportFile-backgroundDataHolder {
@@ -488,10 +488,10 @@ cugi-dropdown:active {
     flex-direction: column;
 
     border-right-color: var(--artimus-background-2);
-    border-right-width: 4px;
+    border-right-width: 3pt;
     border-right-style: solid;
 }
 
 .settings-categoryButton {
-    border-radius: 0px;
+    border-radius: 0pt;
 }

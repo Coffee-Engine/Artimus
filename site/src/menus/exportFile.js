@@ -122,5 +122,5 @@ editor.exportMenu = () => {
                 forceDialogue: true
             });
         }
-    }, { width: 20, height: 50 })
+    }, { width: 21, height: 50 })
 }
