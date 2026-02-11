@@ -338,7 +338,7 @@ window.artimus = {
             else return true;
         }
 
-        redrawBounds(gl, previewGL, context, toolProperties) { return false; }
+        rerenderBounds(gl, previewGL, context, toolProperties) { return false; }
 
         properties = {};
         colorProperties = [];
@@ -2578,6 +2578,7 @@ window.artimus = {
                         default:
                             artimus.exportCanvas.width = Math.max(1, Math.min(8192, this.width * options.sizeMul));
                             artimus.exportCanvas.height = Math.max(1, Math.min(8192, this.height * options.sizeMul));
+                            artimus.exportGL.imageSmoothingEnabled = false;
 
                             artimus.exportGL.fillStyle = options.backgroundColor || "#000000";
                             if (options.background) artimus.exportGL.fillRect(0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
