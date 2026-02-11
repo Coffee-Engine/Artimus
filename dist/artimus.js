@@ -682,6 +682,7 @@ window.artimus = {
                 const button = document.createElement("button");
 
                 button.innerText = target[key];
+                button.className = "CUGI-artimus-font";
                 
                 button.onclick = () => {
                     artimus.fontPopup(this).then(font => {

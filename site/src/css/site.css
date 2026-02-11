@@ -229,6 +229,7 @@ cugi-dropdown:active {
 .artimus-font-button {
     font-size: calc(var(--small-side) * 2);
     background-color: var(--artimus-button-normal);
+    border-color: var(--artimus-background-2);
 
     border-width: 0px;
     transition: 300ms background-color;
@@ -307,6 +308,27 @@ input:invalid {
 input[type=number] {
   appearance: textfield;
   text-align: center;
+}
+
+.CUGI-artimus-font {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
+}
+
+.CUGI-artimus-font:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
+}
+
+.CUGI-artimus-font:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color, 300ms border-color;
 }
 
 @keyframes popup-main {
