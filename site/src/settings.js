@@ -1,7 +1,8 @@
 editor.settings = {
     theme: "default",
     maxHistory: 10,
-    preferredFormat: "png"
+    preferredFormat: "png",
+    debug: false
 };
 
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
@@ -11,7 +12,8 @@ editor.settingDefs = {
         {type: "int", target: editor.settings, key: "maxHistory", min: 1, max: 50, onchange: (value) => {
             artimus.maxHistory = value;
         }},
-        {type: "dropdown", target: editor.settings, key: "preferredFormat", items: Object.keys(artimus.extensionToMIME)}
+        {type: "dropdown", target: editor.settings, key: "preferredFormat", items: Object.keys(artimus.extensionToMIME)},
+        {type: "boolean", target: editor.settings, key: "debug" }
     ],
     theme: [
         {type: "dropdown", target: editor.settings, key: "theme", items: [

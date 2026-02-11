@@ -596,6 +596,12 @@ window.artimus = {
         magic = Array.from("COFE", char => String(char).charCodeAt(0));
         jsonMagic = Array.from("JSON", char => String(char).charCodeAt(0));
 
+        //Finally just a small profiler thing.
+        performance = {
+            fps: 0,
+            delta: 0
+        }
+
         updatePosition() {
             //Setup some CSS
             this.quickVar(this.container, {
@@ -788,6 +794,8 @@ window.artimus = {
         }
 
         renderLoop(delta) {
+            this.performance.fps = 1 / delta;
+            this.performance.delta = delta;
             this.fullviewGL.drawImage(this.gridCanvas, 0, 0);
 
             if (this.dirty) {

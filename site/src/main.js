@@ -168,4 +168,15 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     artimus.globalRefreshTools();
 
     new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+
+    const element = document.getElementById("versionIdentifier");
+    const loop = () => {
+        if (editor.settings.debug) {
+            const perf = artimus.activeWorkspaces[0].performance;
+            element.innerText = `d:${Math.floor(perf.delta * 1000) / 1000} f:${Math.floor(perf.fps)}`
+        }
+        requestAnimationFrame(loop);
+    }
+
+    loop();
 });
