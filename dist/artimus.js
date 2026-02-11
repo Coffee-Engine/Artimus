@@ -701,10 +701,18 @@ window.artimus = {
             this.layers = [];
 
             //For editing
-            this.editingCanvas = document.createElement("canvas");
-            this.previewCanvas = document.createElement("canvas");
-            this.compositeCanvas = document.createElement("canvas");
-            this.gridCanvas = document.createElement("canvas");
+            if (window.OffscreenCanvas) {
+                this.editingCanvas = new OffscreenCanvas(1, 1);
+                this.previewCanvas = new OffscreenCanvas(1, 1);
+                this.compositeCanvas = new OffscreenCanvas(1, 1);
+                this.gridCanvas = new OffscreenCanvas(1, 1);
+            }
+            else {
+                this.editingCanvas = document.createElement("canvas");
+                this.previewCanvas = document.createElement("canvas");
+                this.compositeCanvas = document.createElement("canvas");
+                this.gridCanvas = document.createElement("canvas");
+            }
 
             this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
             this.fullviewGL = this.canvas.getContext("2d", { alpha: false});
