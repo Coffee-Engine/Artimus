@@ -173,8 +173,13 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     const loop = () => {
         if (editor.settings.debug) {
             const ws = artimus.activeWorkspaces[0];
-            if (ws.tool) element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height}  || t: ${ws.tool} tc: ${ws.toolFunction.constructive} pc: ${JSON.stringify(ws.toolFunction.colorProperties)}`
-            else element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height} || t: none`
+            //Timing
+            element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)}`;
+            //Canvas
+            element.innerText += ` ud: ${ws.layerHistory.length} hs: ${ws.historyIndex} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height}`;
+
+            if (ws.tool) element.innerText = element.innerText += ` || t: ${ws.tool} tc: ${ws.toolFunction.constructive} pc: ${JSON.stringify(ws.toolFunction.colorProperties)}`
+            else element.innerText += ` || t: none`;
         }
         requestAnimationFrame(loop);
     }

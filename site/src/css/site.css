@@ -310,6 +310,29 @@ input[type=number] {
   text-align: center;
 }
 
+input[type=checkbox] {
+    appearance: none;
+
+    
+    width: auto;
+    height: 1.5em;
+    aspect-ratio: 1;
+    margin: 4px;
+    
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
+}
+
+input[type=checkbox]:checked { background-color: var(--artimus-text); }
+input[type=checkbox]:hover { background-color: var(--artimus-button-hover); }
+input[type="checkbox"]:hover:checked { background-color: var(--artimus-button-selected); }
+
 .CUGI-artimus-font {
     color: var(--artimus-text);
     background-color: var(--artimus-background-1);
