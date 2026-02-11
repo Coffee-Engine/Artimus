@@ -101,8 +101,8 @@ cugi-dropdown:active {
     overflow: hidden;
     border-radius: 16px;
 
-    width: calc(var(--small-side) * var(--window-width));
-    height: calc(var(--small-side) * var(--window-height));
+    width: min(100vw, calc(var(--small-side) * var(--window-width)));
+    height: min(100vh, calc(var(--small-side) * var(--window-height)));
 
     display: flex;
     flex-direction: column;
