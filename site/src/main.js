@@ -72,10 +72,7 @@ window.editor = {
                 case "function": contents(this.content, this); break;
                 case "string": this.content.innerHTML = contents; break;
                 case "object": this.content.appendChild(CUGI.createList(contents, {
-                preprocess: (item) => {
-                        item.text = artimus.translate(item.translationKey || item.key || item.text, options.translationContext) || item.text || item.key;
-                        return item;
-                    }
+                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, item)
                 }));
                 break;
 
@@ -86,6 +83,11 @@ window.editor = {
             editor.modals.push(this);
 
             this.init(name, contents, options);
+        }
+
+        CUGIPreprocess(context, item) {
+            item.text = artimus.translate(item.translationKey || item.key || item.text, context) || item.text || item.key;
+            return item;
         }
 
         init() {}

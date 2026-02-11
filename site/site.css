@@ -477,3 +477,21 @@ cugi-dropdown:active {
     align-items: end;
     flex-grow: 1;
 }
+
+.popup-settings {
+    display: grid;
+    grid-template-columns: 20% 80%;
+}
+
+.settings-categoryList {
+    display: flex;
+    flex-direction: column;
+
+    border-right-color: var(--artimus-background-2);
+    border-right-width: 4px;
+    border-right-style: solid;
+}
+
+.settings-categoryButton {
+    border-radius: 0px;
+}

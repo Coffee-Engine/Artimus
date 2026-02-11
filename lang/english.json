@@ -106,9 +106,12 @@
     "artimus.modal.exportFile.preferred": "(Preferred)",
 
     "artimus.modal.settings.title": "Settings",
-    "artimus.modal.settings.theme": "Theme",
-    "artimus.modal.settings.maxHistory": "History Length",
-    "artimus.modal.settings.preferredFormat": "Preferred Format",
+    "artimus.modal.settings.category.general": "General",
+    "artimus.modal.settings.category.theme": "Theme",
+
+    "artimus.modal.settings.theme.theme": "Theme",
+    "artimus.modal.settings.general.maxHistory": "History Length",
+    "artimus.modal.settings.general.preferredFormat": "Preferred Format",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
