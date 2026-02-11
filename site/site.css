@@ -21,7 +21,7 @@
 
 /* ? General size stuff ? */
 body {
-    --small-side: max(min(1vw, 1vh), 6px);
+    --small-side: max(1vmin, 8px);
     color: var(--artimus-text);
 }
 
