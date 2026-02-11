@@ -247,6 +247,68 @@ cugi-dropdown:active {
     transition: 0ms background-color;
 }
 
+select {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
+}
+
+select:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
+}
+
+select:focus {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-button-click);
+}
+
+select:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color, 300ms border-color;
+}
+
+input {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
+}
+
+input:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
+}
+
+input:focus {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-button-click);
+}
+
+input:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color, 300ms border-color;
+}
+
+input:invalid {
+    background-color: color-mix(in srgb, var(--artimus-background-2) 80%, #ff0000 20%);
+    border-color: var(--artimus-button-click);
+}
+
+input[type=number] {
+  appearance: textfield;
+  text-align: center;
+}
+
 @keyframes popup-main {
     0% {
         transform: translate(-50%, -50%) scaleY(0);
