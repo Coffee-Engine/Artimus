@@ -1,0 +1,133 @@
+.popup-newFile {
+    display: grid;
+    grid-template-columns: 65% 35%;
+}
+
+.newFile-presets {
+    margin: 8px;
+    padding: 4px;
+    background-color: var(--artimus-background-2);
+    border-radius: 8px;
+
+    display: grid;
+    grid-template-columns: 33.3333% 33.3333% 33.3333%;
+
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.newFile-preset {
+    display: grid;
+    grid-template-rows: 1fr 24px 16px;
+    aspect-ratio: 8/11;
+
+    margin: 4px;
+    border-radius: 8px;
+    background-color: var(--artimus-background-1);
+}
+
+.newFile-presetPreviewContainer {
+    margin: 4px;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: var(--artimus-background-2);
+
+    width: calc(100% - 24px);
+    height: calc(100% - 24px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.newFile-presetPreview {
+    border-color: var(--artimus-icon);
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 8px;
+}
+
+.newFile-presetName {
+    font-size: 14px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.newFile-presetResolution {
+    font-size: 10px;
+}
+
+.newFile-tuning {
+    display: grid;
+    grid-template-rows: 60% 20% 20%;
+}
+
+.newFile-tuning-previewHolder {
+    margin: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: var(--artimus-background-2);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.newFile-tuning-preview {
+    border-color: var(--artimus-icon);
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms width, 300ms height;
+}
+
+.newFile-flip {
+    border-radius: 100%;
+    border-width: 2px;
+    border-style: solid;
+
+    height: calc(100% - 16px);
+    margin: 8px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+
+    background-color: var(--artimus-background-1);
+    border-color: var(--artimus-background-3);
+    color: var(--artimus-text);
+
+    transition: background-color 100ms;
+}
+
+.newFile-flip:hover {
+    background-color: var(--artimus-background-2);
+}
+
+.newFile-flip:active {
+    background-color: var(--artimus-button-click);
+    transition: background-color 0ms;
+}
+
+.newFile-sizingDiv {
+    display: grid;
+    grid-template-columns: 50% 50%;
+
+    aspect-ratio: 2/1;
+    height: 100%;
+
+    margin-left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+.newFile-resolutionHolder {
+    display: grid;
+    grid-template-rows: 50% 50%;
+}
+
+.newFile-finalCreateButtonHolder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

@@ -1,0 +1,56 @@
+.popup-settings {
+    display: grid;
+    grid-template-columns: 20% 80%;
+}
+
+.settings-categoryList {
+    display: flex;
+    flex-direction: column;
+
+    border-right-color: var(--artimus-background-2);
+    border-right-width: 4px;
+    border-right-style: solid;
+}
+
+.settings-categoryButton {
+    border-radius: 0px;
+}
+
+.settings-settingsList .CUGI-PropertyHolder {
+    display: flex;
+    grid-template-columns: 50% auto;
+
+    animation: 300ms settings-pop-in;
+}
+
+.settings-settingsList .CUGI-PropertyHolder .CUGI-PropertyName {
+    min-width: 50%;
+    text-align: right;
+    
+    border-right-color: var(--artimus-background-3);
+    border-right-width: 4px;
+    border-right-style: solid;
+    border-radius: 0px;
+
+    background-color: var(--artimus-background-2);
+
+    margin-right: 8px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+
+    padding-right: 8px;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+@keyframes settings-pop-in {
+    0% {
+        transform: scaleY(0) translateY(-100%);
+    }
+    50% {
+        transform: scaleY(1.2) translateY(10%);
+    }
+    100% {
+        transform: scaleY(1) translateY(0%);
+    }
+}

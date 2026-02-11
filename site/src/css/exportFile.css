@@ -1,0 +1,36 @@
+.popup-exportFile {
+    display:flex;
+    flex-direction: column;
+    padding: 8px;
+}
+
+.exportFile-formatDescription {
+    min-height: 15%;
+    max-height: 15%;
+}
+
+.exportFile-labelText {
+    margin-bottom: 2px;
+    font-size: larger;
+}
+
+.exportFile-sizeInput {
+    align-self: center;
+}
+
+.exportFile-finalSize {
+    margin: 0px;
+}
+
+.exportFile-backgroundDataHolder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.exportFile-finalDiv {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    flex-grow: 1;
+}

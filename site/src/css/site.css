@@ -1,0 +1,260 @@
+/* ? Scrollbars ? */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { 
+    background: var(--artimus-background-2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--artimus-icon);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--artimus-button-selected); }
+
+/* If the browser doesn't support the cool psuedo-element, use the standard */
+@supports not selector(::-webkit-scrollbar) {
+    body {
+        scrollbar-color: var(--artimus-icon) var(--artimus-background-2);
+        scrollbar-width: thin;
+    }
+}
+
+/* ? General size stuff ? */
+body {
+    --small-side: max(1vmin, 8px);
+    color: var(--artimus-text);
+}
+
+/* ? Main UI ? */
+.main-grid {
+    display: grid;
+    grid-template-rows: 24px calc(100vh - 24px);
+
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    top: 0px;
+    left: 0px;
+}
+
+.top-bar {
+    background-color: var(--artimus-background-2);
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    border-bottom-color: var(--artimus-background-1);
+
+    display: flex;
+
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.top-bar > p {
+    margin: 0px;
+}
+
+cugi-dropdown {
+    text-align: center;
+    user-select: none;
+
+    background-color: var(--artimus-button-normal);
+    transition: 300ms background-color;
+}
+
+cugi-dropdown:hover {
+    background-color: var(--artimus-button-hover);
+}
+
+cugi-dropdown:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color;
+}
+
+/* ? Popups ? */
+.modal-background {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0px;
+    left: 0px;
+
+    background-color: #00000055;
+
+    transition: 250ms opacity;
+}
+
+.popup {
+    position: absolute; 
+    
+    padding: 0px;
+
+    top: 50%; 
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background-color: var(--artimus-background-1);
+
+    overflow: hidden;
+    border-radius: 16px;
+
+    width: min(100vw, calc(var(--small-side) * var(--window-width)));
+    height: min(100vh, calc(var(--small-side) * var(--window-height)));
+
+    display: flex;
+    flex-direction: column;
+
+    animation: 300ms popup-main ease-in-out;
+}
+
+.popup .popup-content {
+    text-align: center;
+    font-family: monospace;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.popup-content button {
+    border-bottom-width: 4px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+}
+
+.popup .CUGI-PropertyHolder {
+    display: flex;
+}
+
+.popup-top {
+    display: flex;
+    background-color: var(--artimus-background-2);
+    padding: 4px;
+}
+
+.popup-title {
+    flex-grow: 1;
+    
+    text-align: center;
+    align-self: center;
+
+    padding: 0px;
+    margin:0px
+}
+
+.popup > h1 {
+    margin: 0px;
+}
+
+.CUGI-Button {
+    background-color: var(--artimus-button-normal);
+    color: var(--artimus-text);
+    transition: 300ms background-color;
+    width: auto;
+
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--artimus-button-hover);
+    border-radius: 16px;
+}
+
+.CUGI-Popup .CUGI-Button {
+    border-width: 0px;
+    width: 100%;
+}
+
+.CUGI-Button:hover {
+    background-color: var(--artimus-button-hover);
+}
+
+.CUGI-Button:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color;
+}
+
+.LOGO {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    /* Weird chromium Win-11 bug */
+    filter: blur(0);
+
+    width: 90%;
+    margin: 5%;
+    margin-bottom: 0%;
+    margin-top: 1%;
+}
+
+.popup-close {
+    border-radius: 100%;
+    border-width: 2px;
+    border-style: solid;
+
+    height: 24px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+
+    background-color: var(--artimus-background-1);
+    border-color: var(--artimus-background-3);
+    color: var(--artimus-text);
+
+    transition: background-color 100ms;
+}
+
+.popup-close:hover {
+    background-color: var(--artimus-background-2);
+}
+
+.artimus-font-list {
+    --padding: calc(var(--small-side) * 0.5);
+    margin: var(--padding);
+    padding: var(--padding);
+    height: calc(100% - calc(var(--small-side) * 2));
+
+    background-color: var(--artimus-background-2);
+    
+    display: flex;
+    flex-direction: column;
+
+    max-height: 75vh;
+
+    border-radius: 16px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.artimus-font-button {
+    font-size: calc(var(--small-side) * 2);
+    background-color: var(--artimus-button-normal);
+
+    border-width: 0px;
+    transition: 300ms background-color;
+
+    margin-bottom: 2px;
+    margin-top: 2px;
+    border-radius: 16px;
+}
+
+.artimus-font-button:hover {
+    background-color: var(--artimus-button-hover);
+}
+
+.artimus-font-button:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color;
+}
+
+@keyframes popup-main {
+    0% {
+        transform: translate(-50%, -50%) scaleY(0);
+    }
+    50% {
+        transform: translate(-50%, -50%) scaleY(1.1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scaleY(1);
+    }
+}
