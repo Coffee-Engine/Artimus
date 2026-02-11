@@ -172,8 +172,9 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     const element = document.getElementById("versionIdentifier");
     const loop = () => {
         if (editor.settings.debug) {
-            const perf = artimus.activeWorkspaces[0].performance;
-            element.innerText = `d:${Math.floor(perf.delta * 1000) / 1000} f:${Math.floor(perf.fps)}`
+            const ws = artimus.activeWorkspaces[0];
+            if (ws.tool) element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height}  || t: ${ws.tool} tc: ${ws.toolFunction.constructive} pc: ${JSON.stringify(ws.toolFunction.colorProperties)}`
+            else element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height} || t: none`
         }
         requestAnimationFrame(loop);
     }

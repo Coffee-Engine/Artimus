@@ -112,6 +112,7 @@
     "artimus.modal.settings.theme.theme": "Theme",
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
+    "artimus.modal.settings.general.debug": "\"Nerd Numbers\"",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
