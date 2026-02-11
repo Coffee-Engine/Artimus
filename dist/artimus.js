@@ -338,6 +338,8 @@ window.artimus = {
             else return true;
         }
 
+        redrawBounds(gl, previewGL, context, toolProperties) { return false; }
+
         properties = {};
         colorProperties = [];
         constructive = true;
