@@ -318,7 +318,6 @@ input[type=checkbox] {
     width: auto;
     height: 1.5em;
     aspect-ratio: 1;
-    margin: 4px;
     
     color: var(--artimus-text);
     background-color: var(--artimus-background-1);
