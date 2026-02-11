@@ -43,18 +43,11 @@ artimus.tools.paintBucket = class extends artimus.tool {
 
             let lowerBlocked = true;
             let upperBlocked = true;
-            let nextKills = false;
             for (let wx = rx; wx < width; wx++) {
                 //Get color
                 if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
                     const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
-
-                    //Piercing  
-                    if (!toolProperties.pierceTransparency) {
-                        if (nextKills) break;
-                        else if (data[targetCoord + 3] < 240 && data[targetCoord + 3] > 0) nextKills = true;
-                    }
 
                     data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
                     data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
@@ -85,18 +78,11 @@ artimus.tools.paintBucket = class extends artimus.tool {
                 else break;
             }
 
-            nextKills = false;
             for (let wx = rx - 1; wx >= 0; wx--) {
                 //Get color
                 if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
                     const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
-
-                    //Piercing  
-                    if (!toolProperties.pierceTransparency) {
-                        if (nextKills) break;
-                        else if (data[targetCoord + 3] < 240 && data[targetCoord + 3] > 0) nextKills = true;
-                    }
 
                     data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
                     data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
