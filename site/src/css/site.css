@@ -313,7 +313,8 @@ input[type=number] {
 input[type=checkbox] {
     appearance: none;
 
-    
+    align-self: center;
+
     width: auto;
     height: 1.5em;
     aspect-ratio: 1;
