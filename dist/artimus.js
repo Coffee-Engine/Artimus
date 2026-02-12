@@ -761,7 +761,13 @@ window.artimus = {
             this.previewGL = this.previewCanvas.getContext("2d", { desynchronized: true });
             this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
 
-            //Now time to setup the webgl stuff
+            //Now time to setup the webgl texture
+            this.webgl.compositeTexture = this.GL.createTexture();
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MAG_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MIN_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_S, this.GL.CLAMP_TO_EDGE);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_T, this.GL.CLAMP_TO_EDGE);
 
             //Setup vertices
             this.webgl.positionBuffer = this.GL.createBuffer();
@@ -793,12 +799,14 @@ window.artimus = {
             varying mediump vec2 v_texCoord;
 
             void main() {
-                gl_FragColor = vec4(v_texCoord, 0, 1);
-                //gl_FragColor = vec4(mod((gl_FragCoord.x / 255.0), 1.0), mod((gl_FragCoord.y / 255.0), 1.0), 0, 1);
-            
-                //gl_FragColor = texture2D(main_tex, v_texCoord);
+                gl_FragColor = vec4(1);
+
+                highp vec4 sampled = texture2D(main_tex, v_texCoord);
+                gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
             }
             `).use();
+
+            this.webgl.uniLoc = this.GL.getUniformLocation(this.webgl.shaders.main.program, "main_tex");
         }
 
         addWebGLShader(id, vertexSrc, fragmentSrc) {
@@ -895,6 +903,7 @@ window.artimus = {
 
             if (this.dirty) {
                 this.renderComposite();
+                this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
                 this.dirty = false;
             }
 
@@ -909,6 +918,7 @@ window.artimus = {
             }
 
             //this.GL.drawImage(this.previewCanvas, 0, 0);
+            this.GL.uniform1i(this.webgl.uniLoc, 0);
             this.GL.viewport(0, 0, this.width, this.height);
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
