@@ -526,6 +526,30 @@ window.artimus = {
         get height() { return this.#height; }
         
         dirty = true;
+        dirtyArea = [ 0, 0, 0, 0 ];
+
+        dirtyRect(x, y, w, h) {
+            const newDirty = [
+                Math.min(x, this.dirtyArea[0], this.selectionMinX),
+                Math.min(y, this.dirtyArea[1], this.selectionMinY),
+                Math.max(x + w, this.dirtyArea[0] + this.dirtyArea[2], this.selectionMaxX),
+                Math.max(y + h, this.dirtyArea[1] + this.dirtyArea[3], this.selectionMaxY)
+            ];
+
+            this.dirtyArea = [
+                newDirty[0],
+                newDirty[1],
+                newDirty[2] - newDirty[0],
+                newDirty[3] - newDirty[1],
+            ];
+
+            this.dirty = true;
+        }
+
+        //Just some small helpers
+        dirtyBounds(sx, sy, ex, ey) { this.dirtyRect(sx, sy, ex - sx, ey - sy); }
+        dirtyCanvas() { this.dirtyRect(0, 0, this.width, this.height); }
+        dirtySelection() { this.dirtyRect(Infinity, Infinity, -Infinity, -Infinity);}
 
         //Layers
         layerHiddenAnimation = 0;
@@ -798,24 +822,29 @@ window.artimus = {
         renderLoop(delta) {
             this.performance.fps = 1 / delta;
             this.performance.delta = delta;
-            this.fullviewGL.drawImage(this.gridCanvas, 0, 0);
+
+            //Dirty Selection if we have no dirty.
+            if (this.dirtyArea[2] == 0 && this.dirtyArea[3] == 0) this.dirtySelection();
+
+            this.fullviewGL.drawImage(this.gridCanvas, ...this.dirtyArea, ...this.dirtyArea);
 
             if (this.dirty) {
                 this.renderComposite();
                 this.dirty = false;
+                this.dirtyArea = [0, 0, 0, 0];
             }
 
-            this.fullviewGL.drawImage(this.compositeCanvas, 0, 0);
+            this.fullviewGL.drawImage(this.compositeCanvas, ...this.dirtyArea, ...this.dirtyArea);
 
             //Render hidden layers
             if (!this.getLayerVisibility(this.currentLayer)) {
                 this.layerHiddenAnimation += delta * 5.0;
                 this.fullviewGL.globalAlpha = (Math.sin(this.layerHiddenAnimation) * 0.25) + 0.6;
-                this.fullviewGL.drawImage(this.editingCanvas, 0, 0);
+                this.fullviewGL.drawImage(this.editingCanvas, ...this.dirtyArea, ...this.dirtyArea);
                 this.fullviewGL.globalAlpha = 1;
             }
 
-            this.fullviewGL.drawImage(this.previewCanvas, 0, 0);
+            this.fullviewGL.drawImage(this.previewCanvas, ...this.dirtyArea, ...this.dirtyArea);
 
             if (this.hasSelection) {
                 this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
