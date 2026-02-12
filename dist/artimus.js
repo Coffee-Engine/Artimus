@@ -754,7 +754,7 @@ window.artimus = {
             }
 
             //We use webgl for the fullview since offscreen canvas' are rather performance, and also useful.
-            this.GL = this.canvas.getContext("webgl", { alpha: false});
+            this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false });
 
             this.editGL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
             this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
@@ -770,8 +770,12 @@ window.artimus = {
                 0, 0,
                 0, 1,
                 1, 1,
-                1, 0
+
+                0, 0,
+                1, 0,
+                1, 1
             ]), this.GL.STATIC_DRAW);
+            this.GL.enableVertexAttribArray(0);
             this.GL.vertexAttribPointer(0, 2, this.GL.FLOAT, false, 0, 0);
 
 
@@ -781,7 +785,7 @@ window.artimus = {
             varying mediump vec2 v_texCoord;
 
             void main() {
-                gl_Position = vec4((a_position - 0.5) * 2.0, 1, 1);
+                gl_Position = vec4((a_position - 0.5) * vec2(2.0, -2.0), 0, 1);
                 v_texCoord = a_position;
             }
             `,`
@@ -789,7 +793,10 @@ window.artimus = {
             varying mediump vec2 v_texCoord;
 
             void main() {
-                gl_FragColor = texture2D(main_tex, v_texCoord);
+                gl_FragColor = vec4(v_texCoord, 0, 1);
+                //gl_FragColor = vec4(mod((gl_FragCoord.x / 255.0), 1.0), mod((gl_FragCoord.y / 255.0), 1.0), 0, 1);
+            
+                //gl_FragColor = texture2D(main_tex, v_texCoord);
             }
             `).use();
         }
@@ -826,6 +833,7 @@ window.artimus = {
                 this.GL.deleteProgram(program);
             }
 
+            //Setup shader stuff.
             this.webgl.shaders[id] = {
                 program: program,
                 vertex: vertexSrc,
@@ -901,6 +909,8 @@ window.artimus = {
             }
 
             //this.GL.drawImage(this.previewCanvas, 0, 0);
+            this.GL.viewport(0, 0, this.width, this.height);
+            this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
             if (this.hasSelection) {
                 this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
