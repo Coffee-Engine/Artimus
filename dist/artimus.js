@@ -597,7 +597,7 @@ window.artimus = {
         magic = Array.from("COFE", char => String(char).charCodeAt(0));
         jsonMagic = Array.from("JSON", char => String(char).charCodeAt(0));
 
-        webgl = { shaders: {}, positionBuffer: null, selectionBuffer: null };
+        webgl = { shaders: {}, positionBuffer: null, selectionBuffer: null, compositeTexture: null, previewTexture: null, hiddenTexture: null };
 
         //Finally just a small profiler thing.
         performance = {
@@ -622,6 +622,8 @@ window.artimus = {
             });
             
             this.invZoom = 1 / this.#zoom;
+
+            this.dirty = true;
         }
 
         //General helper functions ported from Coffee Engine
@@ -769,6 +771,7 @@ window.artimus = {
             //Now time to setup the webgl texture
             this.webgl.compositeTexture = this.setupSimpleTexture();
             this.webgl.previewTexture = this.setupSimpleTexture();
+            this.webgl.hiddenTexture = this.setupSimpleTexture();
 
             //Setup the blending
             this.GL.enable(this.GL.BLEND);
@@ -806,13 +809,15 @@ window.artimus = {
             uniform mediump vec3 u_background_1;
             uniform mediump vec3 u_background_2;
             uniform mediump float u_grid_size;
-            uniform lowp int u_has_bg;
+
+            uniform lowp int u_render_mode;
+            uniform mediump float u_time;
 
             varying mediump vec2 v_texCoord;
 
             void main() {
                 //If we have a background draw the background and the image
-                if (u_has_bg == 1) {
+                if (u_render_mode == 1) {
                     mediump float offset = gl_FragCoord.x;
                     if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
                     offset = mod(offset, u_grid_size * 2.0);
@@ -822,6 +827,11 @@ window.artimus = {
 
                     highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
                     gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
+                }
+                else if (u_render_mode == 2) {
+                    //If hidden do the animation
+                    gl_FragColor = texture2D(u_main_tex, v_texCoord);
+                    gl_FragColor.w *= (sin(u_time * 5.0) * 0.2) + 0.7;
                 }
                 else {
                     //Otherwise draw just the image
@@ -1014,11 +1024,13 @@ window.artimus = {
             this.time += delta;
 
             //If we are dirty update our canvas as needed.
-            this.renderComposite(viewBounds);
+            if (this.dirty) {
+                this.renderComposite(viewBounds);
 
-            //Bind and edit the composite texture
-            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
-            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
+                //Bind and edit the composite texture
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
+            }
 
             //Set buffers to the position buffer/quad buffer.
             this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
@@ -1032,12 +1044,25 @@ window.artimus = {
                 u_main_tex: this.webgl.compositeTexture,
                 u_background_1: this.gridData.color1,
                 u_background_2: this.gridData.color2,
-                u_has_bg: 1,
+                u_render_mode: 1,
                 u_grid_size: this.gridData.size,
                 u_time: this.time
             });
             
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
+
+            //Render hidden layers
+            if (!this.getLayerVisibility(this.currentLayer)) {
+                //Do preview stuff
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...viewBounds).data);
+
+                main.setUniforms({
+                    u_main_tex: this.webgl.hiddenTexture,
+                    u_render_mode: 2
+                });
+                this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
+            }
 
             //Do preview stuff
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
@@ -1045,17 +1070,9 @@ window.artimus = {
 
             main.setUniforms({
                 u_main_tex: this.webgl.previewTexture,
-                u_has_bg: 0
+                u_render_mode: 0
             });
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
-
-            //Render hidden layers
-            if (!this.getLayerVisibility(this.currentLayer)) {
-                this.layerHiddenAnimation += delta * 5.0;
-                this.GL.globalAlpha = (Math.sin(this.layerHiddenAnimation) * 0.25) + 0.6;
-                this.GL.drawImage(this.editingCanvas, 0, 0);
-                this.GL.globalAlpha = 1;
-            }
 
             if (this.hasSelection) {
                 //Set buffers to the selection outline buffer thingy.
@@ -2154,6 +2171,9 @@ window.artimus = {
 
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewCanvas);
+
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editingCanvas);
             this.dirty = true;
         }
 
