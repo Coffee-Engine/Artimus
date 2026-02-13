@@ -47,6 +47,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
     mouseDown(gl, x, y, toolProperties) {
         //if (toolProperties.pixelBrush) { x--; y--; };
         //Set stroke properties
+        this.workspace.dirtyBounds(x - toolProperties.strokeSize, y - toolProperties.strokeSize, x + toolProperties.strokeSize, y + toolProperties.strokeSize)
         gl.lineCap = "round";
         gl.lineJoin = "round";
         gl.lineWidth = toolProperties.strokeSize;
@@ -74,6 +75,12 @@ artimus.tools.paintBrush = class extends artimus.tool {
     mouseMove(gl, x, y, vx, vy, toolProperties) {
         const linePos = this.linePos;
         let distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
+
+        //Get bounds at the beginning and the end of the stroke
+        this.workspace.dirtyBounds(x - vx - toolProperties.strokeSize, y - vy - toolProperties.strokeSize, x - vx + toolProperties.strokeSize, y - vy + toolProperties.strokeSize);
+        this.workspace.dirtyBounds(x - toolProperties.strokeSize, y - toolProperties.strokeSize, x + toolProperties.strokeSize, y + toolProperties.strokeSize);
+
+        //Decide how we are drawing the line
         if (toolProperties.isEraser) {
             //Draw the line
             for (let i = 0; i < 1; i+=distance) {
@@ -120,6 +127,8 @@ artimus.tools.paintBrush = class extends artimus.tool {
             gl.moveTo(x,y);
             gl.closePath();
         }
+
+        this.workspace.dirtyBounds(x - toolProperties.strokeSize, y - toolProperties.strokeSize, x + toolProperties.strokeSize, y + toolProperties.strokeSize)
 
         this.linePos = null;
     }

@@ -338,8 +338,6 @@ window.artimus = {
             else return true;
         }
 
-        rerenderBounds(gl, previewGL, context, toolProperties) { return false; }
-
         properties = {};
         colorProperties = [];
         constructive = true;
@@ -529,6 +527,12 @@ window.artimus = {
         dirtyArea = [ 0, 0, 0, 0 ];
 
         dirtyRect(x, y, w, h) {
+            //Make sure we are using an integer
+            x = Math.round(x);
+            y = Math.round(y);
+            w = Math.round(w);
+            h = Math.round(h);
+
             const newDirty = [
                 Math.min(x, this.dirtyArea[0], this.selectionMinX),
                 Math.min(y, this.dirtyArea[1], this.selectionMinY),
@@ -547,7 +551,23 @@ window.artimus = {
         }
 
         //Just some small helpers
-        dirtyBounds(sx, sy, ex, ey) { this.dirtyRect(sx, sy, ex - sx, ey - sy); }
+        dirtyBounds(sx, sy, ex, ey) {
+            if (ex < sx) {
+                const t = sx;
+                sx = ex;
+                ex = t;
+            }
+            else if (ex == sx) ex = sx + 1;
+
+            if (ey < sy) {
+                const t = sy;
+                sy = ey;
+                ey = t;
+            }
+            else if (ey == sy) ey = sy + 1;
+
+            this.dirtyRect(sx, sy, ex - sx, ey - sy);
+        }
         dirtyCanvas() { this.dirtyRect(0, 0, this.width, this.height); }
         dirtySelection() { this.dirtyRect(this.width, this.height, -this.width, -this.height);}
 
@@ -776,7 +796,7 @@ window.artimus = {
                 this.gridCanvas = document.createElement("canvas");
             }
 
-            //We use webgl for the fullview since offscreen canvas' are rather performance, and also useful.
+            //We use webgl for the fullview since offscreen canvas' are rather performant, and also useful.
             this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false });
 
             this.setupWebGLSetters();
@@ -1004,18 +1024,23 @@ window.artimus = {
             }
         }
 
-        renderComposite() {
-            this.compositeGL.clearRect(0, 0, this.width, this.height);
+        renderComposite(final) {
+            if (final) this.dirtyCanvas();
+            
+            //Clear and get ready for compositing.
+            this.compositeGL.clearRect(...this.dirtyArea);
+
+            //Draw the layers
             for (let layerID in this.layers) {
                 const layer = this.layers[layerID];
                 this.compositeGL.globalCompositeOperation = layer.blendMode || "source-over";
 
                 if (layer.visibility) {
                     this.compositeGL.globalAlpha = layer.alpha;
-                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, 0, 0);
+                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, ...this.dirtyArea, ...this.dirtyArea);
                     else {
                         const bitmap = layer.bitmap;
-                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, 0, 0);
+                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, ...this.dirtyArea, ...this.dirtyArea);
                     }
                 }
             }
