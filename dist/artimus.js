@@ -643,12 +643,18 @@ window.artimus = {
         magic = Array.from("COFE", char => String(char).charCodeAt(0));
         jsonMagic = Array.from("JSON", char => String(char).charCodeAt(0));
 
-        webgl = { shaders: {}, positionBuffer: null };
+        webgl = { shaders: {}, positionBuffer: null, selectionBuffer: null };
 
         //Finally just a small profiler thing.
         performance = {
             fps: 0,
             delta: 0
+        };
+
+        gridData = {
+            color1: [ 0.9, 0.9, 0.9 ],
+            color2: [ 0.8, 0.8, 0.8 ],
+            size: 8
         }
 
         updatePosition() {
@@ -797,7 +803,7 @@ window.artimus = {
             }
 
             //We use webgl for the fullview since offscreen canvas' are rather performant, and also useful.
-            this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false });
+            this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false, antialiasing: false });
 
             this.setupWebGLSetters();
 
@@ -816,6 +822,8 @@ window.artimus = {
 
             //Setup vertices
             this.webgl.positionBuffer = this.GL.createBuffer();
+            this.webgl.selectionBuffer = this.GL.createBuffer();
+            
             this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
             this.GL.bufferData(this.GL.ARRAY_BUFFER, new Float32Array([
                 0, 0,
@@ -857,6 +865,27 @@ window.artimus = {
 
                 highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
                 gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
+            }
+            `).use();
+            
+            this.addWebGLShader("selection", `
+            attribute mediump vec3 a_position;
+
+            varying mediump float v_distance;
+
+            void main() {
+                gl_Position = vec4((a_position.xy - 0.5) * vec2(2.0, -2.0), 0, 1);
+                v_distance = a_position.z;
+            }
+            `,`
+            uniform mediump float u_selection_animation;
+            uniform mediump vec3 u_selection_color;
+
+            varying mediump float v_distance;
+
+            void main() {
+                gl_FragColor = vec4(u_selection_color, 1);
+                if (mod(v_distance + u_selection_animation, 6.0) > 4.0) { discard; }
             }
             `).use();
         }
@@ -925,9 +954,7 @@ window.artimus = {
                 fragment: fragmentSrc,
                 vertexShader: vertex,
                 fragmentShader: fragment,
-                use: () => {
-                    this.GL.useProgram(shader.program);
-                },
+                use: () => this.GL.useProgram(shader.program),
 
                 setUniforms: (values) => {
                     const keys = Object.keys(values);
@@ -969,10 +996,11 @@ window.artimus = {
             const c1 = artimus.HexToRGB(artimus.getCSSVariable("grid-1"));
             const c2 = artimus.HexToRGB(artimus.getCSSVariable("grid-2"));
 
-            const main = this.webgl.shaders.main;
-            this.GL.uniform3f(main.uniforms.u_background_1.location, c1.r / 255, c1.g / 255, c1.b / 255);
-            this.GL.uniform3f(main.uniforms.u_background_2.location, c2.r / 255, c2.g / 255, c2.b / 255);
-            this.GL.uniform1f(main.uniforms.u_grid_size.location, 8);
+            this.gridData = {
+                color1: [ c1.r / 255, c1.g / 255, c1.b / 255 ],
+                color2: [ c2.r / 255, c2.g / 255, c2.b / 255 ],
+                size: 8
+            }
         }
 
         renderLoop(delta) {
@@ -981,6 +1009,7 @@ window.artimus = {
             this.time = this.time || 0;
             this.time += delta;
 
+            //If we are dirty update our canvas as needed.
             if (this.dirty) {
                 //Add dirty area if one is missing.
                 if (this.dirtyArea[2] < 0 && this.dirtyArea[3] < 0) {
@@ -992,6 +1021,7 @@ window.artimus = {
                 //this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, 0, 0, 100, 100, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(0, 0, 100, 100).data);
                 this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.dirtyArea).data);
                 
+                //Reset dirty data
                 this.dirty = false;
                 this.dirtyArea = [this.width, this.height, -this.width, -this.height];
             }
@@ -1004,23 +1034,42 @@ window.artimus = {
                 this.GL.globalAlpha = 1;
             }
 
-            //this.GL.drawImage(this.previewCanvas, 0, 0);
+            //Set buffers to the position buffer/quad buffer.
+            this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
+            this.GL.vertexAttribPointer(0, 2, this.GL.FLOAT, false, 0, 0);
+
             const main = this.webgl.shaders.main;
+
+            main.use();
             main.setUniforms({
-                u_main_tex: this.webgl.compositeTexture
+                u_main_tex: this.webgl.compositeTexture,
+                u_background_1: this.gridData.color1,
+                u_background_2: this.gridData.color2,
+                u_grid_size: this.gridData.size,
             });
 
             this.GL.viewport(0, 0, this.width, this.height);
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
             if (this.hasSelection) {
-                const selection = this.webgl.shaders.selection;
+                //Set buffers to the selection outline buffer thingy.
+                this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
+                this.GL.vertexAttribPointer(0, 3, this.GL.FLOAT, false, 0, 0);
+
                 this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
+                const { r, g, b } = artimus.HexToRGB(getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline"));
+
+                //Get our shader set needed info, and use it.
+                const selection = this.webgl.shaders.selection;
+
+                selection.use();
                 selection.setUniforms({
-                    u_selection_animation: this.selectionAnimation
+                    u_selection_animation: this.selectionAnimation,
+                    u_selection_color: [ r / 255, g / 255, b / 255 ]
                 })
 
-                const { r, g, b } = artimus.HexToRGB(getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline"));
+                
+                this.GL.drawArrays(this.GL.LINE_STRIP, 0, (this.selection.length / 2) + 1);
             }
         }
 
@@ -1668,15 +1717,31 @@ window.artimus = {
             if (this.selection.length > 0) {
                 this.hasSelection = true;
 
-                //Create selection path
+                //Create selection path, also record data for the gl path.
+                const toGL = [];
+                let distance = 0;
+
                 for (let i = 0; i < this.selection.length; i+=2) {
                     if (i == 0) this.selectionPath.moveTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
-                    else this.selectionPath.lineTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
+                    else {
+                        this.selectionPath.lineTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
+                        distance += Math.sqrt(Math.pow(this.selection[i] - this.selection[i - 2], 2) + Math.pow(this.selection[i + 1] - this.selection[i - 1], 2));
+                    }
+
+                    toGL.push((this.selection[i] + 0.5) / this.width, (this.selection[i + 1] + 0.5) / this.height, distance);
                 }
+                //Calculate the final distance
+                distance += Math.sqrt(Math.pow(this.selection[0] - this.selection[this.selection.length - 2], 2) + Math.pow(this.selection[1] - this.selection[this.selection.length - 1], 2));
+
                 //Finally end it
                 this.selectionPath.lineTo(this.selection[0] + 0.5, this.selection[1] + 0.5);
+                toGL.push((this.selection[0] + 0.5) / this.width, (this.selection[1] + 0.5) / this.height, distance);
 
                 this.editGL.clip(this.selectionPath, artimus.windRule);
+
+                //update the buffer
+                this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
+                this.GL.bufferData(this.GL.ARRAY_BUFFER, new Float32Array(toGL), this.GL.STATIC_DRAW);
             }
             else {
                 this.editGL.restore();
