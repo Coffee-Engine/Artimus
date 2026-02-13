@@ -133,9 +133,10 @@ artimus.tools.paintBrush = class extends artimus.tool {
         this.linePos = null;
     }
 
-    preview(gl, x, y, toolProperties) {
-        //if (toolProperties.pixelBrush) { x--; y--; };
+    preview(gl, x, y, vx, vy, toolProperties) {
         //Set stroke properties
+        this.workspace.dirtyBounds(x - toolProperties.strokeSize, y - toolProperties.strokeSize, x + toolProperties.strokeSize, y + toolProperties.strokeSize);
+
         gl.lineCap = "round";
         gl.lineJoin = "round";
         gl.lineWidth = toolProperties.strokeSize;

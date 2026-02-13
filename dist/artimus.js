@@ -534,11 +534,18 @@ window.artimus = {
             h = Math.round(h);
 
             const newDirty = [
-                Math.min(x, this.dirtyArea[0], this.selectionMinX),
-                Math.min(y, this.dirtyArea[1], this.selectionMinY),
-                Math.max(x + w, this.dirtyArea[0] + this.dirtyArea[2], this.selectionMaxX),
-                Math.max(y + h, this.dirtyArea[1] + this.dirtyArea[3], this.selectionMaxY)
+                Math.min(x, this.dirtyArea[0]),
+                Math.min(y, this.dirtyArea[1]),
+                Math.max(x + w, this.dirtyArea[0] + this.dirtyArea[2]),
+                Math.max(y + h, this.dirtyArea[1] + this.dirtyArea[3])
             ];
+
+            if (this.hasSelection) {
+                newDirty[0] = Math.min(newDirty[0], this.selectionMinX);
+                newDirty[1] = Math.min(newDirty[1], this.selectionMinY);
+                newDirty[2] = Math.max(newDirty[2], this.selectionMaxX);
+                newDirty[3] = Math.max(newDirty[3], this.selectionMaxY);
+            }
 
             this.dirtyArea = [
                 newDirty[0],
@@ -618,6 +625,7 @@ window.artimus = {
         selectionMaxX = 0;
         selectionMaxY = 0;
 
+        time = 0;
         selectionAnimation = 0;
         selectionPath = new Path2D();
         hasSelection = false;
@@ -813,12 +821,8 @@ window.artimus = {
             this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
 
             //Now time to setup the webgl texture
-            this.webgl.compositeTexture = this.GL.createTexture();
-            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
-            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MAG_FILTER, this.GL.NEAREST);
-            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MIN_FILTER, this.GL.NEAREST);
-            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_S, this.GL.CLAMP_TO_EDGE);
-            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_T, this.GL.CLAMP_TO_EDGE);
+            this.webgl.compositeTexture = this.setupSimpleTexture();
+            this.webgl.previewTexture = this.setupSimpleTexture();
 
             //Setup the blending
             this.GL.enable(this.GL.BLEND);
@@ -910,6 +914,17 @@ window.artimus = {
         }
 
         //webGL fun stuff
+        setupSimpleTexture() {
+            const texture = this.GL.createTexture();
+            this.GL.bindTexture(this.GL.TEXTURE_2D, texture);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MAG_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MIN_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_S, this.GL.CLAMP_TO_EDGE);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_T, this.GL.CLAMP_TO_EDGE);
+
+            return texture;
+        }
+
         setupWebGLSetters() {
             this.setters = {};
 
@@ -1023,9 +1038,14 @@ window.artimus = {
         }
 
         renderLoop(delta) {
+            this.GL.viewport(0, 0, this.width, this.height);
+
+            //Set performance and time data.
             this.performance.fps = 1 / delta;
             this.performance.delta = delta;
-            this.time = this.time || 0;
+
+            //The reason behind time and selection animation
+            //Time is here as a global timer, as selection animation is for a specific animation that may restart.
             this.time += delta;
 
             //If we are dirty update our canvas as needed.
@@ -1037,20 +1057,17 @@ window.artimus = {
                 }
 
                 this.renderComposite();
-                //this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, 0, 0, 100, 100, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(0, 0, 100, 100).data);
+
+                //Bind and edit
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
                 this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.dirtyArea).data);
                 
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...this.dirtyArea).data);
+
                 //Reset dirty data
                 this.dirty = false;
                 this.dirtyArea = [this.width, this.height, -this.width, -this.height];
-            }
-
-            //Render hidden layers
-            if (!this.getLayerVisibility(this.currentLayer)) {
-                this.layerHiddenAnimation += delta * 5.0;
-                this.GL.globalAlpha = (Math.sin(this.layerHiddenAnimation) * 0.25) + 0.6;
-                this.GL.drawImage(this.editingCanvas, 0, 0);
-                this.GL.globalAlpha = 1;
             }
 
             //Set buffers to the position buffer/quad buffer.
@@ -1060,16 +1077,32 @@ window.artimus = {
             const main = this.webgl.shaders.main;
 
             main.use();
+
             main.setUniforms({
                 u_main_tex: this.webgl.compositeTexture,
                 u_background_1: this.gridData.color1,
                 u_background_2: this.gridData.color2,
                 u_has_bg: 1,
                 u_grid_size: this.gridData.size,
+                u_time: this.time
             });
-
-            this.GL.viewport(0, 0, this.width, this.height);
+            
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
+
+            //Do preview stuff
+            main.setUniforms({
+                u_main_tex: this.webgl.previewTexture,
+                u_has_bg: 0
+            });
+            this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
+
+            //Render hidden layers
+            if (!this.getLayerVisibility(this.currentLayer)) {
+                this.layerHiddenAnimation += delta * 5.0;
+                this.GL.globalAlpha = (Math.sin(this.layerHiddenAnimation) * 0.25) + 0.6;
+                this.GL.drawImage(this.editingCanvas, 0, 0);
+                this.GL.globalAlpha = 1;
+            }
 
             if (this.hasSelection) {
                 //Set buffers to the selection outline buffer thingy.
@@ -1085,7 +1118,8 @@ window.artimus = {
                 selection.use();
                 selection.setUniforms({
                     u_selection_animation: this.selectionAnimation,
-                    u_selection_color: [ r / 255, g / 255, b / 255 ]
+                    u_selection_color: [ r / 255, g / 255, b / 255 ],
+                    u_time: this.time
                 })
 
                 
@@ -2161,8 +2195,12 @@ window.artimus = {
             this.scrollY = this.scrollY;
             this.updatePosition();
 
-            //Update texture
+            //Update textures
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
+
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewCanvas);
             this.dirtyCanvas();
         }
 

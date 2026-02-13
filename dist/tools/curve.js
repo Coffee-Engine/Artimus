@@ -73,7 +73,7 @@ artimus.tools.curve = class extends artimus.tools.line {
         }
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (this.start) {
             if (toolProperties.state == 0) this.drawLine(gl, ...this.start, x, y, x, y, toolProperties);
             else this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);

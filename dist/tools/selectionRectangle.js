@@ -21,7 +21,7 @@ artimus.tools.selectionRectangle = class extends artimus.tool {
         this.start = null;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (this.start) {
             const [sx, sy] = this.start;
             const width = x - sx;
