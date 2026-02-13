@@ -524,60 +524,6 @@ window.artimus = {
         get height() { return this.#height; }
         
         dirty = true;
-        dirtyArea = [ 0, 0, 0, 0 ];
-
-        dirtyRect(x, y, w, h) {
-            //Make sure we are using an integer
-            x = Math.round(x);
-            y = Math.round(y);
-            w = Math.round(w);
-            h = Math.round(h);
-
-            const newDirty = [
-                Math.min(x, this.dirtyArea[0]),
-                Math.min(y, this.dirtyArea[1]),
-                Math.max(x + w, this.dirtyArea[0] + this.dirtyArea[2]),
-                Math.max(y + h, this.dirtyArea[1] + this.dirtyArea[3])
-            ];
-
-            if (this.hasSelection) {
-                newDirty[0] = Math.min(newDirty[0], this.selectionMinX);
-                newDirty[1] = Math.min(newDirty[1], this.selectionMinY);
-                newDirty[2] = Math.max(newDirty[2], this.selectionMaxX);
-                newDirty[3] = Math.max(newDirty[3], this.selectionMaxY);
-            }
-
-            this.dirtyArea = [
-                newDirty[0],
-                newDirty[1],
-                newDirty[2] - newDirty[0],
-                newDirty[3] - newDirty[1],
-            ];
-
-            this.dirty = true;
-        }
-
-        //Just some small helpers
-        dirtyBounds(sx, sy, ex, ey) {
-            if (ex < sx) {
-                const t = sx;
-                sx = ex;
-                ex = t;
-            }
-            else if (ex == sx) ex = sx + 1;
-
-            if (ey < sy) {
-                const t = sy;
-                sy = ey;
-                ey = t;
-            }
-            else if (ey == sy) ey = sy + 1;
-
-            this.dirtyRect(sx, sy, ex - sx, ey - sy);
-        }
-        dirtyCanvas() { this.dirtyRect(0, 0, this.width, this.height); }
-        dirtySelection() { this.dirtyRect(this.width, this.height, -this.width, -this.height);}
-        dirtyRadius(x, y, r) { this.dirtyBounds(x - r, y - r, x + r, y + r); }
 
         //Layers
         layerHiddenAnimation = 0;
@@ -1044,36 +990,40 @@ window.artimus = {
             this.performance.fps = 1 / delta;
             this.performance.delta = delta;
 
+            //Get view bounds
+            let { width, height } = this.canvasArea.getBoundingClientRect();
+            width /= 2;
+            height /= 2;
+
+            //Calculate render bounds based upon the view area.
+            const halfCanvWidth = this.width / 2;
+            const halfCanvHeight = this.height / 2;
+            const viewBounds = [
+                Math.floor((halfCanvWidth-this.scrollX) - (width * this.invZoom)),
+                Math.floor((halfCanvHeight-this.scrollY) - (height * this.invZoom)),
+                Math.ceil((halfCanvWidth-this.scrollX) + (width * this.invZoom)),
+                Math.ceil((halfCanvHeight-this.scrollY) + (height * this.invZoom))
+            ];
+            viewBounds[0] = Math.min(this.width - 1, Math.max(0, viewBounds[0]));
+            viewBounds[1] = Math.min(this.height - 1, Math.max(0, viewBounds[1]));
+            viewBounds[2] = Math.max(1, Math.min(this.width - viewBounds[0], viewBounds[2] - viewBounds[0]));
+            viewBounds[3] = Math.max(1, Math.min(this.height - viewBounds[1], viewBounds[3] - viewBounds[1]));
+
             //The reason behind time and selection animation
             //Time is here as a global timer, as selection animation is for a specific animation that may restart.
             this.time += delta;
 
             //If we are dirty update our canvas as needed.
-            if (this.dirty) {
-                //Add dirty area if one is missing.
-                if (this.dirtyArea[2] < 0 && this.dirtyArea[3] < 0) {
-                    if (this.hasSelection) this.dirtySelection();
-                    else this.dirtyCanvas();
-                }
+            this.renderComposite(viewBounds);
 
-                this.renderComposite();
-
-                //Bind and edit
-                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.dirtyArea).data);
-                
-                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...this.dirtyArea).data);
-
-                //Reset dirty data
-                this.dirty = false;
-                this.dirtyArea = [this.width, this.height, -this.width, -this.height];
-            }
+            //Bind and edit the composite texture
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
+            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
 
             //Set buffers to the position buffer/quad buffer.
             this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
             this.GL.vertexAttribPointer(0, 2, this.GL.FLOAT, false, 0, 0);
-
+                
             const main = this.webgl.shaders.main;
 
             main.use();
@@ -1090,6 +1040,9 @@ window.artimus = {
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
             //Do preview stuff
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
+            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...viewBounds).data);
+
             main.setUniforms({
                 u_main_tex: this.webgl.previewTexture,
                 u_has_bg: 0
@@ -1127,11 +1080,11 @@ window.artimus = {
             }
         }
 
-        renderComposite(final) {
-            if (final) this.dirtyCanvas();
+        renderComposite(bounds) {
+            if (bounds == true) bounds = [0, 0, this.width, this.height];
             
             //Clear and get ready for compositing.
-            this.compositeGL.clearRect(...this.dirtyArea);
+            this.compositeGL.clearRect(...bounds);
 
             //Draw the layers
             for (let layerID in this.layers) {
@@ -1140,10 +1093,10 @@ window.artimus = {
 
                 if (layer.visibility) {
                     this.compositeGL.globalAlpha = layer.alpha;
-                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, ...this.dirtyArea, ...this.dirtyArea);
+                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, ...bounds, ...bounds);
                     else {
                         const bitmap = layer.bitmap;
-                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, ...this.dirtyArea, ...this.dirtyArea);
+                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, ...bounds, ...bounds);
                     }
                 }
             }
@@ -2201,7 +2154,7 @@ window.artimus = {
 
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewCanvas);
-            this.dirtyCanvas();
+            this.dirty = true;
         }
 
         undo() {
@@ -2211,7 +2164,7 @@ window.artimus = {
             this.historyIndex++;
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
-            this.dirtyCanvas();
+            this.dirty = true;
         }
 
         redo() {
@@ -2221,7 +2174,7 @@ window.artimus = {
             this.historyIndex--;
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
-            this.dirtyCanvas();
+            this.dirty = true;
         }
 
         new(width, height, then) {
