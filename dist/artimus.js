@@ -856,26 +856,36 @@ window.artimus = {
             uniform mediump vec3 u_background_1;
             uniform mediump vec3 u_background_2;
             uniform mediump float u_grid_size;
+            uniform lowp int u_has_bg;
 
             varying mediump vec2 v_texCoord;
 
             void main() {
-                mediump float offset = gl_FragCoord.x;
-                if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
-                offset = mod(offset, u_grid_size * 2.0);
+                //If we have a background draw the background and the image
+                if (u_has_bg == 1) {
+                    mediump float offset = gl_FragCoord.x;
+                    if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
+                    offset = mod(offset, u_grid_size * 2.0);
 
-                if (offset >= u_grid_size) { gl_FragColor = vec4(u_background_1, 1); }
-                else { gl_FragColor = vec4(u_background_2, 1); }
+                    if (offset >= u_grid_size) { gl_FragColor = vec4(u_background_1, 1); }
+                    else { gl_FragColor = vec4(u_background_2, 1); }
 
-                highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
-                gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
+                    highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
+                    gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
+                }
+                else {
+                    //Otherwise draw just the image
+                    gl_FragColor = texture2D(u_main_tex, v_texCoord);
+                }
             }
             `).use();
             
+            //For the selection line
             this.addWebGLShader("selection", `
             attribute mediump vec3 a_position;
 
             varying mediump float v_distance;
+            uniform mediump float u_selection_animation;
 
             void main() {
                 gl_Position = vec4((a_position.xy - 0.5) * vec2(2.0, -2.0), 0, 1);
@@ -1054,6 +1064,7 @@ window.artimus = {
                 u_main_tex: this.webgl.compositeTexture,
                 u_background_1: this.gridData.color1,
                 u_background_2: this.gridData.color2,
+                u_has_bg: 1,
                 u_grid_size: this.gridData.size,
             });
 
