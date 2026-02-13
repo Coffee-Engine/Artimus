@@ -577,7 +577,7 @@ window.artimus = {
         }
         dirtyCanvas() { this.dirtyRect(0, 0, this.width, this.height); }
         dirtySelection() { this.dirtyRect(this.width, this.height, -this.width, -this.height);}
-
+        dirtyRadius(x, y, r) { this.dirtyBounds(x - r, y - r, x + r, y + r); }
 
         //Layers
         layerHiddenAnimation = 0;
@@ -1301,7 +1301,7 @@ window.artimus = {
                             if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.editGL, ...position, this.toolProperties);
                             if (this.toolFunction.preview) {
                                 this.previewGL.clearRect(0, 0, this.width, this.height);
-                                this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                                this.toolFunction.preview(this.previewGL, ...position, position[0] - this.lastPosition[0], position[1] - this.lastPosition[1], this.toolProperties);
                             }
                             
                             //For the undoing
@@ -1335,7 +1335,7 @@ window.artimus = {
                     if (this.toolFunction.preview) {
                         //For previews
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                        this.toolFunction.preview(this.previewGL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
                     }
 
                     if (this.toolDown && this.toolFunction.mouseMove) {
@@ -1383,7 +1383,7 @@ window.artimus = {
                         if (this.toolFunction.keyPressed(this.editGL, event, this.toolProperties)) event.preventDefault();
 
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
+                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, 0, 0, this.toolProperties);                        
                     }
                 },
 
@@ -1394,7 +1394,7 @@ window.artimus = {
                         if (this.toolFunction.keyReleased(this.editGL, event, this.toolProperties)) event.preventDefault();
 
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
+                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, 0, 0, this.toolProperties);                        
                     }
                 }
             },
@@ -1538,7 +1538,7 @@ window.artimus = {
                             if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.editGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             if (this.toolFunction.preview) {
                                 this.previewGL.clearRect(0, 0, this.width, this.height);
-                                this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                                this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, 0, 0, this.toolProperties);
                             }
                             
                             //For the undoing
@@ -1562,7 +1562,7 @@ window.artimus = {
                         if (this.toolFunction.preview) {
                             //For previews
                             this.previewGL.clearRect(0, 0, this.width, this.height);
-                            this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                            this.toolFunction.preview(this.previewGL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
                         }
 
                         if (event.buttons == 1) {
@@ -2211,7 +2211,7 @@ window.artimus = {
             this.historyIndex++;
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
-            this.dirty = true;
+            this.dirtyCanvas();
         }
 
         redo() {
@@ -2221,7 +2221,7 @@ window.artimus = {
             this.historyIndex--;
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
-            this.dirty = true;
+            this.dirtyCanvas();
         }
 
         new(width, height, then) {
