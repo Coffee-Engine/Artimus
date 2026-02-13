@@ -526,6 +526,31 @@ window.artimus = {
         get height() { return this.#height; }
         
         dirty = true;
+        dirtyArea = [ 0, 0, 0, 0 ];
+
+        dirtyRect(x, y, w, h) {
+            const newDirty = [
+                Math.min(x, this.dirtyArea[0], this.selectionMinX),
+                Math.min(y, this.dirtyArea[1], this.selectionMinY),
+                Math.max(x + w, this.dirtyArea[0] + this.dirtyArea[2], this.selectionMaxX),
+                Math.max(y + h, this.dirtyArea[1] + this.dirtyArea[3], this.selectionMaxY)
+            ];
+
+            this.dirtyArea = [
+                newDirty[0],
+                newDirty[1],
+                newDirty[2] - newDirty[0],
+                newDirty[3] - newDirty[1],
+            ];
+
+            this.dirty = true;
+        }
+
+        //Just some small helpers
+        dirtyBounds(sx, sy, ex, ey) { this.dirtyRect(sx, sy, ex - sx, ey - sy); }
+        dirtyCanvas() { this.dirtyRect(0, 0, this.width, this.height); }
+        dirtySelection() { this.dirtyRect(this.width, this.height, -this.width, -this.height);}
+
 
         //Layers
         layerHiddenAnimation = 0;
@@ -795,13 +820,21 @@ window.artimus = {
                 v_texCoord = a_position;
             }
             `,`
-            uniform sampler2D main_tex;
+            uniform sampler2D u_main_tex;
+            uniform mediump float u_time;
             varying mediump vec2 v_texCoord;
 
             void main() {
-                gl_FragColor = vec4(1);
+                mediump float offset = gl_FragCoord.x;
+                if (mod(gl_FragCoord.y, 16.0) >= 8.0) { offset += 8.0; }
+                offset = mod(offset, 16.0);
 
-                highp vec4 sampled = texture2D(main_tex, v_texCoord);
+                offset += sin(u_time + (gl_FragCoord.y * 0.1)) * 5.0;
+
+                if (offset >= 8.0) { gl_FragColor = vec4(1); }
+                else { gl_FragColor = vec4(0.75, 0.75, 0.75, 1); }
+
+                highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
                 gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
             }
             `).use();
@@ -852,6 +885,19 @@ window.artimus = {
                     this.GL.useProgram(this.webgl.shaders[id].program);
                 }
             };
+
+            //Get indicies and count
+            const uniformCount = this.GL.getProgramParameter(program, this.GL.ACTIVE_UNIFORMS);
+            this.webgl.shaders[id].shaderIndicies = Array(uniformCount).keys();
+            this.webgl.shaders[id].uniforms = {};
+
+            //Get uniforms in array
+            for (let idx = 0; idx < uniformCount; idx++) {
+                const data = this.GL.getActiveUniform(program, idx);
+                data.location = this.GL.getUniformLocation(program, data.name);
+                this.webgl.shaders[id].uniforms[data.name] = data;
+            }
+
             return this.webgl.shaders[id];
         }
 
@@ -898,16 +944,23 @@ window.artimus = {
         renderLoop(delta) {
             this.performance.fps = 1 / delta;
             this.performance.delta = delta;
-
-            //this.GL.drawImage(this.gridCanvas, 0, 0);
+            this.time = this.time || 0;
+            this.time += delta;
 
             if (this.dirty) {
-                this.renderComposite();
-                this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
-                this.dirty = false;
-            }
+                //Add dirty area if one is missing.
+                if (this.dirtyArea[2] < 0 && this.dirtyArea[3] < 0) {
+                    if (this.hasSelection) this.dirtySelection();
+                    else this.dirtyCanvas();
+                }
 
-            //this.GL.drawImage(this.compositeCanvas, 0, 0);
+                this.renderComposite();
+                //this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, 0, 0, 100, 100, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(0, 0, 100, 100).data);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.dirtyArea, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.dirtyArea).data);
+                
+                this.dirty = false;
+                this.dirtyArea = [this.width, this.height, -this.width, -this.height];
+            }
 
             //Render hidden layers
             if (!this.getLayerVisibility(this.currentLayer)) {
@@ -918,23 +971,23 @@ window.artimus = {
             }
 
             //this.GL.drawImage(this.previewCanvas, 0, 0);
-            this.GL.uniform1i(this.webgl.uniLoc, 0);
+            const main = this.webgl.shaders.main;
+            this.GL.uniform1i(main.uniforms.u_main_tex.location, 0);
+            this.GL.uniform1f(main.uniforms.u_time.location, this.time);
             this.GL.viewport(0, 0, this.width, this.height);
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
-            if (this.hasSelection) {
-                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
-                this.GL.setLineDash([4, 2]);
-                this.GL.lineDashOffset = this.selectionAnimation;
-                this.GL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
-                this.GL.lineWidth = 1;
-                this.GL.stroke(this.selectionPath);
-            }
+            //if (this.hasSelection) {
+            //    this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
+            //    this.GL.setLineDash([4, 2]);
+            //    this.GL.lineDashOffset = this.selectionAnimation;
+            //    this.GL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
+            //    this.GL.lineWidth = 1;
+            //    this.GL.stroke(this.selectionPath);
+            //}
         }
 
-        renderComposite(final) {
-            if (final) this.dirtyCanvas();
-
+        renderComposite() {
             this.compositeGL.clearRect(0, 0, this.width, this.height);
             for (let layerID in this.layers) {
                 const layer = this.layers[layerID];
@@ -1981,7 +2034,9 @@ window.artimus = {
             this.scrollY = this.scrollY;
             this.updatePosition();
 
-            this.dirty = true;
+            //Update texture
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
+            this.dirtyCanvas();
         }
 
         undo() {
