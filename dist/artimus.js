@@ -803,7 +803,7 @@ window.artimus = {
             }
 
             //We use webgl for the fullview since offscreen canvas' are rather performant, and also useful.
-            this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false, antialiasing: false });
+            this.GL = this.canvas.getContext("webgl", { alpha: false, premultipliedAlpha: false, depth: false, stencil: false, antialias: false });
 
             this.setupWebGLSetters();
 
@@ -819,6 +819,10 @@ window.artimus = {
             this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MIN_FILTER, this.GL.NEAREST);
             this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_S, this.GL.CLAMP_TO_EDGE);
             this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_T, this.GL.CLAMP_TO_EDGE);
+
+            //Setup the blending
+            this.GL.enable(this.GL.BLEND);
+            this.GL.blendFunc(this.GL.SRC_ALPHA, this.GL.ONE_MINUS_SRC_ALPHA);
 
             //Setup vertices
             this.webgl.positionBuffer = this.GL.createBuffer();
@@ -885,7 +889,12 @@ window.artimus = {
 
             void main() {
                 gl_FragColor = vec4(u_selection_color, 1);
-                if (mod(v_distance + u_selection_animation, 6.0) > 4.0) { discard; }
+                mediump float animationPoint = mod(v_distance + u_selection_animation, 7.0);
+
+                if (animationPoint > 3.0) {
+                    if (animationPoint < 5.0) { gl_FragColor.w = max(0.0, (5.0 - animationPoint) / 2.0); }
+                    else { gl_FragColor.w = max(0.0, (animationPoint - 5.0) / 2.0); }
+                }
             }
             `).use();
         }
@@ -1056,7 +1065,7 @@ window.artimus = {
                 this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
                 this.GL.vertexAttribPointer(0, 3, this.GL.FLOAT, false, 0, 0);
 
-                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
+                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5));
                 const { r, g, b } = artimus.HexToRGB(getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline"));
 
                 //Get our shader set needed info, and use it.
