@@ -755,10 +755,8 @@ window.artimus = {
             }
 
             //Setup our grid then loop
-            this.setGridSize(4);
-            this.refreshGridPattern(() => {
-                loop(0.016);
-            });
+            this.refreshGridPattern();
+            loop(0.016);
 
             this.refreshTranslation();
         }
@@ -780,6 +778,8 @@ window.artimus = {
 
             //We use webgl for the fullview since offscreen canvas' are rather performance, and also useful.
             this.GL = this.canvas.getContext("webgl", { alpha: false, depth: false, stencil: false });
+
+            this.setupWebGLSetters();
 
             this.editGL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
             this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
@@ -821,25 +821,49 @@ window.artimus = {
             }
             `,`
             uniform sampler2D u_main_tex;
-            uniform mediump float u_time;
+            uniform mediump vec3 u_background_1;
+            uniform mediump vec3 u_background_2;
+            uniform mediump float u_grid_size;
+
             varying mediump vec2 v_texCoord;
 
             void main() {
                 mediump float offset = gl_FragCoord.x;
-                if (mod(gl_FragCoord.y, 16.0) >= 8.0) { offset += 8.0; }
-                offset = mod(offset, 16.0);
+                if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
+                offset = mod(offset, u_grid_size * 2.0);
 
-                offset += sin(u_time + (gl_FragCoord.y * 0.1)) * 5.0;
-
-                if (offset >= 8.0) { gl_FragColor = vec4(1); }
-                else { gl_FragColor = vec4(0.75, 0.75, 0.75, 1); }
+                if (offset >= u_grid_size) { gl_FragColor = vec4(u_background_1, 1); }
+                else { gl_FragColor = vec4(u_background_2, 1); }
 
                 highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
                 gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
             }
             `).use();
+        }
 
-            this.webgl.uniLoc = this.GL.getUniformLocation(this.webgl.shaders.main.program, "main_tex");
+        //webGL fun stuff
+        setupWebGLSetters() {
+            this.setters = {};
+
+            //Ints
+            this.setters[this.GL.INT] = (location, value) => { this.GL.uniform1i(location, value); }
+            this.setters[this.GL.UNSIGNED_INT] = (location, value) => { this.GL.uniform1ui(location, value); }
+
+            //Floats
+            this.setters[this.GL.FLOAT] = (location, value) => { this.GL.uniform1f(location, value); }
+            this.setters[this.GL.FLOAT_VEC2] = (location, value) => { this.GL.uniform2fv(location, value); }
+            this.setters[this.GL.FLOAT_VEC3] = (location, value) => { this.GL.uniform3fv(location, value); }
+            this.setters[this.GL.FLOAT_VEC4] = (location, value) => { this.GL.uniform4fv(location, value); }
+
+            this.setters[this.GL.FLOAT_MAT2] = (location, value) => { this.GL.uniformMatrix2fv(location, value); }
+            this.setters[this.GL.FLOAT_MAT3] = (location, value) => { this.GL.uniformMatrix3fv(location, value); }
+            this.setters[this.GL.FLOAT_MAT4] = (location, value) => { this.GL.uniformMatrix4fv(location, value); }
+
+            this.setters[this.GL.SAMPLER_2D] = (location, value, { samplerID }) => {
+                this.GL.activeTexture(this.GL[`TEXTURE${samplerID}`]);
+                this.GL.bindTexture(this.GL.TEXTURE_2D, value);
+                this.GL.uniform1i(location, samplerID);
+            }
         }
 
         addWebGLShader(id, vertexSrc, fragmentSrc) {
@@ -875,70 +899,60 @@ window.artimus = {
             }
 
             //Setup shader stuff.
-            this.webgl.shaders[id] = {
+            const shader = {
                 program: program,
                 vertex: vertexSrc,
                 fragment: fragmentSrc,
                 vertexShader: vertex,
                 fragmentShader: fragment,
                 use: () => {
-                    this.GL.useProgram(this.webgl.shaders[id].program);
+                    this.GL.useProgram(shader.program);
+                },
+
+                setUniforms: (values) => {
+                    const keys = Object.keys(values);
+                    for (let keyID = 0; keyID < keys.length; keyID++) {
+                        const key = keys[keyID];
+                        if (shader.uniforms[key]) {
+                            const uniform = shader.uniforms[key];
+                            this.setters[uniform.type](uniform.location, values[key], uniform);
+                        }
+                    }
                 }
             };
 
             //Get indicies and count
             const uniformCount = this.GL.getProgramParameter(program, this.GL.ACTIVE_UNIFORMS);
-            this.webgl.shaders[id].shaderIndicies = Array(uniformCount).keys();
-            this.webgl.shaders[id].uniforms = {};
+            shader.shaderIndicies = Array(uniformCount).keys();
+            shader.uniforms = {};
 
             //Get uniforms in array
+            let sampler2D = 0;
             for (let idx = 0; idx < uniformCount; idx++) {
                 const data = this.GL.getActiveUniform(program, idx);
                 data.location = this.GL.getUniformLocation(program, data.name);
-                this.webgl.shaders[id].uniforms[data.name] = data;
+
+                if (data.type == this.GL.SAMPLER_2D) {
+                    data.samplerID = sampler2D;
+                    sampler2D++;
+                }
+                
+                shader.uniforms[data.name] = data;
             }
 
+            this.webgl.shaders[id] = shader;
             return this.webgl.shaders[id];
         }
 
-        refreshGridPattern(then) {
+        refreshGridPattern() {
+            //webGL :)
             const c1 = artimus.HexToRGB(artimus.getCSSVariable("grid-1"));
             const c2 = artimus.HexToRGB(artimus.getCSSVariable("grid-2"));
 
-            const imageData = new ImageData(2, 2);
-
-            //Set data
-            imageData.data[0] = c1.r; imageData.data[1] = c1.g; imageData.data[2] = c1.b; imageData.data[3] = 255;
-            imageData.data[4] = c2.r; imageData.data[5] = c2.g; imageData.data[6] = c2.b; imageData.data[7] = 255;
-            imageData.data[8] = c2.r; imageData.data[9] = c2.g; imageData.data[10] = c2.b; imageData.data[11] = 255;
-            imageData.data[12] = c1.r; imageData.data[13] = c1.g; imageData.data[14] = c1.b; imageData.data[15] = 255;
-            
-            createImageBitmap(imageData).then(bitmap => {
-                if (this.gridBitmap) this.gridBitmap.close();
-                this.gridBitmap = bitmap;
-                
-                //Create the pattern and position it
-                this.gridPattern = this.gridGL.createPattern(bitmap, "repeat");
-                this.gridPattern.setTransform(this.gridMatrix);
-
-                //Update grid canvas
-                this.gridGL.fillStyle = this.gridPattern;
-                this.gridGL.fillRect(0, 0, this.width, this.height);
-
-                if (then) then();
-            });
-        }
-
-        setGridSize(size) {
-            this.gridMatrix = new DOMMatrix([
-                size, 0,
-                0, size,
-                0, 0
-            ]);
-
-            if (this.gridPattern) {
-                this.gridPattern.setTransform(this.gridMatrix);
-            }
+            const main = this.webgl.shaders.main;
+            this.GL.uniform3f(main.uniforms.u_background_1.location, c1.r / 255, c1.g / 255, c1.b / 255);
+            this.GL.uniform3f(main.uniforms.u_background_2.location, c2.r / 255, c2.g / 255, c2.b / 255);
+            this.GL.uniform1f(main.uniforms.u_grid_size.location, 8);
         }
 
         renderLoop(delta) {
@@ -972,19 +986,22 @@ window.artimus = {
 
             //this.GL.drawImage(this.previewCanvas, 0, 0);
             const main = this.webgl.shaders.main;
-            this.GL.uniform1i(main.uniforms.u_main_tex.location, 0);
-            this.GL.uniform1f(main.uniforms.u_time.location, this.time);
+            main.setUniforms({
+                u_main_tex: this.webgl.compositeTexture
+            });
+
             this.GL.viewport(0, 0, this.width, this.height);
             this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
-            //if (this.hasSelection) {
-            //    this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
-            //    this.GL.setLineDash([4, 2]);
-            //    this.GL.lineDashOffset = this.selectionAnimation;
-            //    this.GL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
-            //    this.GL.lineWidth = 1;
-            //    this.GL.stroke(this.selectionPath);
-            //}
+            if (this.hasSelection) {
+                const selection = this.webgl.shaders.selection;
+                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
+                selection.setUniforms({
+                    u_selection_animation: this.selectionAnimation
+                })
+
+                const { r, g, b } = artimus.HexToRGB(getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline"));
+            }
         }
 
         renderComposite() {
