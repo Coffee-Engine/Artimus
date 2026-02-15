@@ -97,7 +97,7 @@
                     className: `CUGI-Number CUGI-Float ${data.extraStyle}`,
                     min: data.min,
                     max: data.max,
-                    step: data.step,
+                    step: data.step || 0.001,
                     size:2,
                     disabled: (typeof data.disabled == "function") ? data.disabled() : data.disabled
                 });

@@ -1,0 +1,21 @@
+.popup-resizeFile {
+    height: 100%;
+}
+
+.resizeFile-previewAnchor {
+    --speed: 100ms;
+
+    position: relative;
+
+    left: var(--anchor-x);
+    top: var(--anchor-y);
+
+    width: 16px;
+    height: 16px;
+
+    background-color: var(--artimus-icon);
+    transform: translate(-50%, -50%);
+
+    border-radius: 100%;
+    transition: var(--speed) left, var(--speed) top;
+}

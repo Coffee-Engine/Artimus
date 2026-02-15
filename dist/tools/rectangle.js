@@ -34,7 +34,7 @@ artimus.tools.rectangle = class extends artimus.tool {
         this.start = null;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (this.start) {
             this.drawRectangle(gl, ...this.start, x, y, toolProperties);
         }

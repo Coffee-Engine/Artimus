@@ -54,7 +54,7 @@ artimus.tools.eraser = class extends artimus.tool {
         this.linePos = null;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         //Calculations
         const halfSize = Math.floor(toolProperties.strokeSize / 2);
         const rx = x - halfSize;

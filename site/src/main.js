@@ -72,10 +72,7 @@ window.editor = {
                 case "function": contents(this.content, this); break;
                 case "string": this.content.innerHTML = contents; break;
                 case "object": this.content.appendChild(CUGI.createList(contents, {
-                preprocess: (item) => {
-                        item.text = artimus.translate(item.translationKey || item.key || item.text, options.translationContext) || item.text || item.key;
-                        return item;
-                    }
+                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, item)
                 }));
                 break;
 
@@ -86,6 +83,11 @@ window.editor = {
             editor.modals.push(this);
 
             this.init(name, contents, options);
+        }
+
+        CUGIPreprocess(context, item) {
+            item.text = artimus.translate(item.translationKey || item.key || item.text, context) || item.text || item.key;
+            return item;
         }
 
         init() {}
@@ -99,6 +101,13 @@ window.editor = {
 
             delete this;
         }
+    },
+
+    quickP: (text, cls) => {
+        const p = document.createElement("p");
+        p.innerText = text;
+        p.className = cls || "";
+        return p;
     }
 };
 
@@ -159,4 +168,21 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     artimus.globalRefreshTools();
 
     new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+
+    const element = document.getElementById("versionIdentifier");
+    const loop = () => {
+        if (editor.settings.debug) {
+            const ws = artimus.activeWorkspaces[0];
+            //Timing
+            element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)}`;
+            //Canvas
+            element.innerText += ` ud: ${ws.layerHistory.length} hs: ${ws.historyIndex} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height}`;
+
+            if (ws.tool) element.innerText = element.innerText += ` || t: ${ws.tool} tc: ${ws.toolFunction.constructive} pc: ${JSON.stringify(ws.toolFunction.colorProperties)}`
+            else element.innerText += ` || t: none`;
+        }
+        requestAnimationFrame(loop);
+    }
+
+    loop();
 });

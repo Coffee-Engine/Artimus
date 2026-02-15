@@ -102,7 +102,7 @@ artimus.tools.jumble = class extends artimus.tool {
     mouseDown(gl, x, y, toolProperties) { this.jumblePixelsAt(gl, x, y, toolProperties); }
     mouseMove(gl, x, y, vx, vy, toolProperties) { this.jumblePixelsAt(gl, x, y, toolProperties); }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         //Calculations
         const halfSize = Math.floor(toolProperties.jumbleSize / 2);
         const rx = x - halfSize;

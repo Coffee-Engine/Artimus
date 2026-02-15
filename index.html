@@ -8,7 +8,12 @@
 
     <link rel="manifest" href="webapp.json" />
     <link rel="stylesheet" href="dist/default.css">
-    <link rel="stylesheet" href="site/site.css">
+    <link rel="stylesheet" href="site/src/css/site.css">
+    <link rel="stylesheet" href="site/src/css/newFile.css">
+    <link rel="stylesheet" href="site/src/css/resizeFile.css">
+    <link rel="stylesheet" href="site/src/css/exportFile.css">
+    <link rel="stylesheet" href="site/src/css/layerProperties.css">
+    <link rel="stylesheet" href="site/src/css/settings.css">
     <link rel="shortcut icon" href="site/icons/icon.ico" type="image/x-icon">
     <title>Artimus test</title>
 </head>
@@ -41,10 +46,10 @@
                     artimus.activeWorkspaces[0].exportToPC();
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Save as", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC("artimus", true);
+                    artimus.activeWorkspaces[0].exportToPC("artimus", { forceDialogue: true });
                 }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Export as PNG", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC("png");
+                <cugi-option>{ type: "button", text: "Export", onclick: () => {
+                    editor.exportMenu();
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Load", onclick: () => {
                     artimus.activeWorkspaces[0].importFromPC();
@@ -66,7 +71,7 @@
                     editor.settingsPage();
                 }}</cugi-option>
             </cugi-dropdown>
-            <p style="text-align: right; width: 100%;">Artimus web [Γ 1.0]</p>
+            <p style="text-align: right; width: 100%;" id="versionIdentifier">Artimus web [Γ 1.2]</p>
         </div>
         <div id="workspace-area" class="workspace"></div>
     </div>

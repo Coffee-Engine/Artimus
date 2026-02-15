@@ -13,6 +13,8 @@ window.artimus = {
     propertiesIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="70.5" height="70.5" viewBox="0,0,70.5,70.5"><g transform="translate(-204.75001,-144.75)"><g stroke="none" stroke-width="0" stroke-miterlimit="10"><path d="M204.75001,215.25v-70.5h70.5v70.5z" fill="none"/><path d="M220.30727,180c0,-10.876 8.81673,-19.69273 19.69274,-19.69273c10.876,0 19.69274,8.81673 19.69274,19.69274c0,10.876 -8.81674,19.69274 -19.69274,19.69274c-10.876,0 -19.69273,-8.81673 -19.69273,-19.69273zM239.5721,191.93641c6.2132,0 11.25,-5.0368 11.25,-11.25c0,-6.2132 -5.0368,-11.25 -11.25,-11.25c-6.2132,0 -11.25,5.0368 -11.25,11.25c0,6.2132 5.0368,11.25 11.25,11.25z" fill="currentColor"/><path d="M266.32682,174.76257v10.47486h-16.46326c0.61623,-1.39146 0.95854,-2.93126 0.95854,-4.55102c0,-2.1737 -0.61649,-4.20342 -1.68416,-5.92384z" fill="currentColor"/><path d="M213.67319,185.23743v-10.47486h16.33307c-1.06767,1.72042 -1.68416,3.75014 -1.68416,5.92384c0,1.61976 0.34231,3.15956 0.95854,4.55102z" fill="currentColor"/><path d="M254.91245,157.68071l7.40684,7.40684l-12.06382,12.06382c-1.15757,-3.50021 -3.98726,-6.23919 -7.54291,-7.27077z" fill="currentColor"/><path d="M225.08755,202.31929l-7.40684,-7.40684l11.08557,-11.08557c1.03158,3.55565 3.77056,6.38534 7.27077,7.54291z" fill="currentColor"/><path d="M234.76257,153.67319h10.47486l0,17.29172c-1.66381,-0.9717 -3.59955,-1.52849 -5.66533,-1.52849c-1.72074,0 -3.35125,0.38633 -4.80953,1.07698z" fill="currentColor"/><path d="M245.23743,206.32681h-10.47486l0,-15.46738c1.45828,0.69065 3.08879,1.07698 4.80953,1.07698c2.06579,0 4.00153,-0.55679 5.66533,-1.52849z" fill="currentColor"/><path d="M217.68071,165.08756l7.40684,-7.40684l12.0253,12.0253c-3.65263,0.81448 -6.63562,3.40493 -7.99565,6.81804z" fill="currentColor"/><path d="M262.31929,194.91244l-7.40684,7.40684l-11.17799,-11.17799c3.4131,-1.36003 6.00356,-4.34302 6.81804,-7.99565z" fill="currentColor"/></g></g></svg>`,
     layerIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="66.48045" height="66.48045" viewBox="0,0,66.48045,66.48045"><g transform="translate(-206.75978,-146.75978)"><g stroke-miterlimit="10"><path d="M213.21429,179.5871h53.57143" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M213.21429,167.4753h3.35793" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M233.91977,167.4753h8.04121" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M260.59712,167.4753h6.18859" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M213.21429,191.38834h29.85166" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M258.87232,191.38834h7.91339" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><g><path d="M225.22727,172.35537v-9.60744" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M219.33884,164.71074l5.88843,-10.02066l5.88843,10.02066z" fill="currentColor" stroke="none" stroke-width="0" stroke-linecap="butt"/></g><g><path d="M250.95041,187.64463v9.60744" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M256.83884,195.28926l-5.88843,10.02066l-5.88843,-10.02066z" fill="currentColor" stroke="none" stroke-width="0" stroke-linecap="butt"/></g><path d="M206.75978,213.24022v-66.48045h66.48045v66.48045z" fill="none" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
 
+    exportCanvas: document.createElement("canvas"),
+
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
 
@@ -263,6 +265,8 @@ window.artimus = {
         "webp": "image/webp",
     },
 
+    lossyFormats: [ "jpeg", "jpg", "webp" ],
+
     resizeAnchors: {
         TOP_LEFT: [0, 0],
         TOP_MIDDLE: [0.5, 0],
@@ -453,7 +457,7 @@ window.artimus = {
             
             //Blit image data to editing canvas if needed
             if (active) {
-                this.workspace.GL.putImageData(output, 0, 0);
+                this.workspace.editGL.putImageData(output, 0, 0);
             }
 
             this.dataRaw = output;
@@ -490,7 +494,7 @@ window.artimus = {
         toolFunction = new artimus.tool();
         set tool(value) {
             //Make sure the tool function gets the deselection notification if possible
-            if (this.toolFunction && this.toolFunction.deselected) this.toolFunction.deselected(this.GL, this.previewGL, this.toolProperties);
+            if (this.toolFunction && this.toolFunction.deselected) this.toolFunction.deselected(this.editGL, this.previewGL, this.toolProperties);
 
             if (artimus.tools[value]) this.toolFunction = new artimus.tools[value]();
             else this.toolFunction = new artimus.tool();
@@ -498,7 +502,7 @@ window.artimus = {
 
             //Then call the selection signal after properties.
             this.toolProperties = Object.assign({},this.toolFunction.properties, this.toolProperties);
-            if (this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.GL, this.previewGL, this.toolProperties);
+            if (this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.editGL, this.previewGL, this.toolProperties);
 
             this.#tool = value;
             this.refreshToolOptions();
@@ -567,6 +571,7 @@ window.artimus = {
         selectionMaxX = 0;
         selectionMaxY = 0;
 
+        time = 0;
         selectionAnimation = 0;
         selectionPath = new Path2D();
         hasSelection = false;
@@ -592,6 +597,20 @@ window.artimus = {
         magic = Array.from("COFE", char => String(char).charCodeAt(0));
         jsonMagic = Array.from("JSON", char => String(char).charCodeAt(0));
 
+        webgl = { shaders: {}, positionBuffer: null, selectionBuffer: null, compositeTexture: null, previewTexture: null, hiddenTexture: null };
+
+        //Finally just a small profiler thing.
+        performance = {
+            fps: 0,
+            delta: 0
+        };
+
+        gridData = {
+            color1: [ 0.9, 0.9, 0.9 ],
+            color2: [ 0.8, 0.8, 0.8 ],
+            size: 8
+        }
+
         updatePosition() {
             //Setup some CSS
             this.quickVar(this.container, {
@@ -603,6 +622,8 @@ window.artimus = {
             });
             
             this.invZoom = 1 / this.#zoom;
+
+            this.dirty = true;
         }
 
         //General helper functions ported from Coffee Engine
@@ -678,6 +699,7 @@ window.artimus = {
                 const button = document.createElement("button");
 
                 button.innerText = target[key];
+                button.className = "CUGI-artimus-font";
                 
                 button.onclick = () => {
                     artimus.fontPopup(this).then(font => {
@@ -692,21 +714,10 @@ window.artimus = {
             this.createLayout();
             this.addControls();
 
-            //Create layers
+            //Create layers array
             this.layers = [];
 
-            //For editing
-            this.editingCanvas = document.createElement("canvas");
-            this.previewCanvas = document.createElement("canvas");
-            this.compositeCanvas = document.createElement("canvas");
-            this.gridCanvas = document.createElement("canvas");
-
-            this.GL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
-            this.fullviewGL = this.canvas.getContext("2d", { alpha: false});
-            this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
-            this.previewGL = this.previewCanvas.getContext("2d", { desynchronized: true });
-            this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
-
+            this.setupCanvases();
             this.resize(640, 480);
             this.createLayer();
 
@@ -726,96 +737,383 @@ window.artimus = {
             }
 
             //Setup our grid then loop
-            this.setGridSize(4);
-            this.refreshGridPattern(() => {
-                loop(0.016);
-            });
+            this.refreshGridPattern();
+            loop(0.016);
 
             this.refreshTranslation();
         }
 
-        refreshGridPattern(then) {
+        setupCanvases() {
+            //Set up our canvi? canvases? canvo?
+            if (window.OffscreenCanvas) {
+                this.editingCanvas = new OffscreenCanvas(1, 1);
+                this.previewCanvas = new OffscreenCanvas(1, 1);
+                this.compositeCanvas = new OffscreenCanvas(1, 1);
+                this.gridCanvas = new OffscreenCanvas(1, 1);
+            }
+            else {
+                this.editingCanvas = document.createElement("canvas");
+                this.previewCanvas = document.createElement("canvas");
+                this.compositeCanvas = document.createElement("canvas");
+                this.gridCanvas = document.createElement("canvas");
+            }
+
+            //We use webgl for the fullview since offscreen canvas' are rather performant, and also useful.
+            this.GL = this.canvas.getContext("webgl", { alpha: false, premultipliedAlpha: false, depth: false, stencil: false, antialias: false });
+
+            this.setupWebGLSetters();
+
+            this.editGL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
+            this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
+            this.previewGL = this.previewCanvas.getContext("2d", { desynchronized: true });
+            this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
+
+            //Now time to setup the webgl texture
+            this.webgl.compositeTexture = this.setupSimpleTexture();
+            this.webgl.previewTexture = this.setupSimpleTexture();
+            this.webgl.hiddenTexture = this.setupSimpleTexture();
+
+            //Setup the blending
+            this.GL.enable(this.GL.BLEND);
+            this.GL.blendFunc(this.GL.SRC_ALPHA, this.GL.ONE_MINUS_SRC_ALPHA);
+
+            //Setup vertices
+            this.webgl.positionBuffer = this.GL.createBuffer();
+            this.webgl.selectionBuffer = this.GL.createBuffer();
+            
+            this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
+            this.GL.bufferData(this.GL.ARRAY_BUFFER, new Float32Array([
+                0, 0,
+                0, 1,
+                1, 1,
+
+                0, 0,
+                1, 0,
+                1, 1
+            ]), this.GL.STATIC_DRAW);
+            this.GL.enableVertexAttribArray(0);
+            this.GL.vertexAttribPointer(0, 2, this.GL.FLOAT, false, 0, 0);
+
+
+            this.addWebGLShader("main", `
+            attribute mediump vec2 a_position;
+
+            varying mediump vec2 v_texCoord;
+
+            void main() {
+                gl_Position = vec4((a_position - 0.5) * vec2(2.0, -2.0), 0, 1);
+                v_texCoord = a_position;
+            }
+            `,`
+            uniform sampler2D u_main_tex;
+            uniform mediump vec3 u_background_1;
+            uniform mediump vec3 u_background_2;
+            uniform mediump float u_grid_size;
+
+            uniform lowp int u_render_mode;
+            uniform mediump float u_time;
+
+            varying mediump vec2 v_texCoord;
+
+            void main() {
+                //If we have a background draw the background and the image
+                if (u_render_mode == 1) {
+                    mediump float offset = gl_FragCoord.x;
+                    if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
+                    offset = mod(offset, u_grid_size * 2.0);
+
+                    if (offset >= u_grid_size) { gl_FragColor = vec4(u_background_1, 1); }
+                    else { gl_FragColor = vec4(u_background_2, 1); }
+
+                    highp vec4 sampled = texture2D(u_main_tex, v_texCoord);
+                    gl_FragColor.xyz = mix(gl_FragColor.xyz, sampled.xyz, sampled.a);
+                }
+                else if (u_render_mode == 2) {
+                    //If hidden do the animation
+                    gl_FragColor = texture2D(u_main_tex, v_texCoord);
+                    gl_FragColor.w *= (sin(u_time * 5.0) * 0.2) + 0.7;
+                }
+                else {
+                    //Otherwise draw just the image
+                    gl_FragColor = texture2D(u_main_tex, v_texCoord);
+                }
+            }
+            `).use();
+            
+            //For the selection line
+            this.addWebGLShader("selection", `
+            attribute mediump vec3 a_position;
+
+            varying mediump float v_distance;
+            uniform mediump float u_selection_animation;
+
+            void main() {
+                gl_Position = vec4((a_position.xy - 0.5) * vec2(2.0, -2.0), 0, 1);
+                v_distance = a_position.z;
+            }
+            `,`
+            uniform mediump float u_selection_animation;
+            uniform mediump vec3 u_selection_color;
+
+            varying mediump float v_distance;
+
+            void main() {
+                gl_FragColor = vec4(u_selection_color, 1);
+                mediump float animationPoint = mod(v_distance + u_selection_animation, 7.0);
+
+                if (animationPoint > 3.0) {
+                    if (animationPoint < 5.0) { gl_FragColor.w = max(0.0, (5.0 - animationPoint) / 2.0); }
+                    else { gl_FragColor.w = max(0.0, (animationPoint - 5.0) / 2.0); }
+                }
+            }
+            `).use();
+        }
+
+        //webGL fun stuff
+        setupSimpleTexture() {
+            const texture = this.GL.createTexture();
+            this.GL.bindTexture(this.GL.TEXTURE_2D, texture);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MAG_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_MIN_FILTER, this.GL.NEAREST);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_S, this.GL.CLAMP_TO_EDGE);
+            this.GL.texParameterf(this.GL.TEXTURE_2D, this.GL.TEXTURE_WRAP_T, this.GL.CLAMP_TO_EDGE);
+
+            return texture;
+        }
+
+        setupWebGLSetters() {
+            this.setters = {};
+
+            //Ints
+            this.setters[this.GL.INT] = (location, value) => { this.GL.uniform1i(location, value); }
+            this.setters[this.GL.UNSIGNED_INT] = (location, value) => { this.GL.uniform1ui(location, value); }
+
+            //Floats
+            this.setters[this.GL.FLOAT] = (location, value) => { this.GL.uniform1f(location, value); }
+            this.setters[this.GL.FLOAT_VEC2] = (location, value) => { this.GL.uniform2fv(location, value); }
+            this.setters[this.GL.FLOAT_VEC3] = (location, value) => { this.GL.uniform3fv(location, value); }
+            this.setters[this.GL.FLOAT_VEC4] = (location, value) => { this.GL.uniform4fv(location, value); }
+
+            this.setters[this.GL.FLOAT_MAT2] = (location, value) => { this.GL.uniformMatrix2fv(location, value); }
+            this.setters[this.GL.FLOAT_MAT3] = (location, value) => { this.GL.uniformMatrix3fv(location, value); }
+            this.setters[this.GL.FLOAT_MAT4] = (location, value) => { this.GL.uniformMatrix4fv(location, value); }
+
+            this.setters[this.GL.SAMPLER_2D] = (location, value, { samplerID }) => {
+                this.GL.activeTexture(this.GL[`TEXTURE${samplerID}`]);
+                this.GL.bindTexture(this.GL.TEXTURE_2D, value);
+                this.GL.uniform1i(location, samplerID);
+            }
+        }
+
+        addWebGLShader(id, vertexSrc, fragmentSrc) {
+            const vertex = this.GL.createShader(this.GL.VERTEX_SHADER);
+            this.GL.shaderSource(vertex, vertexSrc);
+            this.GL.compileShader(vertex);
+            
+            if (!this.GL.getShaderParameter(vertex, this.GL.COMPILE_STATUS)) {
+                console.error(`shader not compiled!\nclearing memory\nCompile Log\n***\n${this.GL.getShaderInfoLog(vertex)}\n***`);
+                this.GL.deleteShader(vertex)
+            }
+
+            const fragment = this.GL.createShader(this.GL.FRAGMENT_SHADER);
+            this.GL.shaderSource(fragment, fragmentSrc);
+            this.GL.compileShader(fragment);
+            
+            if (!this.GL.getShaderParameter(fragment, this.GL.COMPILE_STATUS)) {
+                console.error(`shader not compiled!\nclearing memory\nCompile Log\n***\n${this.GL.getShaderInfoLog(fragment)}\n***`);
+                this.GL.deleteShader(fragment)
+            }
+
+            const program = this.GL.createProgram();
+
+            this.GL.attachShader(program, vertex);
+            this.GL.attachShader(program, fragment);
+
+            this.GL.linkProgram(program);
+
+            //? could potentially be better?
+            if (!this.GL.getProgramParameter(program, this.GL.LINK_STATUS)) {
+                console.error(`shader not compiled!\nerror in program linking!\nclearing memory\nlink log\n***\n${gl.getProgramInfoLog(program)}\n***`);
+                this.GL.deleteProgram(program);
+            }
+
+            //Setup shader stuff.
+            const shader = {
+                program: program,
+                vertex: vertexSrc,
+                fragment: fragmentSrc,
+                vertexShader: vertex,
+                fragmentShader: fragment,
+                use: () => this.GL.useProgram(shader.program),
+
+                setUniforms: (values) => {
+                    const keys = Object.keys(values);
+                    for (let keyID = 0; keyID < keys.length; keyID++) {
+                        const key = keys[keyID];
+                        if (shader.uniforms[key]) {
+                            const uniform = shader.uniforms[key];
+                            this.setters[uniform.type](uniform.location, values[key], uniform);
+                        }
+                    }
+                }
+            };
+
+            //Get indicies and count
+            const uniformCount = this.GL.getProgramParameter(program, this.GL.ACTIVE_UNIFORMS);
+            shader.shaderIndicies = Array(uniformCount).keys();
+            shader.uniforms = {};
+
+            //Get uniforms in array
+            let sampler2D = 0;
+            for (let idx = 0; idx < uniformCount; idx++) {
+                const data = this.GL.getActiveUniform(program, idx);
+                data.location = this.GL.getUniformLocation(program, data.name);
+
+                if (data.type == this.GL.SAMPLER_2D) {
+                    data.samplerID = sampler2D;
+                    sampler2D++;
+                }
+                
+                shader.uniforms[data.name] = data;
+            }
+
+            this.webgl.shaders[id] = shader;
+            return this.webgl.shaders[id];
+        }
+
+        refreshGridPattern() {
+            //webGL :)
             const c1 = artimus.HexToRGB(artimus.getCSSVariable("grid-1"));
             const c2 = artimus.HexToRGB(artimus.getCSSVariable("grid-2"));
 
-            const imageData = new ImageData(2, 2);
-
-            //Set data
-            imageData.data[0] = c1.r; imageData.data[1] = c1.g; imageData.data[2] = c1.b; imageData.data[3] = 255;
-            imageData.data[4] = c2.r; imageData.data[5] = c2.g; imageData.data[6] = c2.b; imageData.data[7] = 255;
-            imageData.data[8] = c2.r; imageData.data[9] = c2.g; imageData.data[10] = c2.b; imageData.data[11] = 255;
-            imageData.data[12] = c1.r; imageData.data[13] = c1.g; imageData.data[14] = c1.b; imageData.data[15] = 255;
-            
-            createImageBitmap(imageData).then(bitmap => {
-                if (this.gridBitmap) this.gridBitmap.close();
-                this.gridBitmap = bitmap;
-                
-                //Create the pattern and position it
-                this.gridPattern = this.fullviewGL.createPattern(bitmap, "repeat");
-                this.gridPattern.setTransform(this.gridMatrix);
-
-                //Update grid canvas
-                this.gridGL.fillStyle = this.gridPattern;
-                this.gridGL.fillRect(0, 0, this.width, this.height);
-
-                if (then) then();
-            });
-        }
-
-        setGridSize(size) {
-            this.gridMatrix = new DOMMatrix([
-                size, 0,
-                0, size,
-                0, 0
-            ]);
-
-            if (this.gridPattern) {
-                this.gridPattern.setTransform(this.gridMatrix);
+            this.gridData = {
+                color1: [ c1.r / 255, c1.g / 255, c1.b / 255 ],
+                color2: [ c2.r / 255, c2.g / 255, c2.b / 255 ],
+                size: 8
             }
         }
 
         renderLoop(delta) {
-            this.fullviewGL.drawImage(this.gridCanvas, 0, 0);
+            this.GL.viewport(0, 0, this.width, this.height);
 
+            //Set performance and time data.
+            this.performance.fps = 1 / delta;
+            this.performance.delta = delta;
+
+            //Get view bounds
+            let { width, height } = this.canvasArea.getBoundingClientRect();
+            width /= 2;
+            height /= 2;
+
+            //Calculate render bounds based upon the view area.
+            const halfCanvWidth = this.width / 2;
+            const halfCanvHeight = this.height / 2;
+            const viewBounds = [
+                Math.floor((halfCanvWidth-this.scrollX) - (width * this.invZoom)),
+                Math.floor((halfCanvHeight-this.scrollY) - (height * this.invZoom)),
+                Math.ceil((halfCanvWidth-this.scrollX) + (width * this.invZoom)),
+                Math.ceil((halfCanvHeight-this.scrollY) + (height * this.invZoom))
+            ];
+            viewBounds[0] = Math.min(this.width - 1, Math.max(0, viewBounds[0]));
+            viewBounds[1] = Math.min(this.height - 1, Math.max(0, viewBounds[1]));
+            viewBounds[2] = Math.max(1, Math.min(this.width - viewBounds[0], viewBounds[2] - viewBounds[0]));
+            viewBounds[3] = Math.max(1, Math.min(this.height - viewBounds[1], viewBounds[3] - viewBounds[1]));
+
+            //The reason behind time and selection animation
+            //Time is here as a global timer, as selection animation is for a specific animation that may restart.
+            this.time += delta;
+
+            //If we are dirty update our canvas as needed.
             if (this.dirty) {
-                this.renderComposite();
-                this.dirty = false;
+                this.renderComposite(viewBounds);
+
+                //Bind and edit the composite texture
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
             }
 
-            this.fullviewGL.drawImage(this.compositeCanvas, 0, 0);
+            //Set buffers to the position buffer/quad buffer.
+            this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.positionBuffer);
+            this.GL.vertexAttribPointer(0, 2, this.GL.FLOAT, false, 0, 0);
+                
+            const main = this.webgl.shaders.main;
+
+            main.use();
+
+            main.setUniforms({
+                u_main_tex: this.webgl.compositeTexture,
+                u_background_1: this.gridData.color1,
+                u_background_2: this.gridData.color2,
+                u_render_mode: 1,
+                u_grid_size: this.gridData.size,
+                u_time: this.time
+            });
+            
+            this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
             //Render hidden layers
             if (!this.getLayerVisibility(this.currentLayer)) {
-                this.layerHiddenAnimation += delta * 5.0;
-                this.fullviewGL.globalAlpha = (Math.sin(this.layerHiddenAnimation) * 0.25) + 0.6;
-                this.fullviewGL.drawImage(this.editingCanvas, 0, 0);
-                this.fullviewGL.globalAlpha = 1;
+                //Do preview stuff
+                this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...viewBounds).data);
+
+                main.setUniforms({
+                    u_main_tex: this.webgl.hiddenTexture,
+                    u_render_mode: 2
+                });
+                this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
             }
 
-            this.fullviewGL.drawImage(this.previewCanvas, 0, 0);
+            //Do preview stuff
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
+            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...viewBounds).data);
+
+            main.setUniforms({
+                u_main_tex: this.webgl.previewTexture,
+                u_render_mode: 0
+            });
+            this.GL.drawArrays(this.GL.TRIANGLES, 0, 6);
 
             if (this.hasSelection) {
-                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5)) % 6;
-                this.fullviewGL.setLineDash([4, 2]);
-                this.fullviewGL.lineDashOffset = this.selectionAnimation;
-                this.fullviewGL.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
-                this.fullviewGL.lineWidth = 1;
-                this.fullviewGL.stroke(this.selectionPath);
+                //Set buffers to the selection outline buffer thingy.
+                this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
+                this.GL.vertexAttribPointer(0, 3, this.GL.FLOAT, false, 0, 0);
+
+                this.selectionAnimation = (this.selectionAnimation + (delta * 7.5));
+                const { r, g, b } = artimus.HexToRGB(getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline"));
+
+                //Get our shader set needed info, and use it.
+                const selection = this.webgl.shaders.selection;
+
+                selection.use();
+                selection.setUniforms({
+                    u_selection_animation: this.selectionAnimation,
+                    u_selection_color: [ r / 255, g / 255, b / 255 ],
+                    u_time: this.time
+                })
+
+                
+                this.GL.drawArrays(this.GL.LINE_STRIP, 0, (this.selection.length / 2) + 1);
             }
         }
 
-        renderComposite() {
-            this.compositeGL.clearRect(0, 0, this.width, this.height);
+        renderComposite(bounds) {
+            if (bounds == true) bounds = [0, 0, this.width, this.height];
+            
+            //Clear and get ready for compositing.
+            this.compositeGL.clearRect(...bounds);
+
+            //Draw the layers
             for (let layerID in this.layers) {
                 const layer = this.layers[layerID];
                 this.compositeGL.globalCompositeOperation = layer.blendMode || "source-over";
 
                 if (layer.visibility) {
                     this.compositeGL.globalAlpha = layer.alpha;
-                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, 0, 0);
+                    if (layerID == this.currentLayer) this.compositeGL.drawImage(this.editingCanvas, ...bounds, ...bounds);
                     else {
                         const bitmap = layer.bitmap;
-                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, 0, 0);
+                        if (bitmap instanceof ImageBitmap) this.compositeGL.drawImage(bitmap, ...bounds, ...bounds);
                     }
                 }
             }
@@ -924,7 +1222,7 @@ window.artimus = {
             let red = 255; let green = 255; let blue = 255; let alpha = 255;
 
             if (artimus.pickType == "composite") [red, green, blue, alpha] = this.compositeGL.getImageData(...this.getCanvasPosition(x, y, true), 1, 1).data;
-            else [red, green, blue, alpha] = this.GL.getImageData(x, y, 1, 1).data;
+            else [red, green, blue, alpha] = this.editGL.getImageData(x, y, 1, 1).data;
             const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
             return converted;
         }
@@ -938,7 +1236,7 @@ window.artimus = {
                     switch (event.button) {
                         case 0:
                             if (event.target != this.canvas) return;
-                            if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.GL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
+                            if (this.toolFunction.mouseDown && !this.toolDown) this.toolFunction.mouseDown(this.editGL, ...this.getCanvasPosition(event.clientX, event.clientY), this.toolProperties);
                             this.toolDown = true;
                             break;
 
@@ -970,10 +1268,10 @@ window.artimus = {
                     switch (event.button) {
                         case 0:
                             const position = this.getCanvasPosition(event.clientX, event.clientY);
-                            if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.GL, ...position, this.toolProperties);
+                            if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.editGL, ...position, this.toolProperties);
                             if (this.toolFunction.preview) {
                                 this.previewGL.clearRect(0, 0, this.width, this.height);
-                                this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                                this.toolFunction.preview(this.previewGL, ...position, position[0] - this.lastPosition[0], position[1] - this.lastPosition[1], this.toolProperties);
                             }
                             
                             //For the undoing
@@ -1007,11 +1305,11 @@ window.artimus = {
                     if (this.toolFunction.preview) {
                         //For previews
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                        this.toolFunction.preview(this.previewGL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
                     }
 
                     if (this.toolDown && this.toolFunction.mouseMove) {
-                        this.toolFunction.mouseMove(this.GL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
+                        this.toolFunction.mouseMove(this.editGL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
                         if (this.toolFunction.constructive) this.dirty = true;
                     }
                 },
@@ -1052,10 +1350,10 @@ window.artimus = {
                     if (event.key.toLowerCase() == "shift") { this.shiftHeld = true; }
 
                     if (this.toolFunction.keyPressed) {
-                        if (this.toolFunction.keyPressed(this.GL, event, this.toolProperties)) event.preventDefault();
+                        if (this.toolFunction.keyPressed(this.editGL, event, this.toolProperties)) event.preventDefault();
 
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
+                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, 0, 0, this.toolProperties);                        
                     }
                 },
 
@@ -1063,10 +1361,10 @@ window.artimus = {
                     if (event.key.toLowerCase() == "shift") { this.shiftHeld = false; }
 
                     if (this.toolFunction.keyReleased) {
-                        if (this.toolFunction.keyReleased(this.GL, event, this.toolProperties)) event.preventDefault();
+                        if (this.toolFunction.keyReleased(this.editGL, event, this.toolProperties)) event.preventDefault();
 
                         this.previewGL.clearRect(0, 0, this.width, this.height);
-                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
+                        this.toolFunction.preview(this.previewGL, ...this.lastPosition, 0, 0, this.toolProperties);                        
                     }
                 }
             },
@@ -1169,7 +1467,7 @@ window.artimus = {
 
                             //Initilize drawing if we haven't
                             if (!this.toolDown) {
-                                if (this.toolFunction.mouseDown) this.toolFunction.mouseDown(this.GL, ...position, this.toolProperties);
+                                if (this.toolFunction.mouseDown) this.toolFunction.mouseDown(this.editGL, ...position, this.toolProperties);
                                 this.toolDown = true;
                             }
                             else {
@@ -1180,7 +1478,7 @@ window.artimus = {
                                     this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                                 }
 
-                                if (this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.GL, ...position, position[0] - this.controlSets.touch.lastDrew[0], position[1] - this.controlSets.touch.lastDrew[1], this.toolProperties);
+                                if (this.toolFunction.mouseMove) this.toolFunction.mouseMove(this.editGL, ...position, position[0] - this.controlSets.touch.lastDrew[0], position[1] - this.controlSets.touch.lastDrew[1], this.toolProperties);
                             }
 
                             if (this.toolFunction.constructive) this.dirty = true;
@@ -1207,10 +1505,10 @@ window.artimus = {
 
                     if (this.fingersDown == 0) {
                         if (this.toolDown) {
-                            if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.GL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                            if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.editGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             if (this.toolFunction.preview) {
                                 this.previewGL.clearRect(0, 0, this.width, this.height);
-                                this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
+                                this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, 0, 0, this.toolProperties);
                             }
                             
                             //For the undoing
@@ -1234,7 +1532,7 @@ window.artimus = {
                         if (this.toolFunction.preview) {
                             //For previews
                             this.previewGL.clearRect(0, 0, this.width, this.height);
-                            this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
+                            this.toolFunction.preview(this.previewGL, ...position, event.movementX * this.invZoom, event.movementY * this.invZoom, this.toolProperties);
                         }
 
                         if (event.buttons == 1) {
@@ -1384,10 +1682,10 @@ window.artimus = {
 
         //For selections
         setSelection(newSelection) {
-            if (this.#selection.length == 0) this.GL.save();
+            if (this.#selection.length == 0) this.editGL.save();
             else {
-                this.GL.restore();
-                this.GL.save();
+                this.editGL.restore();
+                this.editGL.save();
             }
 
             //Reset animation
@@ -1443,18 +1741,34 @@ window.artimus = {
             if (this.selection.length > 0) {
                 this.hasSelection = true;
 
-                //Create selection path
+                //Create selection path, also record data for the gl path.
+                const toGL = [];
+                let distance = 0;
+
                 for (let i = 0; i < this.selection.length; i+=2) {
                     if (i == 0) this.selectionPath.moveTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
-                    else this.selectionPath.lineTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
+                    else {
+                        this.selectionPath.lineTo(Math.floor(this.selection[i]) + 0.5, Math.floor(this.selection[i + 1]) + 0.5);
+                        distance += Math.sqrt(Math.pow(this.selection[i] - this.selection[i - 2], 2) + Math.pow(this.selection[i + 1] - this.selection[i - 1], 2));
+                    }
+
+                    toGL.push((this.selection[i] + 0.5) / this.width, (this.selection[i + 1] + 0.5) / this.height, distance);
                 }
+                //Calculate the final distance
+                distance += Math.sqrt(Math.pow(this.selection[0] - this.selection[this.selection.length - 2], 2) + Math.pow(this.selection[1] - this.selection[this.selection.length - 1], 2));
+
                 //Finally end it
                 this.selectionPath.lineTo(this.selection[0] + 0.5, this.selection[1] + 0.5);
+                toGL.push((this.selection[0] + 0.5) / this.width, (this.selection[1] + 0.5) / this.height, distance);
 
-                this.GL.clip(this.selectionPath, artimus.windRule);
+                this.editGL.clip(this.selectionPath, artimus.windRule);
+
+                //update the buffer
+                this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
+                this.GL.bufferData(this.GL.ARRAY_BUFFER, new Float32Array(toGL), this.GL.STATIC_DRAW);
             }
             else {
-                this.GL.restore();
+                this.editGL.restore();
                 this.hasSelection = false;
             }
         }
@@ -1486,7 +1800,7 @@ window.artimus = {
                     const label = oldLayer.label;
 
                     //Clean up data and save layer data to previous layer.
-                    this.layers[this.#currentLayer].dataRaw = this.GL.getImageData(0, 0, this.width, this.height);
+                    this.layers[this.#currentLayer].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
                     this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
 
                     this.updateLayer(this.#currentLayer, () => {
@@ -1494,8 +1808,8 @@ window.artimus = {
 
                         //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
                         const current = this.layers[this.#currentLayer];
-                        this.GL.putImageData(current.dataRaw, 0, 0);
-                        this.layerHistory = [this.GL.getImageData(0, 0, this.width, this.height)];
+                        this.editGL.putImageData(current.dataRaw, 0, 0);
+                        this.layerHistory = [this.editGL.getImageData(0, 0, this.width, this.height)];
 
                         label.className = this.layerClass;
                         current.label.className = this.layerClass + this.layerClassSelected;
@@ -1752,7 +2066,7 @@ window.artimus = {
             }
 
             this.historyIndex = 0;
-            this.layerHistory.splice(0, 0, this.GL.getImageData(0, 0, this.width, this.height));
+            this.layerHistory.splice(0, 0, this.editGL.getImageData(0, 0, this.width, this.height));
             if (this.layerHistory.length > artimus.maxHistory) {
                 this.layerHistory.pop();
             }
@@ -1823,7 +2137,7 @@ window.artimus = {
             if (height < 1 || typeof height != "number") height = 1;
 
             //Get editing data before resizing due to resizing removing all image data;
-            const editingData = (this.GL) ? this.GL.getImageData(0, 0, this.width, this.height) : null;
+            const editingData = (this.editGL) ? this.editGL.getImageData(0, 0, this.width, this.height) : null;
 
             this.#width = width;
             this.#height = height;
@@ -1849,10 +2163,10 @@ window.artimus = {
             }
 
             //Finally set smoothing
-            this.fullviewGL.imageSmoothingEnabled = false;
+            this.GL.imageSmoothingEnabled = false;
             this.previewGL.imageSmoothingEnabled = false;
             this.gridGL.imageSmoothingEnabled = false;
-            this.GL.imageSmoothingEnabled = false;
+            this.editGL.imageSmoothingEnabled = false;
 
             //Redraw the grid
             this.gridGL.fillStyle = this.gridPattern;
@@ -1862,26 +2176,35 @@ window.artimus = {
             this.scrollY = this.scrollY;
             this.updatePosition();
 
+            //Update textures
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
+
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewCanvas);
+
+            this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
+            this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editingCanvas);
             this.dirty = true;
         }
 
         undo() {
-            if (this.toolFunction.undo && this.toolFunction.undo(this.gl, this.previewGL, this.toolProperties)) return true;
+            if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
             if (this.historyIndex >= this.layerHistory.length - 1) return;
             this.historyIndex++;
 
-            this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+            this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
         }
 
         redo() {
-            if (this.toolFunction.redo && this.toolFunction.redo(this.gl, this.previewGL, this.toolProperties)) return true;
+            if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
             if (this.historyIndex <= 0) return;
             this.historyIndex--;
 
-            this.GL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
+            this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
         }
 
@@ -1896,7 +2219,7 @@ window.artimus = {
             }
 
             //Then clear our current layer
-            this.GL.clearRect(0, 0, this.width, this.height);
+            this.editGL.clearRect(0, 0, this.width, this.height);
             this.updateLayer(this.#currentLayer, () => {
                 this.resize(width, height);
                 this.currentLayer = 0;
@@ -2537,7 +2860,7 @@ window.artimus = {
                     image.onload = () => {
                         this.new(image.width, image.height, () => {
                             this.setLayer(0, () => {
-                                this.GL.drawImage(image, 0, 0);
+                                this.editGL.drawImage(image, 0, 0);
                             });
                         });
                     }
@@ -2547,7 +2870,14 @@ window.artimus = {
             }
         }
 
-        export(format) {
+        export(format, options) {
+            options = Object.assign({
+                sizeMul: 1,
+                background: false,
+                backgroundColor: "#000000",
+                quality: 1
+            }, options);
+
             return new Promise((resolve, reject) => {
                 format = format || "artimus";
 
@@ -2562,16 +2892,33 @@ window.artimus = {
                             return this.exportArtimus().then(item => resolve(item));
                         
                         default:
-                            return resolve(this.compositeCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png));
+                            artimus.exportCanvas.width = Math.max(1, Math.min(8192, this.width * options.sizeMul));
+                            artimus.exportCanvas.height = Math.max(1, Math.min(8192, this.height * options.sizeMul));
+                            artimus.exportGL.imageSmoothingEnabled = false;
+
+                            artimus.exportGL.fillStyle = options.backgroundColor || "#000000";
+                            if (options.background) artimus.exportGL.fillRect(0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+                            else artimus.exportGL.clearRect(0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+
+                            //Draw the final composite
+                            artimus.exportGL.drawImage(this.compositeCanvas, 0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
+
+                            resolve(artimus.exportCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png, options.quality));
+                            
+                            //Reset export canvas and return;
+                            artimus.exportCanvas.width = 1;
+                            artimus.exportCanvas.height = 1;
+                            return;
                     }
                 });
             });
         }
 
-        exportToPC(format, forceDialogue) {
+        exportToPC(format, options) {
             format = format || "artimus";
+            const { forceDialogue, name } = options || {};
 
-            this.export(format).then(value => {
+            this.export(format, options).then(value => {
                 // Not yet widely available, so we will need to check we can use the file system access API
                 if (window.showSaveFilePicker) {
                     // Fetch the dataURL to convert it to a byte stream
@@ -2587,7 +2934,7 @@ window.artimus = {
                             window.showSaveFilePicker({
                                 id: "artimus_file_location",
                                 startIn: "documents",
-                                suggestedName: `picture.${format}`,
+                                suggestedName: `${name || "picture"}.${format}`,
                                 types: [
                                     {
                                         accept: {
@@ -2617,7 +2964,7 @@ window.artimus = {
                     // This browser doesn't support saving with a file system dialogue
                     const link = document.createElement("a");
                     link.href = value;
-                    link.download = `picture.${format}`;
+                    link.download = `${name || "picture"}.${format}`;
                     link.click();
                 }
 
@@ -2642,3 +2989,7 @@ window.artimus = {
         return workspace;
     }
 }
+
+artimus.exportCanvas.width = 1;
+artimus.exportCanvas.height = 1;
+artimus.exportGL = artimus.exportCanvas.getContext("2d");

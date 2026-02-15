@@ -321,7 +321,7 @@ artimus.tools.move = class extends artimus.tool {
         return true;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         //Set the image and draw the matrix
         this.workspace.applySelectionToPreview();
         this.drawImage(gl);

@@ -37,7 +37,7 @@ artimus.tools.selectionCircle = class extends artimus.tool {
         this.start = null;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (this.start) {
             let [sx, sy] = this.start;
             let [ex, ey] = [x, y];

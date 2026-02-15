@@ -21,7 +21,7 @@
 
 /* ? General size stuff ? */
 body {
-    --small-side: max(min(1vw, 1vh), 6px);
+    --small-side: max(1vmin, 8px);
     color: var(--artimus-text);
 }
 
@@ -101,11 +101,13 @@ cugi-dropdown:active {
     overflow: hidden;
     border-radius: 16px;
 
-    width: calc(var(--small-side) * var(--window-width));
-    height: calc(var(--small-side) * var(--window-height));
+    width: min(100vw, calc(var(--small-side) * var(--window-width)));
+    height: min(100vh, calc(var(--small-side) * var(--window-height)));
 
     display: flex;
     flex-direction: column;
+
+    animation: 300ms popup-main ease-in-out;
 }
 
 .popup .popup-content {
@@ -227,6 +229,7 @@ cugi-dropdown:active {
 .artimus-font-button {
     font-size: calc(var(--small-side) * 2);
     background-color: var(--artimus-button-normal);
+    border-color: var(--artimus-background-2);
 
     border-width: 0px;
     transition: 300ms background-color;
@@ -245,198 +248,120 @@ cugi-dropdown:active {
     transition: 0ms background-color;
 }
 
-.popup-newFile {
-    display: grid;
-    grid-template-columns: 65% 35%;
-}
-
-.popup-resizeFile {
-    height: 100%;
-}
-
-.newFile-presets {
-    margin: 8px;
-    padding: 4px;
-    background-color: var(--artimus-background-2);
-    border-radius: 8px;
-
-    display: grid;
-    grid-template-columns: 33.3333% 33.3333% 33.3333%;
-
-    overflow-x: hidden;
-    overflow-y: scroll;
-}
-
-.newFile-preset {
-    display: grid;
-    grid-template-rows: 1fr 24px 16px;
-    aspect-ratio: 8/11;
-
-    margin: 4px;
-    border-radius: 8px;
-    background-color: var(--artimus-background-1);
-}
-
-.newFile-presetPreviewContainer {
-    margin: 4px;
-    padding: 8px;
-    border-radius: 8px;
-    background-color: var(--artimus-background-2);
-
-    width: calc(100% - 24px);
-    height: calc(100% - 24px);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.newFile-presetPreview {
-    border-color: var(--artimus-icon);
-    border-width: 2px;
-    border-style: solid;
-    border-radius: 8px;
-}
-
-.newFile-presetName {
-    font-size: 14px;
-
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.newFile-presetResolution {
-    font-size: 10px;
-}
-
-.newFile-tuning {
-    display: grid;
-    grid-template-rows: 60% 20% 20%;
-}
-
-.newFile-tuning-previewHolder {
-    margin: 8px;
-    padding: 8px;
-    border-radius: 8px;
-    background-color: var(--artimus-background-2);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.newFile-tuning-preview {
-    border-color: var(--artimus-icon);
-    border-width: 2px;
-    border-style: solid;
-    border-radius: 8px;
-
-    transition: 300ms width, 300ms height;
-}
-
-.newFile-flip {
-    border-radius: 100%;
-    border-width: 2px;
-    border-style: solid;
-
-    height: calc(100% - 16px);
-    margin: 8px;
-    aspect-ratio: 1;
-    border-radius: 8px;
-
-    background-color: var(--artimus-background-1);
-    border-color: var(--artimus-background-3);
+select {
     color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
 
-    transition: background-color 100ms;
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
 }
 
-.newFile-flip:hover {
-    background-color: var(--artimus-background-2);
+select:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
 }
 
-.newFile-flip:active {
+select:focus {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-button-click);
+}
+
+select:active {
     background-color: var(--artimus-button-click);
-    transition: background-color 0ms;
+    transition: 0ms background-color, 300ms border-color;
 }
 
-.newFile-sizingDiv {
-    display: grid;
-    grid-template-columns: 50% 50%;
+input {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
 
-    aspect-ratio: 2/1;
-    height: 100%;
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
 
-    margin-left: 50%;
-    transform: translate(-50%, 0%);
+    transition: 300ms background-color, 300ms border-color;
 }
 
-.newFile-resolutionHolder {
-    display: grid;
-    grid-template-rows: 50% 50%;
+input:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
 }
 
-.newFile-finalCreateButtonHolder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+input:focus {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-button-click);
 }
 
-.resizeFile-previewAnchor {
-    --speed: 100ms;
-
-    position: relative;
-
-    left: var(--anchor-x);
-    top: var(--anchor-y);
-
-    width: 16px;
-    height: 16px;
-
-    background-color: var(--artimus-icon);
-    transform: translate(-50%, -50%);
-
-    border-radius: 100%;
-    transition: var(--speed) left, var(--speed) top;
+input:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color, 300ms border-color;
 }
 
-.layerProperties-BMTHolder {
-    display: grid;
-    margin: 4px;
-    grid-template-columns: 30% 70%;
+input:invalid {
+    background-color: color-mix(in srgb, var(--artimus-background-2) 80%, #ff0000 20%);
+    border-color: var(--artimus-button-click);
 }
 
-.popup-layerProperties {
-    padding: 4px;
-
-    display: flex;
-    flex-direction: column;
+input[type=number] {
+  appearance: textfield;
+  text-align: center;
 }
 
-.layerProperties-CenterHolder {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+input[type=checkbox] {
+    appearance: none;
+
+    align-self: center;
+
+    width: auto;
+    height: 1.5em;
+    aspect-ratio: 1;
+    
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
 }
 
-.layerProperties-BlendModeHolder {
-    flex-direction: row;
+input[type=checkbox]:checked { background-color: var(--artimus-text); }
+input[type=checkbox]:hover { background-color: var(--artimus-button-hover); }
+input[type="checkbox"]:hover:checked { background-color: var(--artimus-button-selected); }
+
+.CUGI-artimus-font {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color, 300ms border-color;
 }
 
-.layerProperties-blendModePreview {
-    height: calc(var(--small-side) * 5);
-
-    background-color: var(--artimus-background-2);
-    border-radius: 25%;
-    margin: 4px;
-    padding: 4px;
+.CUGI-artimus-font:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
 }
 
-.layerProperties-doneButtonHolder {
-    flex-grow:1;
-    display: flex;
-    justify-content: center;
-    align-items: end;
+.CUGI-artimus-font:active {
+    background-color: var(--artimus-button-click);
+    transition: 0ms background-color, 300ms border-color;
+}
+
+@keyframes popup-main {
+    0% {
+        transform: translate(-50%, -50%) scaleY(0);
+    }
+    50% {
+        transform: translate(-50%, -50%) scaleY(1.1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scaleY(1);
+    }
 }

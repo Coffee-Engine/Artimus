@@ -18,7 +18,7 @@ artimus.tools.sprayPaint = class extends artimus.tool {
     mouseMove (gl, x, y, vx, vy, toolProperties) { this.spray(gl, x, y, toolProperties); }
     mouseUp (gl, x, y, toolProperties) { toolProperties.down = false;}
 
-    preview (gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (!toolProperties.down) {
             gl.strokeStyle = artimus.getCSSVariable("eraser-outline");
             gl.fillStyle = artimus.getCSSVariable("eraser-inline");

@@ -30,6 +30,11 @@
         "height": 480
     },
     {
+        "name": "8x6",
+        "width": 800,
+        "height": 600
+    },
+    {
         "name": "4x3 720p",
         "width": 960,
         "height": 720

@@ -263,7 +263,7 @@ artimus.tools.text = class extends artimus.tool {
         return true;
     }
 
-    preview(gl, x, y, toolProperties) {
+    preview(gl, x, y, vx, vy, toolProperties) {
         if (this.typing) this.renderText(gl, toolProperties, true);
     }
 
