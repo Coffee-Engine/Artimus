@@ -7,16 +7,37 @@ artimus.tools.selectionCircle = class extends artimus.tool {
         this.start = [x, y];
     }
 
+    getEllipse(sx, sy, ex, ey) {
+        let width = ex - sx;
+        let height = ey - sy;
+
+        if (this.shiftHeld) {
+            if (Math.abs(width) < Math.abs(height)) {
+                if (artimus.preferGreaterAxis) width = Math.abs(height) * ((width < 0) ? -1 : 1);
+                else height = Math.abs(width) * ((height < 0) ? -1 : 1);
+            }
+            else {
+                if (artimus.preferGreaterAxis) height = Math.abs(width) * ((height < 0) ? -1 : 1);
+                else width = Math.abs(height) * ((width < 0) ? -1 : 1);
+            }
+        }
+
+        width /= 2;
+        height /= 2;
+
+        return [sx + width, sy + height, Math.abs(width), Math.abs(height)];
+    }
+
+    getEllipseStroke(sx, sy, ex, ey) {
+        const [x, y, width, height] = this.getEllipse(sx, sy, ex, ey);
+        return [x + 0.5, y + 0.5, width, height];
+    }
+
     mouseUp(gl, x, y, toolProperties) {
         if (this.start) {
             if (this.start[0] == x && this.start[1] == y) this.workspace.clearSelection();
             else {
-                const [sx, sy] = this.start;
-                let cx = (x + sx) / 2;
-                let cy = (y + sy) / 2;
-
-                let rx = (x - sx) / 2;
-                let ry = (y - sy) / 2;
+                const [cx, cy, rx, ry] = this.getEllipse(...this.start, x, y);
 
                 const points = [];
 
@@ -39,30 +60,12 @@ artimus.tools.selectionCircle = class extends artimus.tool {
 
     preview(gl, x, y, toolProperties) {
         if (this.start) {
-            let [sx, sy] = this.start;
-            let [ex, ey] = [x, y];
-            const hx = (x + sx) / 2;
-            const hy = (y + sy) / 2;
-
-            //Flip due to canvas context 2d not supporting ellipses of negative proportions
-            if (ex < sx) {
-                let t = sx;
-                sx = ex;
-                ex = t;
-            }
-
-            if (ey < sy) {
-                let t = sy;
-                sy = ey;
-                ey = t;
-            }
-
             gl.setLineDash([4, 2]);
             gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
             gl.lineWidth = 1;
 
             gl.beginPath();
-            gl.ellipse(hx + 0.5, hy + 0.5, (ex - sx) / 2, (ey - sy) / 2, 0, 0, 2 * Math.PI);
+            gl.ellipse(...this.getEllipseStroke(...this.start, x, y), 0, 0, 2 * Math.PI);
             gl.stroke();
             gl.setLineDash([]);
         }

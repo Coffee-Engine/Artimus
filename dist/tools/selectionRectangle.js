@@ -7,15 +7,44 @@ artimus.tools.selectionRectangle = class extends artimus.tool {
         this.start = [x, y];
     }
 
+    getRect(sx, sy, ex, ey) {
+        let width = ex - sx;
+        let height = ey - sy;
+
+        if (this.shiftHeld) {
+            if (Math.abs(width) < Math.abs(height)) {
+                if (artimus.preferGreaterAxis) width = Math.abs(height) * ((width < 0) ? -1 : 1);
+                else height = Math.abs(width) * ((height < 0) ? -1 : 1);
+            }
+            else {
+                if (artimus.preferGreaterAxis) height = Math.abs(width) * ((height < 0) ? -1 : 1);
+                else width = Math.abs(height) * ((width < 0) ? -1 : 1);
+            }
+        }
+
+        return [sx, sy, width, height];
+    }
+
+    getStrokeRect(sx, sy, ex, ey) {
+        const [x, y, width, height] = this.getRect(sx, sy, ex, ey);
+        return [x + 0.5, y + 0.5, width, height];
+    }
+
+    getRectArray(sx, sy, ex, ey) {
+        const [x, y, width, height] = this.getRect(sx, sy, ex, ey);
+
+        return [
+            x, y,
+            x + width, y,
+            x + width, y + height,
+            x, y + height
+        ];
+    }
+
     mouseUp(gl, x, y, toolProperties) {
         if (this.start) {
             if (this.start[0] == x && this.start[1] == y) this.workspace.clearSelection();
-            else this.workspace.setSelection([
-                ...this.start,
-                this.start[0], y,
-                x, y,
-                x, this.start[1]
-            ]);
+            else this.workspace.setSelection(this.getRectArray(...this.start, x, y));
         }
 
         this.start = null;
@@ -23,15 +52,11 @@ artimus.tools.selectionRectangle = class extends artimus.tool {
 
     preview(gl, x, y, toolProperties) {
         if (this.start) {
-            const [sx, sy] = this.start;
-            const width = x - sx;
-            const height = y - sy;
-
             gl.setLineDash([4, 2]);
             gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
             gl.lineWidth = 1;
 
-            gl.strokeRect(sx + 0.5, sy + 0.5, width, height);
+            gl.strokeRect(...this.getStrokeRect(...this.start, x, y));
             gl.setLineDash([]);
         }
         else {
