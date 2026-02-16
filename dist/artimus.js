@@ -808,19 +808,23 @@ window.artimus = {
             uniform sampler2D u_main_tex;
             uniform mediump vec3 u_background_1;
             uniform mediump vec3 u_background_2;
-            uniform mediump float u_grid_size;
+            uniform mediump int u_grid_size;
 
             uniform lowp int u_render_mode;
             uniform mediump float u_time;
 
             varying mediump vec2 v_texCoord;
 
+            int mod(int a, int b) {
+                return a - ((a/b) * b);
+            }
+
             void main() {
                 //If we have a background draw the background and the image
                 if (u_render_mode == 1) {
-                    mediump float offset = gl_FragCoord.x;
-                    if (mod(gl_FragCoord.y, u_grid_size * 2.0) >= u_grid_size) { offset += u_grid_size; }
-                    offset = mod(offset, u_grid_size * 2.0);
+                    mediump int offset = int(gl_FragCoord.x);
+                    if (mod(int(gl_FragCoord.y), u_grid_size * 2) >= u_grid_size) { offset += u_grid_size; }
+                    offset = mod(offset, u_grid_size * 2);
 
                     if (offset >= u_grid_size) { gl_FragColor = vec4(u_background_1, 1); }
                     else { gl_FragColor = vec4(u_background_2, 1); }
