@@ -9,6 +9,17 @@ artimus.tools.rectangle = class extends artimus.tool {
         let width = ex - sx;
         let height = ey - sy;
 
+        if (this.shiftHeld) {
+            if (Math.abs(width) < Math.abs(height)) {
+                if (artimus.preferGreaterAxis) width = Math.abs(height) * ((width < 0) ? -1 : 1);
+                else height = Math.abs(width) * ((height < 0) ? -1 : 1);
+            }
+            else {
+                if (artimus.preferGreaterAxis) height = Math.abs(width) * ((height < 0) ? -1 : 1);
+                else width = Math.abs(height) * ((width < 0) ? -1 : 1);
+            }
+        }
+
         if (width == 0) width = 1;
         if (height == 0) height = 1;
 

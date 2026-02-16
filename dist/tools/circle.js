@@ -6,27 +6,29 @@ artimus.tools.circle = class extends artimus.tool {
     }
 
     drawCircle(gl, sx, sy, ex, ey, toolProperties) {
-        const hx = (ex + sx) / 2;
-        const hy = (ey + sy) / 2;
-
-        //Flip due to canvas context 2d not supporting ellipses of negative proportions
-        if (ex < sx) {
-            let t = sx;
-            sx = ex;
-            ex = t;
+        //Get width and height
+        let width = (ex - sx) / 2;
+        let height = (ey - sy) / 2;
+        
+        if (this.shiftHeld) {
+            if (Math.abs(width) < Math.abs(height)) {
+                if (artimus.preferGreaterAxis) width = Math.abs(height) * ((width < 0) ? -1 : 1);
+                else height = Math.abs(width) * ((height < 0) ? -1 : 1);
+            }
+            else {
+                if (artimus.preferGreaterAxis) height = Math.abs(width) * ((height < 0) ? -1 : 1);
+                else width = Math.abs(height) * ((width < 0) ? -1 : 1);
+            }
         }
 
-        if (ey < sy) {
-            let t = sy;
-            sy = ey;
-            ey = t;
-        }
-
+        const hx = sx + width;
+        const hy = sy + height;
+        
         gl.fillStyle = toolProperties.fillColor;
         gl.strokeStyle = toolProperties.strokeColor;
         gl.lineWidth = toolProperties.strokeSize;
         gl.beginPath();
-        gl.ellipse(hx, hy, (ex - sx) / 2, (ey - sy) / 2, 0, 0, 2 * Math.PI);
+        gl.ellipse(hx, hy, Math.abs(width), Math.abs(height), 0, 0, 2 * Math.PI);
         gl.fill();
         if (toolProperties.strokeSize > 0) gl.stroke();
         gl.closePath();
