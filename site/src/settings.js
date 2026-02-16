@@ -2,7 +2,8 @@ editor.settings = {
     theme: "default",
     maxHistory: 10,
     preferredFormat: "png",
-    debug: false
+    debug: false,
+    preferGreaterAxis: true, 
 };
 
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
@@ -13,6 +14,9 @@ editor.settingDefs = {
             artimus.maxHistory = value;
         }},
         {type: "dropdown", target: editor.settings, key: "preferredFormat", items: Object.keys(artimus.extensionToMIME)},
+        {type: "boolean", target: editor.settings, key: "preferGreaterAxis", onchange: (value) => {
+            artimus.preferGreaterAxis = value;
+        }},
         {type: "boolean", target: editor.settings, key: "debug" }
     ],
     theme: [
