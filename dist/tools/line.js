@@ -41,7 +41,7 @@ artimus.tools.line = class extends artimus.tool {
         this.start = null;
     }
 
-    preview(gl, x, y, vx, vy, toolProperties) {
+    preview(gl, x, y, toolProperties) {
         if (this.start) {
             this.drawLine(gl, ...this.start, x, y, toolProperties);
         }
