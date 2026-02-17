@@ -952,7 +952,8 @@ window.artimus = {
             
             if (!this.GL.getShaderParameter(vertex, this.GL.COMPILE_STATUS)) {
                 console.error(`shader not compiled!\nclearing memory\nCompile Log\n***\n${this.GL.getShaderInfoLog(vertex)}\n***`);
-                this.GL.deleteShader(vertex)
+                this.GL.deleteShader(vertex);
+                return;
             }
 
             const fragment = this.GL.createShader(this.GL.FRAGMENT_SHADER);
@@ -961,7 +962,9 @@ window.artimus = {
             
             if (!this.GL.getShaderParameter(fragment, this.GL.COMPILE_STATUS)) {
                 console.error(`shader not compiled!\nclearing memory\nCompile Log\n***\n${this.GL.getShaderInfoLog(fragment)}\n***`);
-                this.GL.deleteShader(fragment)
+                this.GL.deleteShader(vertex);
+                this.GL.deleteShader(fragment);
+                return;
             }
 
             const program = this.GL.createProgram();
@@ -974,8 +977,14 @@ window.artimus = {
             //? could potentially be better?
             if (!this.GL.getProgramParameter(program, this.GL.LINK_STATUS)) {
                 console.error(`shader not compiled!\nerror in program linking!\nclearing memory\nlink log\n***\n${gl.getProgramInfoLog(program)}\n***`);
+                this.GL.deleteShader(vertex);
+                this.GL.deleteShader(fragment);
                 this.GL.deleteProgram(program);
+                return;
             }
+            
+            //Delete the shader if it exists.
+            if (this.webgl.shaders[id]) this.removeWebGLShader(id);
 
             //Setup shader stuff.
             const shader = {
@@ -1019,6 +1028,16 @@ window.artimus = {
 
             this.webgl.shaders[id] = shader;
             return this.webgl.shaders[id];
+        }
+
+        removeWebGLShader(shader) {
+            if (typeof shader == "string") shader = this.webgl.shaders[shader];
+
+            if (typeof shader == "object") {
+                if (shader.program) this.GL.deleteProgram(shader.program);
+                if (shader.vertexShader) this.GL.deleteShader(shader.vertexShader);
+                if (shader.fragmentShader) this.GL.deleteShader(shader.fragmentShader);
+            }
         }
 
         refreshGridPattern() {
