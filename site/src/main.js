@@ -156,6 +156,7 @@ artimus.fontPopup = (workspace) => {
 //Setup hotkeys
 artimus.unfocusedHotkeys = true;
 artimus.hotkeys["ctrl+s"] = "exportToPC";
+artimus.hotkeys["ctrl+l"] = "importFromPC";
 
 //Finally initialize the editor by fetching needed json data
 fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
