@@ -4,7 +4,8 @@ editor.settings = {
     preferredFormat: "png",
     debug: false,
     preferGreaterAxis: true, 
-    hotkeys: {...artimus.hotkeys}
+    hotkeys: {...artimus.hotkeys},
+    extensions: []
 };
 
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
@@ -35,6 +36,9 @@ editor.settingDefs = {
     //Hotkeys are complex, so we use a function instead of a cugi menu.
     hotkeys: { function: editor.hotkeyMenu, onchange: () => {
         artimus.hotkeys = editor.settings.hotkeys;
+        editor.saveSettings();
+    }},
+    extensions: { function: editor.extensionMenu, onchange: () => {
         editor.saveSettings();
     }}
 };

@@ -87,6 +87,17 @@
     border-right-style: solid;
 }
 
+.settings-extensionDisplay {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+.settings-extensionAdd {
+    border-radius: 8px;
+    aspect-ratio: 1;
+    height: 100%;
+}
+
 @keyframes settings-pop-in {
     0% {
         transform: scaleY(0) translateY(-100%);

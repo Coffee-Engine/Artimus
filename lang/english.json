@@ -109,6 +109,7 @@
     "artimus.modal.settings.category.general": "General",
     "artimus.modal.settings.category.theme": "Theme",
     "artimus.modal.settings.category.hotkeys": "Hotkeys",
+    "artimus.modal.settings.category.extensions": "Extensions",
 
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
@@ -136,6 +137,10 @@
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",
+
+    "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
+    "artimus.modal.settings.extensions.add": "+",
+    "artimus.modal.settings.extensions.remove": "-",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
