@@ -131,7 +131,7 @@ editor.fileResize = () => {
         document.addEventListener("mouseup", anchorStop);
 
         createButton.onclick = () => {
-            artimus.activeWorkspaces[0].resize(width, height, anchor);
+            editor.workspace.resize(width, height, anchor);
             modal.close();
             document.removeEventListener("mousemove", anchorDrag);
             document.removeEventListener("mouseup", anchorStop);

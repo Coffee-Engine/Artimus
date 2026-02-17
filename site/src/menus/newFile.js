@@ -87,7 +87,7 @@ editor.newFile = (forced) => {
         flipButton.onclick = () => updateResolution(heightInput.value, widthInput.value);
 
         createButton.onclick = () => {
-            artimus.activeWorkspaces[0].new(width, height);
+            editor.workspace.new(width, height);
             modal.close();
         }
 
