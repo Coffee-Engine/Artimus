@@ -315,6 +315,20 @@ window.artimus = {
         "xor",
     ],
 
+    //Default hotkey settings, unfocusedHotkeys makes hotkeys a non-focus exclusive feature.
+    unfocusedHotkeys: false,
+    hotkeys: {
+        "ctrl+z": "undo",
+        "ctrl+shift+z": "redo",
+    },
+
+    modifierKeys: [
+        "control",
+        "shift",
+        "meta",
+        "alt"
+    ],
+
     tool: class {
         get icon() { return ""; }
 
@@ -1289,6 +1303,29 @@ window.artimus = {
             return converted;
         }
 
+        processHotkey(hotkey) {
+            console.log(hotkey);
+            switch (typeof hotkey) {
+                case "string":
+                    this[hotkey]();
+                    break;
+
+                case "object":
+                    //Allow hotkeys to be arrays of commands
+                    if (Array.isArray(hotkey)) for (let command in hotkey) {
+                        this.processHotkey(hotkey[command]);
+                    }
+                    break;
+
+                case "function":
+                    hotkey();
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+
         //Control stuffs
         fingersDown = 0;
         panning = false;
@@ -1394,19 +1431,23 @@ window.artimus = {
                 },
 
                 keyPressed: (event) => {
-                    if (event.key.toLowerCase() == "z" && event.ctrlKey) {
-                        //Determine undo/redo
-                        if (event.shiftKey) {
-                            if (this.redo()) return;
-                        }
-                        else {
-                            if (this.undo()) return;
-                        }
-                    }
+                    if (!(artimus.unfocusedHotkeys || this.focused)) return;
 
-                    if (event.key.toLowerCase() == "s" && event.ctrlKey) {
-                        event.preventDefault();
-                        this.exportToPC();
+                    //Get the initial state
+                    let keyDescription = event.key.toLowerCase();
+                    //Make sure it isn't one of the modifier keys
+                    if (!artimus.modifierKeys.includes(keyDescription)) {
+                        if (event.altKey) keyDescription = `alt+${keyDescription}`;
+                        if (event.shiftKey) keyDescription = `shift+${keyDescription}`;
+                        if (event.ctrlKey) keyDescription = `ctrl+${keyDescription}`;
+
+                        //Just incase...
+                        if (event.metaKey) keyDescription = `meta+${keyDescription}`;
+
+                        if (artimus.hotkeys[keyDescription]){
+                            event.preventDefault();
+                            this.processHotkey(artimus.hotkeys[keyDescription]);
+                        }
                     }
 
                     if (event.key.toLowerCase() == "shift") { this.shiftHeld = true; }
@@ -1633,6 +1674,10 @@ window.artimus = {
             this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
             this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
+
+            document.addEventListener("mousedown", () => { this.focused = false; console.log(this.focused) })
+            this.container.addEventListener("mousedown", (event) => { event.stopPropagation(); this.focused = true; console.log(this.focused) })
+
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
             document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);
 

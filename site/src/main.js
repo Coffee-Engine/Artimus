@@ -111,6 +111,7 @@ window.editor = {
     }
 };
 
+//Artimus configuration
 artimus.translate = (item, context) => {
     if (!editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
 
@@ -152,6 +153,11 @@ artimus.fontPopup = (workspace) => {
     })
 }
 
+//Setup hotkeys
+artimus.unfocusedHotkeys = true;
+artimus.hotkeys["ctrl+s"] = "exportToPC";
+
+//Finally initialize the editor by fetching needed json data
 fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
     try {
         const parsed = JSON.parse(text);
