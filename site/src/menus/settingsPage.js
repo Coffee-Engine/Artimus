@@ -29,13 +29,14 @@ editor.settingsPage = () => {
                         case "object":
                             //Just incase a category changes it.
                             settings.className = "settings-settingsList";
-                            settings.appendChild(CUGI.createList(categoryInfo, { 
+                            if (Array.isArray(categoryInfo)) settings.appendChild(CUGI.createList(categoryInfo, { 
                                 globalChange: () => {
                                     editor.saveSettings();
                                 },
 
                                 preprocess: (item) => modal.CUGIPreprocess(`modal.settings.${category}`, item)
                             }));
+                            else if (categoryInfo.function) categoryInfo.function(settings, `modal.settings.${category}`, categoryInfo.onchange);                            
                             break;
 
                         case "function":

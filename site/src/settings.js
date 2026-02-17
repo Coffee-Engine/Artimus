@@ -33,93 +33,10 @@ editor.settingDefs = {
         }},
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
-    hotkeys: (container, translationKey) => {
-        container.className = "settings-hotkeyList";
-        
-        //Create elements
-        const hotkeyInputHolder = document.createElement("div");
-        hotkeyInputHolder.className = "settings-hotkeyHolder";
-
-        const hotkeyInput = document.createElement("button");
-        hotkeyInput.className = "artimus-button settings-hotkeyInput";
-        hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
-
-        //Add the dropdown menu, and it's options.
-        const hotkeyFunction = document.createElement("select");
-        for (let funcID in editor.hotkeyFunctions) {
-            const func = editor.hotkeyFunctions[funcID];
-
-            const option = document.createElement("option");
-            option.innerText = artimus.translate(func, `${translationKey}.functions`);
-            option.value = func;
-
-            hotkeyFunction.appendChild(option);
-        }
-
-        const hotkeyAdd = document.createElement("button");
-        hotkeyAdd.className = "artimus-button settings-hotkeyAdd";
-        hotkeyAdd.innerText = artimus.translate("add", translationKey);
-
-        //Add functionality to the key capture mechanism.
-        let hotkeyToAdd = "";
-        const inputCapturer = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const key = event.key.toLowerCase();
-
-            if (!artimus.modifierKeys.includes(key)) {
-                let keyDescription = key;
-
-                if (event.altKey) keyDescription = `alt+${keyDescription}`;
-                if (event.shiftKey) keyDescription = `shift+${keyDescription}`;
-                if (event.ctrlKey) keyDescription = `ctrl+${keyDescription}`;
-
-                //Just incase...
-                if (event.metaKey) keyDescription = `meta+${keyDescription}`;
-
-                const joiner = artimus.translate("joiner", translationKey);
-                let translatedDescription = keyDescription.split("+");
-
-                for (let idx in translatedDescription) {
-                    translatedDescription[idx] = artimus.translate(translatedDescription[idx], translationKey, true);
-                }
-                
-                artimus.unfocusedHotkeys = true;
-                hotkeyInput.innerText = translatedDescription.join(joiner);
-                hotkeyToAdd = keyDescription;
-                document.removeEventListener("keydown", inputCapturer);
-            }
-        }
-
-        hotkeyInput.onclick = () => {
-            artimus.unfocusedHotkeys = false;
-            hotkeyInput.innerText = artimus.translate("waitingForInput", translationKey);
-
-            document.addEventListener("keydown", inputCapturer);
-        }
-
-        hotkeyAdd.onclick = () => {
-            //Give an error if the hotkey doesn't exist.
-            if (artimus.hotkeys[hotkeyToAdd]) {
-                hotkeyInput.innerText = artimus.translate("hotkeyExists", translationKey);
-            }
-            else {
-                artimus.hotkeys[hotkeyToAdd] = hotkeyFunction.value;
-                hotkeyToAdd = "";
-                hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
-            }
-        }
-
-        //Setup the dom for the initial holder.
-        hotkeyInputHolder.appendChild(hotkeyInput);
-        hotkeyInputHolder.appendChild(hotkeyFunction);
-        hotkeyInputHolder.appendChild(hotkeyAdd);
-        container.appendChild(hotkeyInputHolder);
-
-        //Prevent errors from switching pages.
-        return () => document.removeEventListener("keydown", inputCapturer);
-    }
+    hotkeys: { function: editor.hotkeyMenu, onchange: () => {
+        artimus.hotkeys = editor.settings.hotkeys;
+        editor.saveSettings();
+    }}
 };
 
 
@@ -127,10 +44,17 @@ if (localStorage.getItem("settings")) {
     Object.assign(editor.settings, JSON.parse(localStorage.getItem("settings")));
 
     for (let category in editor.settingDefs) {
-        if (!Array.isArray(editor.settingDefs[category])) continue;
+        const categoryObj = editor.settingDefs[category];
+        //If we aren't a CUGI menu, then try to call object functions
+        if (!Array.isArray(categoryObj)) {
+            if (typeof categoryObj == "object") {
+                if (categoryObj.onchange) categoryObj.onchange();
+            }
+            continue;
+        }
 
-        for (let item in editor.settingDefs[category]) {
-            const setting = editor.settingDefs[category][item];
+        for (let item in categoryObj) {
+            const setting = categoryObj[item];
 
             if (setting.onchange) setting.onchange(editor.settings[setting.key]);
         }
