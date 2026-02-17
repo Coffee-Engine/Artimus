@@ -118,6 +118,7 @@
     "artimus.modal.settings.theme.theme": "Theme",
 
     "artimus.modal.settings.hotkeys.add": "+",
+    "artimus.modal.settings.hotkeys.remove": "-",
     "artimus.modal.settings.hotkeys.clickToInput": "Click to Input!",
     "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for Input.",
     "artimus.modal.settings.hotkeys.hotkeyExists": "Hotkey exists!",

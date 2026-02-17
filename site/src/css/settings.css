@@ -16,6 +16,10 @@
     border-radius: 0px;
 }
 
+.settings-settingsList {
+    transition: background-color 300ms;
+}
+
 .settings-settingsList .CUGI-PropertyHolder {
     display: flex;
     grid-template-columns: 50% auto;
@@ -44,12 +48,14 @@
 }
 
 .settings-hotkeyList {
+    transition: background-color 300ms;
     background-color: var(--artimus-background-3);
 }
 
 .settings-hotkeyHolder {
     display: grid;
     grid-template-columns: 50% 1fr auto;
+    animation: 300ms settings-pop-in;
 }
 
 .settings-hotkeyInput {
