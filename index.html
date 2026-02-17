@@ -60,6 +60,9 @@
                 <cugi-option>{ type: "button", text: "Resize", onclick: () => {
                     editor.fileResize(false);
                 }}</cugi-option>
+                <cugi-option>{ type: "button", text: "Crop", onclick: () => {
+                    artimus.activeWorkspaces[0].cropToSelection();
+                }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Undo (ctrl + z)", onclick: () => {
                     artimus.activeWorkspaces[0].undo();
                 }}</cugi-option>

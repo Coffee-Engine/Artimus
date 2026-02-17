@@ -280,6 +280,11 @@ window.artimus = {
         BOTTOM_RIGHT: [1, 1],
     },
 
+    resizeModes: [
+        "anchored",
+        "crop"
+    ],
+
     //Mostly used in saving but can be used for other purposes, like making a list of global composite operations
     blendModes: [
         "source-over",
@@ -426,7 +431,40 @@ window.artimus = {
             }
         }
 
-        resize(active, anchor, width, height, editingData) {
+        resizeByRect(active, rx, ry, width, height, editingData) {
+            const layer = (active) ? editingData : this;
+            if (width == layer.width && height == layer.height) return;
+
+            //Get needed attributes for the transfer
+            const output = new ImageData(width, height);
+
+            //Transfer data
+            for (let y = 0; y < layer.height; y++) {
+                for (let x = 0; x < layer.width; x++) {
+                    //Then get the position
+                    if (x < 0 || y < 0 || x >= width || y >= height) continue;
+
+                    //Now we do the stuff we need to
+                    const lID = (((ry + y) * layer.width) + (rx + x)) * 4;
+                    const oID = ((y * output.width) + x) * 4;
+
+                    output.data[oID] = layer.data[lID];
+                    output.data[oID + 1] = layer.data[lID + 1];
+                    output.data[oID + 2] = layer.data[lID + 2];
+                    output.data[oID + 3] = layer.data[lID + 3];
+                }
+            }
+            
+            //Blit image data to editing canvas if needed
+            if (active) {
+                this.workspace.editGL.putImageData(output, 0, 0);
+            }
+
+            this.dataRaw = output;
+            this.updateBitmap();
+        }
+
+        resizeByAnchor(active, anchor, width, height, editingData) {
             const layer = (active) ? editingData : this;
             if (width == layer.width && height == layer.height) return;
 
@@ -750,13 +788,11 @@ window.artimus = {
                 this.editingCanvas = new OffscreenCanvas(1, 1);
                 this.previewCanvas = new OffscreenCanvas(1, 1);
                 this.compositeCanvas = new OffscreenCanvas(1, 1);
-                this.gridCanvas = new OffscreenCanvas(1, 1);
             }
             else {
                 this.editingCanvas = document.createElement("canvas");
                 this.previewCanvas = document.createElement("canvas");
                 this.compositeCanvas = document.createElement("canvas");
-                this.gridCanvas = document.createElement("canvas");
             }
 
             //We use webgl for the fullview since offscreen canvas' are rather performant, and also useful.
@@ -767,7 +803,6 @@ window.artimus = {
             this.editGL = this.editingCanvas.getContext("2d", { willReadFrequently: true, desynchronized: true  });
             this.compositeGL = this.compositeCanvas.getContext("2d", { desynchronized: true });
             this.previewGL = this.previewCanvas.getContext("2d", { desynchronized: true });
-            this.gridGL = this.gridCanvas.getContext("2d", { alpha: false });
 
             //Now time to setup the webgl texture
             this.webgl.compositeTexture = this.setupSimpleTexture();
@@ -2083,14 +2118,25 @@ window.artimus = {
             }
         }
 
-        resizeLayer(ID, anchor, width, height, editingData) {
+        resizeLayerByRect(ID, x, y, width, height, editingData) {
             if (typeof ID == "string") {
                 const locID = this.layers.findIndex((layer) => layer.name == ID);
                 if (locID != -1) ID = locID;
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resize(ID == this.currentLayer, anchor, width, height, editingData);
+                this.layers[ID].resizeByRect(ID == this.currentLayer, x, y, width, height, editingData);
+            }
+        }
+
+        resizeLayerByAnchor(ID, anchor, width, height, editingData) {
+            if (typeof ID == "string") {
+                const locID = this.layers.findIndex((layer) => layer.name == ID);
+                if (locID != -1) ID = locID;
+            }
+
+            if (typeof ID == "number") {
+                this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
             }
         }
 
@@ -2118,17 +2164,25 @@ window.artimus = {
             return this.layers.findIndex((layer) => layer.name == name) != -1;
         }
 
-        //Now for the stuff people want to interact with
-        resize(width, height, anchor) {
-            //Get anchor data
-            anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
-            if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
+        cropToSelection() {
+            //Relatively simple, check for a selection then call resize with the crop mode.
+            if (this.hasSelection) this.resizeByRect(
+                this.selectionMinX,
+                this.selectionMinY,
+                this.selectionMaxX - this.selectionMinX + 1,
+                this.selectionMaxY - this.selectionMinY + 1,
+            );
+        }
 
-            //Copy the data
-            anchor = [...(anchor)];
+        //Resizing in style
+        resize(width, height, anchor) { 
+            if (anchor) this.resizeByAnchor(width, height, anchor);
+            else this.resizeByRect(0, 0, width, height);
+        }
 
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
+        _resizeCanvases(width, height) {
+            //Clear the selection if we have one
+            this.clearSelection();
 
             //Get editing data before resizing due to resizing removing all image data;
             const editingData = (this.editGL) ? this.editGL.getImageData(0, 0, this.width, this.height) : null;
@@ -2145,32 +2199,18 @@ window.artimus = {
             this.editingCanvas.width = width;
             this.editingCanvas.height = height;
             
-            this.gridCanvas.width = width;
-            this.gridCanvas.height = height;
-            
             this.compositeCanvas.width = width;
             this.compositeCanvas.height = height;
 
-            //resize layers
-            for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayer(index, anchor, this.#width, this.#height, editingData);
-            }
-
             //Finally set smoothing
-            this.GL.imageSmoothingEnabled = false;
             this.previewGL.imageSmoothingEnabled = false;
-            this.gridGL.imageSmoothingEnabled = false;
+            this.compositeGL.imageSmoothingEnabled = false;
             this.editGL.imageSmoothingEnabled = false;
 
-            //Redraw the grid
-            this.gridGL.fillStyle = this.gridPattern;
-            this.gridGL.fillRect(0, 0, this.width, this.height);
+            return editingData;
+        }
 
-            this.scrollX = this.scrollX;
-            this.scrollY = this.scrollY;
-            this.updatePosition();
-
-            //Update textures
+        _updateTextures() {
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeCanvas);
 
@@ -2179,6 +2219,50 @@ window.artimus = {
 
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editingCanvas);
+        }
+
+        resizeByRect(x, y, width, height) {
+            if (x < 0 || typeof x != "number") x = 0;
+            else if (x >= this.width) x = this.width - 1;
+
+            if (y < 0 || typeof y != "number") x = 0;
+            else if (y >= this.height) y = this.height - 1;
+
+            if (width < 1 || typeof width != "number") width = 1;
+            if (height < 1 || typeof height != "number") height = 1;
+
+            const editingData = this._resizeCanvases(width, height);
+            for (let index = 0; index < this.layers.length; index++) {
+                this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
+            }
+
+            //Update textures
+            this._updateTextures();
+            this.dirty = true;
+        }
+
+        resizeByAnchor(width, height, anchor) {
+            //Get anchor data
+            anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
+            if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
+
+            //Copy the data
+            anchor = [...(anchor)];
+
+            if (width < 1 || typeof width != "number") width = 1;
+            if (height < 1 || typeof height != "number") height = 1;
+
+            const editingData = this._resizeCanvases(width, height);
+            for (let index = 0; index < this.layers.length; index++) {
+                this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
+            }
+
+            this.scrollX = this.scrollX;
+            this.scrollY = this.scrollY;
+            this.updatePosition();
+
+            //Update textures
+            this._updateTextures();
             this.dirty = true;
         }
 
