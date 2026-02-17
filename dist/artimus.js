@@ -1675,8 +1675,8 @@ window.artimus = {
             this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
 
-            document.addEventListener("mousedown", () => { this.focused = false; console.log(this.focused) })
-            this.container.addEventListener("mousedown", (event) => { event.stopPropagation(); this.focused = true; console.log(this.focused) })
+            document.addEventListener("mousedown", () => { this.focused = false; });
+            this.container.addEventListener("mousedown", (event) => { event.stopPropagation(); this.focused = true; });
 
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
             document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);

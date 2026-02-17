@@ -30,6 +30,9 @@ editor.settingDefs = {
             for (let item in theme) { document.body.style.setProperty(`--${item}`, theme[item]); }
             for (let workspaceID in artimus.activeWorkspaces) { artimus.activeWorkspaces[workspaceID].refreshGridPattern(); }
         }},
+    ],
+    hotkeys: [
+        
     ]
 };
 
