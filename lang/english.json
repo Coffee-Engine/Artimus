@@ -118,8 +118,9 @@
     "artimus.modal.settings.theme.theme": "Theme",
 
     "artimus.modal.settings.hotkeys.add": "+",
-    "artimus.modal.settings.hotkeys.clickToInput": "Click to Input",
-    "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for input",
+    "artimus.modal.settings.hotkeys.clickToInput": "Click to Input!",
+    "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for Input.",
+    "artimus.modal.settings.hotkeys.hotkeyExists": "Hotkey exists!",
 
     "artimus.modal.settings.hotkeys.ctrl": "ctrl",
     "artimus.modal.settings.hotkeys.shift": "shift",
@@ -128,8 +129,9 @@
     "artimus.modal.settings.hotkeys. ": "space",
     "artimus.modal.settings.hotkeys.joiner": "+",
 
-    "artimus.modal.settings.hotkeys.functions.undo": "undo",
-    "artimus.modal.settings.hotkeys.functions.redo": "redo",
+    "artimus.modal.settings.hotkeys.functions.undo": "Undo",
+    "artimus.modal.settings.hotkeys.functions.redo": "Redo",
+    "artimus.modal.settings.hotkeys.functions.cropToSelection": "Crop",
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",

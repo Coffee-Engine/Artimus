@@ -4,6 +4,7 @@ editor.settings = {
     preferredFormat: "png",
     debug: false,
     preferGreaterAxis: true, 
+    hotkeys: {...artimus.hotkeys}
 };
 
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
@@ -36,8 +37,8 @@ editor.settingDefs = {
         container.className = "settings-hotkeyList";
         
         //Create elements
-        const hotkeyAddHolder = document.createElement("div");
-        hotkeyAddHolder.className = "settings-hotkeyHolder";
+        const hotkeyInputHolder = document.createElement("div");
+        hotkeyInputHolder.className = "settings-hotkeyHolder";
 
         const hotkeyInput = document.createElement("button");
         hotkeyInput.className = "artimus-button settings-hotkeyInput";
@@ -98,10 +99,23 @@ editor.settingDefs = {
             document.addEventListener("keydown", inputCapturer);
         }
 
-        hotkeyAddHolder.appendChild(hotkeyInput);
-        hotkeyAddHolder.appendChild(hotkeyFunction);
-        hotkeyAddHolder.appendChild(hotkeyAdd);
-        container.appendChild(hotkeyAddHolder);
+        hotkeyAdd.onclick = () => {
+            //Give an error if the hotkey doesn't exist.
+            if (artimus.hotkeys[hotkeyToAdd]) {
+                hotkeyInput.innerText = artimus.translate("hotkeyExists", translationKey);
+            }
+            else {
+                artimus.hotkeys[hotkeyToAdd] = hotkeyFunction.value;
+                hotkeyToAdd = "";
+                hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
+            }
+        }
+
+        //Setup the dom for the initial holder.
+        hotkeyInputHolder.appendChild(hotkeyInput);
+        hotkeyInputHolder.appendChild(hotkeyFunction);
+        hotkeyInputHolder.appendChild(hotkeyAdd);
+        container.appendChild(hotkeyInputHolder);
 
         //Prevent errors from switching pages.
         return () => document.removeEventListener("keydown", inputCapturer);
@@ -113,6 +127,8 @@ if (localStorage.getItem("settings")) {
     Object.assign(editor.settings, JSON.parse(localStorage.getItem("settings")));
 
     for (let category in editor.settingDefs) {
+        if (!Array.isArray(editor.settingDefs[category])) continue;
+
         for (let item in editor.settingDefs[category]) {
             const setting = editor.settingDefs[category][item];
 

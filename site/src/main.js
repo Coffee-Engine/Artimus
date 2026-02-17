@@ -116,6 +116,7 @@ window.editor = {
         "importFromPC",
         "exportToPC",
         "createLayer",
+        "cropToSelection"
     ]
 };
 
