@@ -1304,7 +1304,6 @@ window.artimus = {
         }
 
         processHotkey(hotkey) {
-            console.log(hotkey);
             switch (typeof hotkey) {
                 case "string":
                     this[hotkey]();
@@ -1315,10 +1314,20 @@ window.artimus = {
                     if (Array.isArray(hotkey)) for (let command in hotkey) {
                         this.processHotkey(hotkey[command]);
                     }
+                    //Allow objects to be used
+                    else {
+                        //Parse arguments if available.
+                        let args = [];
+                        if (Array.isArray(hotkey.arguments)) args = [...hotkey.arguments];
+
+                        //Function determination using any function from this as a fallback if need be
+                        if (typeof hotkey.function == "function") hotkey.function(this, ...args);
+                        else if (typeof this[hotkey.function] == "function") this[hotkey.function](...args);
+                    }
                     break;
 
                 case "function":
-                    hotkey();
+                    hotkey(this);
                     break;
             
                 default:
