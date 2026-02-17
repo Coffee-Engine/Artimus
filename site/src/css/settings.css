@@ -43,6 +43,25 @@
     padding-bottom: 0.5em;
 }
 
+.settings-hotkeyList {
+    background-color: var(--artimus-background-3);
+}
+
+.settings-hotkeyHolder {
+    display: grid;
+    grid-template-columns: 50% 1fr auto;
+}
+
+.settings-hotkeyInput {
+    border-radius: 4px;
+}
+
+.settings-hotkeyAdd {
+    border-radius: 8px;
+    aspect-ratio: 1;
+    height: 100%;
+}
+
 @keyframes settings-pop-in {
     0% {
         transform: scaleY(0) translateY(-100%);

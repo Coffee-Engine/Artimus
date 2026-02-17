@@ -326,7 +326,8 @@ window.artimus = {
         "control",
         "shift",
         "meta",
-        "alt"
+        "alt",
+        "+"
     ],
 
     tool: class {

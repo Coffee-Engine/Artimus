@@ -108,14 +108,22 @@ window.editor = {
         p.innerText = text;
         p.className = cls || "";
         return p;
-    }
+    },
+
+    hotkeyFunctions: [
+        "undo",
+        "redo",
+        "importFromPC",
+        "exportToPC",
+        "createLayer",
+    ]
 };
 
 //Artimus configuration
-artimus.translate = (item, context) => {
-    if (!editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
+artimus.translate = (item, context, noComplaints) => {
+    if ((!noComplaints) && !editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
 
-    const translated = (editor.language[`artimus.${context}.${item}`] || `artimus.${context}.${item}`);
+    const translated = editor.language[`artimus.${context}.${item}`] || ((noComplaints) ? item : `artimus.${context}.${item}`);
     if (Array.isArray(translated)) return translated.join("\n");
     return translated;
 }
