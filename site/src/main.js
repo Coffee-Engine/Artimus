@@ -108,13 +108,23 @@ window.editor = {
         p.innerText = text;
         p.className = cls || "";
         return p;
-    }
+    },
+
+    hotkeyFunctions: [
+        "undo",
+        "redo",
+        "importFromPC",
+        "exportToPC",
+        "createLayer",
+        "cropToSelection"
+    ]
 };
 
-artimus.translate = (item, context) => {
-    if (!editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
+//Artimus configuration
+artimus.translate = (item, context, noComplaints) => {
+    if ((!noComplaints) && !editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
 
-    const translated = (editor.language[`artimus.${context}.${item}`] || `artimus.${context}.${item}`);
+    const translated = editor.language[`artimus.${context}.${item}`] || ((noComplaints) ? item : `artimus.${context}.${item}`);
     if (Array.isArray(translated)) return translated.join("\n");
     return translated;
 }
@@ -152,6 +162,12 @@ artimus.fontPopup = (workspace) => {
     })
 }
 
+//Setup hotkeys
+artimus.unfocusedHotkeys = true;
+artimus.hotkeys["ctrl+s"] = "exportToPC";
+artimus.hotkeys["ctrl+l"] = "importFromPC";
+
+//Finally initialize the editor by fetching needed json data
 fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
     try {
         const parsed = JSON.parse(text);
@@ -172,14 +188,14 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     const element = document.getElementById("versionIdentifier");
     const loop = () => {
         if (editor.settings.debug) {
-            const ws = artimus.activeWorkspaces[0];
             //Timing
-            element.innerText = `dt:${Math.floor(ws.performance.delta * 1000) / 1000} fps:${Math.floor(ws.performance.fps)}`;
+            element.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
             //Canvas
-            element.innerText += ` ud: ${ws.layerHistory.length} hs: ${ws.historyIndex} d:${ws.dirty} l:${ws.layers.length} || cw: ${ws.width} ch: ${ws.height}`;
+            element.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
 
-            if (ws.tool) element.innerText = element.innerText += ` || t: ${ws.tool} tc: ${ws.toolFunction.constructive} pc: ${JSON.stringify(ws.toolFunction.colorProperties)}`
+            if (editor.workspace.tool) element.innerText = element.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
             else element.innerText += ` || t: none`;
+            element.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
         }
         requestAnimationFrame(loop);
     }

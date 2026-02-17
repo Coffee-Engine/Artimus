@@ -108,12 +108,34 @@
     "artimus.modal.settings.title": "Settings",
     "artimus.modal.settings.category.general": "General",
     "artimus.modal.settings.category.theme": "Theme",
+    "artimus.modal.settings.category.hotkeys": "Hotkeys",
 
-    "artimus.modal.settings.theme.theme": "Theme",
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
     "artimus.modal.settings.general.preferGreaterAxis": "Prefer Greater Axis",
     "artimus.modal.settings.general.debug": "\"Nerd Numbers\"",
+
+    "artimus.modal.settings.theme.theme": "Theme",
+
+    "artimus.modal.settings.hotkeys.add": "+",
+    "artimus.modal.settings.hotkeys.remove": "-",
+    "artimus.modal.settings.hotkeys.clickToInput": "Click to Input!",
+    "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for Input.",
+    "artimus.modal.settings.hotkeys.hotkeyExists": "Hotkey exists!",
+
+    "artimus.modal.settings.hotkeys.ctrl": "ctrl",
+    "artimus.modal.settings.hotkeys.shift": "shift",
+    "artimus.modal.settings.hotkeys.alt": "alt",
+    "artimus.modal.settings.hotkeys.meta": "meta",
+    "artimus.modal.settings.hotkeys. ": "space",
+    "artimus.modal.settings.hotkeys.joiner": "+",
+
+    "artimus.modal.settings.hotkeys.functions.undo": "Undo",
+    "artimus.modal.settings.hotkeys.functions.redo": "Redo",
+    "artimus.modal.settings.hotkeys.functions.cropToSelection": "Crop",
+    "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
+    "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
+    "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",

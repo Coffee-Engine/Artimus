@@ -4,6 +4,7 @@ editor.settings = {
     preferredFormat: "png",
     debug: false,
     preferGreaterAxis: true, 
+    hotkeys: {...artimus.hotkeys}
 };
 
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
@@ -30,7 +31,12 @@ editor.settingDefs = {
             for (let item in theme) { document.body.style.setProperty(`--${item}`, theme[item]); }
             for (let workspaceID in artimus.activeWorkspaces) { artimus.activeWorkspaces[workspaceID].refreshGridPattern(); }
         }},
-    ]
+    ],
+    //Hotkeys are complex, so we use a function instead of a cugi menu.
+    hotkeys: { function: editor.hotkeyMenu, onchange: () => {
+        artimus.hotkeys = editor.settings.hotkeys;
+        editor.saveSettings();
+    }}
 };
 
 
@@ -38,55 +44,19 @@ if (localStorage.getItem("settings")) {
     Object.assign(editor.settings, JSON.parse(localStorage.getItem("settings")));
 
     for (let category in editor.settingDefs) {
-        for (let item in editor.settingDefs[category]) {
-            const setting = editor.settingDefs[category][item];
+        const categoryObj = editor.settingDefs[category];
+        //If we aren't a CUGI menu, then try to call object functions
+        if (!Array.isArray(categoryObj)) {
+            if (typeof categoryObj == "object") {
+                if (categoryObj.onchange) categoryObj.onchange();
+            }
+            continue;
+        }
+
+        for (let item in categoryObj) {
+            const setting = categoryObj[item];
 
             if (setting.onchange) setting.onchange(editor.settings[setting.key]);
         }
     }
-}
-
-editor.settingsPage = () => {
-    //Do some cool stuff
-    new editor.modal(
-        artimus.translate("title", "modal.settings"), 
-        (contents, modal) => {
-            contents.className += " popup-settings";
-
-            const categories = document.createElement("div");
-            const settings = document.createElement("div");
-
-            categories.classList = "settings-categoryList";
-            settings.classList = "settings-settingsList";
-
-            //Add the categories to the sidebar
-            for (let category in editor.settingDefs) {
-                const button = document.createElement("button");
-                button.innerText = artimus.translate(category, "modal.settings.category");
-                button.className = "artimus-button settings-categoryButton";
-
-                button.onclick = () => {
-                    settings.innerHTML = "";
-
-                    settings.appendChild(CUGI.createList(editor.settingDefs[category], { 
-                        globalChange: () => {
-                            editor.saveSettings();
-                        },
-
-                        preprocess: (item) => modal.CUGIPreprocess(`modal.settings.${category}`, item)
-                    }));
-                };
-
-                categories.appendChild(button);
-            }
-
-            //Add them to the contents then "click" the first one
-            contents.appendChild(categories);
-            contents.appendChild(settings);
-
-            categories.children[0].onclick();
-            
-        }, 
-        { translationContext: "settings", width: 60 }
-    );
 }

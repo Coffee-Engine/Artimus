@@ -315,6 +315,21 @@ window.artimus = {
         "xor",
     ],
 
+    //Default hotkey settings, unfocusedHotkeys makes hotkeys a non-focus exclusive feature.
+    unfocusedHotkeys: false,
+    hotkeys: {
+        "ctrl+z": "undo",
+        "ctrl+shift+z": "redo",
+    },
+
+    modifierKeys: [
+        "control",
+        "shift",
+        "meta",
+        "alt",
+        "+"
+    ],
+
     tool: class {
         get icon() { return ""; }
 
@@ -505,6 +520,9 @@ window.artimus = {
     },
 
     workspace: class {
+        //Viewbounds
+        viewBounds = [0, 0, 0, 0];
+
         //Scrolling
         #scrollX = 0;
         set scrollX(value) {
@@ -547,7 +565,7 @@ window.artimus = {
             this.refreshToolOptions();
 
             //We also want to clear the previewGL
-            if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
+            if (this.toolFunction.preview) this.previewGL.clearRect(...this.viewBounds);
         }
         get tool() { return this.#tool; }
 
@@ -1067,16 +1085,16 @@ window.artimus = {
             //Calculate render bounds based upon the view area.
             const halfCanvWidth = this.width / 2;
             const halfCanvHeight = this.height / 2;
-            const viewBounds = [
+            this.viewBounds = [
                 Math.floor((halfCanvWidth-this.scrollX) - (width * this.invZoom)),
                 Math.floor((halfCanvHeight-this.scrollY) - (height * this.invZoom)),
                 Math.ceil((halfCanvWidth-this.scrollX) + (width * this.invZoom)),
                 Math.ceil((halfCanvHeight-this.scrollY) + (height * this.invZoom))
             ];
-            viewBounds[0] = Math.min(this.width - 1, Math.max(0, viewBounds[0]));
-            viewBounds[1] = Math.min(this.height - 1, Math.max(0, viewBounds[1]));
-            viewBounds[2] = Math.max(1, Math.min(this.width - viewBounds[0], viewBounds[2] - viewBounds[0]));
-            viewBounds[3] = Math.max(1, Math.min(this.height - viewBounds[1], viewBounds[3] - viewBounds[1]));
+            this.viewBounds[0] = Math.min(this.width - 1, Math.max(0, this.viewBounds[0]));
+            this.viewBounds[1] = Math.min(this.height - 1, Math.max(0, this.viewBounds[1]));
+            this.viewBounds[2] = Math.max(1, Math.min(this.width - this.viewBounds[0], this.viewBounds[2] - this.viewBounds[0]));
+            this.viewBounds[3] = Math.max(1, Math.min(this.height - this.viewBounds[1], this.viewBounds[3] - this.viewBounds[1]));
 
             //The reason behind time and selection animation
             //Time is here as a global timer, as selection animation is for a specific animation that may restart.
@@ -1084,11 +1102,11 @@ window.artimus = {
 
             //If we are dirty update our canvas as needed.
             if (this.dirty) {
-                this.renderComposite(viewBounds);
+                this.renderComposite(this.viewBounds);
 
                 //Bind and edit the composite texture
                 this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.viewBounds).data);
             }
 
             //Set buffers to the position buffer/quad buffer.
@@ -1114,7 +1132,7 @@ window.artimus = {
             if (!this.getLayerVisibility(this.currentLayer)) {
                 //Do preview stuff
                 this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...viewBounds).data);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...this.viewBounds).data);
 
                 main.setUniforms({
                     u_main_tex: this.webgl.hiddenTexture,
@@ -1125,7 +1143,7 @@ window.artimus = {
 
             //Do preview stuff
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
-            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...viewBounds).data);
+            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...this.viewBounds).data);
 
             main.setUniforms({
                 u_main_tex: this.webgl.previewTexture,
@@ -1286,6 +1304,38 @@ window.artimus = {
             return converted;
         }
 
+        processHotkey(hotkey) {
+            switch (typeof hotkey) {
+                case "string":
+                    this[hotkey]();
+                    break;
+
+                case "object":
+                    //Allow hotkeys to be arrays of commands
+                    if (Array.isArray(hotkey)) for (let command in hotkey) {
+                        this.processHotkey(hotkey[command]);
+                    }
+                    //Allow objects to be used
+                    else {
+                        //Parse arguments if available.
+                        let args = [];
+                        if (Array.isArray(hotkey.arguments)) args = [...hotkey.arguments];
+
+                        //Function determination using any function from this as a fallback if need be
+                        if (typeof hotkey.function == "function") hotkey.function(this, ...args);
+                        else if (typeof this[hotkey.function] == "function") this[hotkey.function](...args);
+                    }
+                    break;
+
+                case "function":
+                    hotkey(this);
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+
         //Control stuffs
         fingersDown = 0;
         panning = false;
@@ -1329,7 +1379,7 @@ window.artimus = {
                             const position = this.getCanvasPosition(event.clientX, event.clientY);
                             if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.editGL, ...position, this.toolProperties);
                             if (this.toolFunction.preview) {
-                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.previewGL.clearRect(...this.viewBounds);
                                 this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                             }
                             
@@ -1363,7 +1413,7 @@ window.artimus = {
                     
                     if (this.toolFunction.preview) {
                         //For previews
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                     }
 
@@ -1391,19 +1441,23 @@ window.artimus = {
                 },
 
                 keyPressed: (event) => {
-                    if (event.key.toLowerCase() == "z" && event.ctrlKey) {
-                        //Determine undo/redo
-                        if (event.shiftKey) {
-                            if (this.redo()) return;
-                        }
-                        else {
-                            if (this.undo()) return;
-                        }
-                    }
+                    if (!(artimus.unfocusedHotkeys || this.focused)) return;
 
-                    if (event.key.toLowerCase() == "s" && event.ctrlKey) {
-                        event.preventDefault();
-                        this.exportToPC();
+                    //Get the initial state
+                    let keyDescription = event.key.toLowerCase();
+                    //Make sure it isn't one of the modifier keys
+                    if (!artimus.modifierKeys.includes(keyDescription)) {
+                        if (event.altKey) keyDescription = `alt+${keyDescription}`;
+                        if (event.shiftKey) keyDescription = `shift+${keyDescription}`;
+                        if (event.ctrlKey) keyDescription = `ctrl+${keyDescription}`;
+
+                        //Just incase...
+                        if (event.metaKey) keyDescription = `meta+${keyDescription}`;
+
+                        if (artimus.hotkeys[keyDescription]){
+                            event.preventDefault();
+                            this.processHotkey(artimus.hotkeys[keyDescription]);
+                        }
                     }
 
                     if (event.key.toLowerCase() == "shift") { this.shiftHeld = true; }
@@ -1411,7 +1465,7 @@ window.artimus = {
                     if (this.toolFunction.keyPressed) {
                         if (this.toolFunction.keyPressed(this.editGL, event, this.toolProperties)) event.preventDefault();
 
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
                     }
                 },
@@ -1422,7 +1476,7 @@ window.artimus = {
                     if (this.toolFunction.keyReleased) {
                         if (this.toolFunction.keyReleased(this.editGL, event, this.toolProperties)) event.preventDefault();
 
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
                     }
                 }
@@ -1533,7 +1587,7 @@ window.artimus = {
                     
                                 if (this.toolFunction.preview) {
                                     //For previews
-                                    this.previewGL.clearRect(0, 0, this.width, this.height);
+                                    this.previewGL.clearRect(...this.viewBounds);
                                     this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                                 }
 
@@ -1566,7 +1620,7 @@ window.artimus = {
                         if (this.toolDown) {
                             if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.editGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             if (this.toolFunction.preview) {
-                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.previewGL.clearRect(...this.viewBounds);
                                 this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             }
                             
@@ -1590,7 +1644,7 @@ window.artimus = {
                         const position = this.getCanvasPosition(event.clientX, event.clientY);
                         if (this.toolFunction.preview) {
                             //For previews
-                            this.previewGL.clearRect(0, 0, this.width, this.height);
+                            this.previewGL.clearRect(...this.viewBounds);
                             this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                         }
 
@@ -1630,6 +1684,10 @@ window.artimus = {
             this.container.addEventListener("mouseup", this.controlSets.kbMouse.mouseUp);
             this.canvasArea.addEventListener("mousemove", this.controlSets.kbMouse.mouseMove);
             this.canvasArea.addEventListener("wheel", this.controlSets.kbMouse.mouseWheel, { passive: false });
+
+            document.addEventListener("mousedown", () => { this.focused = false; });
+            this.container.addEventListener("mousedown", (event) => { event.stopPropagation(); this.focused = true; });
+
             document.addEventListener("keydown", this.controlSets.kbMouse.keyPressed);
             document.addEventListener("keyup", this.controlSets.kbMouse.keyReleased);
 
