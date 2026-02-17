@@ -550,7 +550,7 @@ window.artimus = {
             this.refreshToolOptions();
 
             //We also want to clear the previewGL
-            if (this.toolFunction.preview) this.previewGL.clearRect(0, 0, this.width, this.height);
+            if (this.toolFunction.preview) this.previewGL.clearRect(...this.viewBounds);
         }
         get tool() { return this.#tool; }
 
@@ -1332,7 +1332,7 @@ window.artimus = {
                             const position = this.getCanvasPosition(event.clientX, event.clientY);
                             if (this.toolFunction.mouseUp && this.toolDown) this.toolFunction.mouseUp(this.editGL, ...position, this.toolProperties);
                             if (this.toolFunction.preview) {
-                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.previewGL.clearRect(...this.viewBounds);
                                 this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                             }
                             
@@ -1366,7 +1366,7 @@ window.artimus = {
                     
                     if (this.toolFunction.preview) {
                         //For previews
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                     }
 
@@ -1414,7 +1414,7 @@ window.artimus = {
                     if (this.toolFunction.keyPressed) {
                         if (this.toolFunction.keyPressed(this.editGL, event, this.toolProperties)) event.preventDefault();
 
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
                     }
                 },
@@ -1425,7 +1425,7 @@ window.artimus = {
                     if (this.toolFunction.keyReleased) {
                         if (this.toolFunction.keyReleased(this.editGL, event, this.toolProperties)) event.preventDefault();
 
-                        this.previewGL.clearRect(0, 0, this.width, this.height);
+                        this.previewGL.clearRect(...this.viewBounds);
                         this.toolFunction.preview(this.previewGL, ...this.lastPosition, this.toolProperties);                        
                     }
                 }
@@ -1536,7 +1536,7 @@ window.artimus = {
                     
                                 if (this.toolFunction.preview) {
                                     //For previews
-                                    this.previewGL.clearRect(0, 0, this.width, this.height);
+                                    this.previewGL.clearRect(...this.viewBounds);
                                     this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                                 }
 
@@ -1569,7 +1569,7 @@ window.artimus = {
                         if (this.toolDown) {
                             if (this.toolFunction.mouseUp) this.toolFunction.mouseUp(this.editGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             if (this.toolFunction.preview) {
-                                this.previewGL.clearRect(0, 0, this.width, this.height);
+                                this.previewGL.clearRect(...this.viewBounds);
                                 this.toolFunction.preview(this.previewGL, ...this.controlSets.touch.lastDrew, this.toolProperties);
                             }
                             
@@ -1593,7 +1593,7 @@ window.artimus = {
                         const position = this.getCanvasPosition(event.clientX, event.clientY);
                         if (this.toolFunction.preview) {
                             //For previews
-                            this.previewGL.clearRect(0, 0, this.width, this.height);
+                            this.previewGL.clearRect(...this.viewBounds);
                             this.toolFunction.preview(this.previewGL, ...position, this.toolProperties);
                         }
 
