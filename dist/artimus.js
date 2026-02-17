@@ -505,6 +505,9 @@ window.artimus = {
     },
 
     workspace: class {
+        //Viewbounds
+        viewBounds = [0, 0, 0, 0];
+
         //Scrolling
         #scrollX = 0;
         set scrollX(value) {
@@ -1067,16 +1070,16 @@ window.artimus = {
             //Calculate render bounds based upon the view area.
             const halfCanvWidth = this.width / 2;
             const halfCanvHeight = this.height / 2;
-            const viewBounds = [
+            this.viewBounds = [
                 Math.floor((halfCanvWidth-this.scrollX) - (width * this.invZoom)),
                 Math.floor((halfCanvHeight-this.scrollY) - (height * this.invZoom)),
                 Math.ceil((halfCanvWidth-this.scrollX) + (width * this.invZoom)),
                 Math.ceil((halfCanvHeight-this.scrollY) + (height * this.invZoom))
             ];
-            viewBounds[0] = Math.min(this.width - 1, Math.max(0, viewBounds[0]));
-            viewBounds[1] = Math.min(this.height - 1, Math.max(0, viewBounds[1]));
-            viewBounds[2] = Math.max(1, Math.min(this.width - viewBounds[0], viewBounds[2] - viewBounds[0]));
-            viewBounds[3] = Math.max(1, Math.min(this.height - viewBounds[1], viewBounds[3] - viewBounds[1]));
+            this.viewBounds[0] = Math.min(this.width - 1, Math.max(0, this.viewBounds[0]));
+            this.viewBounds[1] = Math.min(this.height - 1, Math.max(0, this.viewBounds[1]));
+            this.viewBounds[2] = Math.max(1, Math.min(this.width - this.viewBounds[0], this.viewBounds[2] - this.viewBounds[0]));
+            this.viewBounds[3] = Math.max(1, Math.min(this.height - this.viewBounds[1], this.viewBounds[3] - this.viewBounds[1]));
 
             //The reason behind time and selection animation
             //Time is here as a global timer, as selection animation is for a specific animation that may restart.
@@ -1084,11 +1087,11 @@ window.artimus = {
 
             //If we are dirty update our canvas as needed.
             if (this.dirty) {
-                this.renderComposite(viewBounds);
+                this.renderComposite(this.viewBounds);
 
                 //Bind and edit the composite texture
                 this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...viewBounds).data);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.viewBounds).data);
             }
 
             //Set buffers to the position buffer/quad buffer.
@@ -1114,7 +1117,7 @@ window.artimus = {
             if (!this.getLayerVisibility(this.currentLayer)) {
                 //Do preview stuff
                 this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.hiddenTexture);
-                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...viewBounds).data);
+                this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editGL.getImageData(...this.viewBounds).data);
 
                 main.setUniforms({
                     u_main_tex: this.webgl.hiddenTexture,
@@ -1125,7 +1128,7 @@ window.artimus = {
 
             //Do preview stuff
             this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.previewTexture);
-            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...viewBounds).data);
+            this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.previewGL.getImageData(...this.viewBounds).data);
 
             main.setUniforms({
                 u_main_tex: this.webgl.previewTexture,
