@@ -4,36 +4,33 @@ window.extensionSuffix = "\n})([URL HERE])";
 
 //Append the dissallowed APIs to the prefix.
 {
-    const allowedAPIs = [
-        "artimus",
-        "editor",
-        "document",
-        "ImageData",
-        "ImageBitmap",
-        "CanvasRenderingContext2D",
-        "WebGLRenderingContext",
-        "WebGL2RenderingContext",
-        "Math",
-        "Path2D",
-        "CUGI",
-        "console",
-        "String",
-        "Number",
-        "Array",
-        "Object",
-        "NaN",
-        "undefined"
+    //May switch this to a blacklist.
+    const bannedAPIs = [
+        "close",
+        "eval",
+        "Function",
+        "window",
+        "Window",
+        "EvalError",
+        "fullScreen",
+        "InstallTrigger",
+        "onmozfullscreenchange",
+        "onmozfullscreenerror",
+        "parent",
+        "self",
+        "addEventListener",
+        "removeEventListener"
     ];
 
     //Small formatting is rather useless but nice.
     extensionPrefix += "\n const window = {\n";
-    for (api in allowedAPIs) {
-        extensionPrefix += `    ${allowedAPIs[api]}: ${allowedAPIs[api]},\n`;
+    for (api in window) {
+        if (!bannedAPIs.includes(api)) extensionPrefix += `    ${api}: ${api},\n`;
     }
     extensionPrefix += "};\n";
 
     for (let key in window) {
-        if (key != "window" && !allowedAPIs.includes(key)) extensionPrefix += `const ${key} = null;`;
+        if (key != "window" && bannedAPIs.includes(key)) extensionPrefix += `const ${key} = null;`;
     }
     extensionPrefix += "\n";
 }
