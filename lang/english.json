@@ -141,6 +141,10 @@
     "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
     "artimus.modal.settings.extensions.add": "+",
     "artimus.modal.settings.extensions.remove": "-",
+    "artimus.modal.settings.extensions.namePlaceholder": "Unknown Extension",
+    "artimus.modal.settings.extensions.authorPlaceholder": "Unknown Author",
+    "artimus.modal.settings.extensions.versionPlaceholder": "???",
+    "artimus.modal.settings.extensions.description": "Author: [author] Version: [version]",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
