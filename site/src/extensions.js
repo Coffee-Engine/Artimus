@@ -1,6 +1,16 @@
 //Small safeguard, nothing to much.
-window.extensionPrefix = "(function(extensionURL) {\n//To somewhat safeguard the editor\n//I know it's not the most secure but it works for now.\n";
-window.extensionSuffix = "\n})([URL HERE])";
+window.extensionPrefix = `(function(extensionURL, extensionID) {
+    const translate = (key, context) => {
+        const translationKey = extensionID + \`.$\{context}.$\{key}\`;
+        return editor.language[translationKey] || translationKey;
+    }
+
+    const addTool = (id, tool) => {
+        tool.prototype.name = translate(id, "tool");
+        artimus.tools[\`$\{extensionID}_$\{id}\`] = tool;
+    }
+`;
+window.extensionSuffix = "\n})([URL HERE], [EXTENSION ID])";
 
 editor.addExtension = (url) => {
     return new Promise((resolve, reject) => {
@@ -32,7 +42,7 @@ editor.removeExtension = (url) => {
 }
 
 editor.startExtension = (extension, skipNewDat) => {
-    new Promise(async (resolve) => {
+    return new Promise(async (resolve) => {
         //If we are online, try to update.
         if (navigator.onLine && !skipNewDat) {
             //Parse in a saf-ish way
@@ -62,16 +72,17 @@ editor.startExtension = (extension, skipNewDat) => {
 
         for (let fileID in extension.files) {
             const file = await fetch(`${extension.fetchURL}${extension.files[fileID]}`).then(res => res.text());
-            const fileCode = `${extensionPrefix}${file}${extensionSuffix.replace("[URL HERE]", `"${extension.url.replaceAll('"','\\"')}"`)}`;
+            const fileCode = `${extensionPrefix}${file}${extensionSuffix
+                .replace("[URL HERE]", `"${extension.url.replaceAll('"','\\"')}"`)
+                .replace("[EXTENSION ID]", `"${(extension.id || "extension").replaceAll('"','\\"')}"`)
+            }`;
 
             const script = document.createElement("script");
             script.innerHTML = fileCode;
             document.body.appendChild(script);
         }
-    });
-}
 
-//Autostart existing ones.
-for (let idx in editor.settings.extensions) {
-    editor.startExtension(editor.settings.extensions[idx]);
+        artimus.globalRefreshTools()
+        resolve();
+    });
 }

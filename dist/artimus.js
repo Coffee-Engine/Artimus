@@ -337,6 +337,8 @@ window.artimus = {
 
         get shiftHeld() { return this.workspace.shiftHeld; }
 
+        name = null;
+
         mouseDown(gl, x, y, toolProperties) {}
         mouseMove(gl, x, y, vx, vy, toolProperties) {}
         mouseUp(gl, x, y, toolProperties) {}
