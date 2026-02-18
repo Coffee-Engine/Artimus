@@ -108,7 +108,8 @@
     "artimus.modal.newFile.loadInstead": "Load a file instead",
 
     "artimus.modal.loadFile.title": "Load file",
-    "artimus.modal.loadFile.load": "Load",
+    "artimus.modal.loadFile.loadAndReplace": "Load and replace",
+    "artimus.modal.loadFile.loadAndAdd": "Load and add as layer",
     "artimus.modal.loadFile.createInstead": "Create a file instead",
 
     "artimus.modal.resizeFile.title": "Resize",
