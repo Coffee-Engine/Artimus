@@ -11,6 +11,8 @@ editor.addExtension = (url) => {
                 
                 //Add it
                 editor.settings.extensions.push(extensionJSON);
+
+                editor.startExtension(extensionJSON, true);
                 resolve(extensionJSON);
             } catch (error) { console.warn(`Failed to add extension ${url}\n::===---===::\n${error}`) }
         });
@@ -24,9 +26,23 @@ editor.removeExtension = (url) => {
     }
 }
 
-for (let idx in editor.settings.extensions) {
+editor.startExtension = (extension, skipNewDat) => {
     new Promise(async (resolve) => {
-        const extension = editor.settings.extensions[idx];
+        //If we are online, try to update.
+        if (navigator.onLine && !skipNewDat) {
+            let newDat = await fetch(extension.url).then(res => res.text());
+            try {
+                //Parse and use
+                newDat = JSON.parse(newDat);
+                for (let key in newDat) {
+                    extension[key] = newDat[key];
+                }
+                console.log(`Fetched new data for the extension "${extension.name}" which may be called "${newDat.name}"`)
+
+                //Save the settings
+                editor.saveSettings();
+            } catch (error) { console.warn(`New data for extension "${extension.newDat}" is invalid!`)}
+        }
 
         //Get the baseURL for the extension
         let urlBase = extension.url.split("/");
@@ -42,4 +58,9 @@ for (let idx in editor.settings.extensions) {
             document.body.appendChild(script);
         }
     });
+}
+
+//Autostart existing ones.
+for (let idx in editor.settings.extensions) {
+    editor.startExtension(editor.settings.extensions[idx]);
 }
