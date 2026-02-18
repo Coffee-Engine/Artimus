@@ -107,7 +107,7 @@
 
 .settings-extensionHolder {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     
     border-radius: 8px;
     padding: 4px;
@@ -124,6 +124,20 @@
 
 .settings-extensionName {
     font-size: 1.5em;
+}
+
+.settings-extensionIcon {
+    width: auto;
+    height: 3em;
+
+    aspect-ratio: 1;
+
+    margin-right: 4px;
+
+    border-radius: 8px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--artimus-background-3);
 }
 
 .settings-extensionModContainer {

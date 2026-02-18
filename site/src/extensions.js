@@ -12,3 +12,10 @@ editor.addExtension = (url) => {
         });
     });
 }
+
+editor.removeExtension = (url) => {
+    const extensionIndex = editor.settings.extensions.findIndex((el) => el.url == url);
+    if (extensionIndex >= 0) {
+        editor.settings.extensions.splice(extensionIndex, 1);
+    }
+}

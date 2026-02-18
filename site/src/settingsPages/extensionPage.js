@@ -15,9 +15,12 @@ editor.extensionMenu = (container, translationKey, onchange) => {
     extensionList.className = "settings-extensionList";
 
     const addExtensionDisplay = (extension) => {
-        console.log(extension);
         const extensionHolder = document.createElement("div");
         extensionHolder.className = "settings-extensionHolder";
+
+        const extensionIcon = document.createElement("img");
+        extensionIcon.src = extension.icon || "site/icons/ico48.png";
+        extensionIcon.className = "settings-extensionIcon";
 
         const extensionData = document.createElement("div");
         extensionData.className = "settings-extensionData";
@@ -42,9 +45,16 @@ editor.extensionMenu = (container, translationKey, onchange) => {
         extensionRemove.className = "artimus-button settings-extensionAdd settings-extensionRemove";
         extensionRemove.innerText = artimus.translate("remove", translationKey);
 
+        extensionRemove.onclick = () => {
+            extensionHolder.parentElement.removeChild(extensionHolder);
+            editor.removeExtension(extension.url);
+        }
+
         extensionData.appendChild(extensionName);
         extensionData.appendChild(extensionDescription);
         extensionModContainer.appendChild(extensionRemove);
+
+        extensionHolder.appendChild(extensionIcon);
         extensionHolder.appendChild(extensionData);
         extensionHolder.appendChild(extensionModContainer);
         extensionList.appendChild(extensionHolder);
