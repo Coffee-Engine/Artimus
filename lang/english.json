@@ -1,4 +1,6 @@
 {
+    "identifier": "english",
+    
     "artimus.tool.paintBrush": "Brush",
     "artimus.tool.eraser": "Eraser",
     "artimus.tool.sprayPaint": "Spray Paint",

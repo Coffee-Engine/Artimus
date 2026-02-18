@@ -19,7 +19,7 @@ editor.extensionMenu = (container, translationKey, onchange) => {
         extensionHolder.className = "settings-extensionHolder";
 
         const extensionIcon = document.createElement("img");
-        extensionIcon.src = extension.icon || "site/icons/ico48.png";
+        extensionIcon.src = (extension.icon) ? `${extension.fetchURL}${extension.icon}` : "site/icons/ico48.png";
         extensionIcon.className = "settings-extensionIcon";
 
         const extensionData = document.createElement("div");
@@ -48,6 +48,7 @@ editor.extensionMenu = (container, translationKey, onchange) => {
         extensionRemove.onclick = () => {
             extensionHolder.parentElement.removeChild(extensionHolder);
             editor.removeExtension(extension.url);
+            onchange();
         }
 
         extensionData.appendChild(extensionName);
