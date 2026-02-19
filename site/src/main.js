@@ -1,4 +1,7 @@
 window.editor = {
+    dbName: "artimusDB",
+    dbVersion: 1,
+
     docEdit: {
         width: 256,
         height: 240
@@ -182,6 +185,11 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     editor.workspace = artimus.inject(document.getElementById("workspace-area"));
     editor.workspace.resize(0, 0);
     artimus.globalRefreshTools();
+
+    //Add extensions
+    for (let idx in editor.settings.extensions) {
+        editor.startExtension(editor.settings.extensions[idx]);
+    }
 
     new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
 

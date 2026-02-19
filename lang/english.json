@@ -1,4 +1,6 @@
 {
+    "identifier": "english",
+    
     "artimus.tool.paintBrush": "Brush",
     "artimus.tool.eraser": "Eraser",
     "artimus.tool.sprayPaint": "Spray Paint",
@@ -109,6 +111,7 @@
     "artimus.modal.settings.category.general": "General",
     "artimus.modal.settings.category.theme": "Theme",
     "artimus.modal.settings.category.hotkeys": "Hotkeys",
+    "artimus.modal.settings.category.extensions": "Extensions",
 
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
@@ -136,6 +139,25 @@
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",
+
+    "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
+    "artimus.modal.settings.extensions.add": "+",
+    "artimus.modal.settings.extensions.remove": "-",
+    "artimus.modal.settings.extensions.namePlaceholder": "Unknown Extension",
+    "artimus.modal.settings.extensions.authorPlaceholder": "Unknown Author",
+    "artimus.modal.settings.extensions.versionPlaceholder": "???",
+    "artimus.modal.settings.extensions.description": "Author: [author] Version: [version]",
+
+    "artimus.modal.settings.extensions.warning": "Warning!",
+    "artimus.modal.settings.extensions.warningText": [
+        "Be careful when adding extensions!",
+        "Extensions run arbiturary code and if you don't trust one, don't load it!",
+        "You have been warned.",
+        "",
+        "The app will also have to be reloaded for removed extensions to vanish!",
+        "Thankfully there is a button below for that!"
+    ],
+    "artimus.modal.settings.extensions.reload": "Reload",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
