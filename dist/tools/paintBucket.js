@@ -17,7 +17,9 @@ artimus.tools.paintBucket = class extends artimus.tool {
         ];
     }
 
-    compareColor(data, x, y, width, targetColor, toolProperties) {
+    compareColor(gl, data, x, y, width, targetColor, toolProperties) {
+        if (!this.inSelection(gl, x, y)) return false;
+        
         const compareColor = this.colorAt(data, x, y, width);
         if (targetColor[3] == 0 && toolProperties.respectTransparency) return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && compareColor[3] == targetColor[3]) || compareColor[3] < 240;
         else return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && targetColor[3] == compareColor[3]);
@@ -45,7 +47,7 @@ artimus.tools.paintBucket = class extends artimus.tool {
             let upperBlocked = true;
             for (let wx = rx; wx < width; wx++) {
                 //Get color
-                if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
+                if (this.compareColor(gl, data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
                     const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
 
@@ -56,20 +58,20 @@ artimus.tools.paintBucket = class extends artimus.tool {
                     else data[targetCoord + 3] = myColor.a;
                     
                     if (!lowerBlocked) {
-                        if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
+                        if (!this.compareColor(gl, data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
                     }
                     else {
-                        if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
+                        if (this.compareColor(gl, data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
                             paintQueue.push([wx, ry + 1]);
                             lowerBlocked = false;
                         }
                     }
                     
                     if (!upperBlocked) {
-                        if (!this.compareColor(data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
+                        if (!this.compareColor(gl, data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
                     }
                     else {
-                        if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
+                        if (this.compareColor(gl, data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
                             paintQueue.push([wx, ry - 1]);
                             upperBlocked = false;
                         }
@@ -80,7 +82,7 @@ artimus.tools.paintBucket = class extends artimus.tool {
 
             for (let wx = rx - 1; wx >= 0; wx--) {
                 //Get color
-                if (this.compareColor(data, wx, ry, width, targetColor, toolProperties)) {
+                if (this.compareColor(gl, data, wx, ry, width, targetColor, toolProperties)) {
                     let targetCoord = this.coordToColourID(wx, ry, width);
                     const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
 
@@ -91,20 +93,20 @@ artimus.tools.paintBucket = class extends artimus.tool {
                     else data[targetCoord + 3] = myColor.a;
                     
                     if (!lowerBlocked) {
-                        if (!this.compareColor(data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
+                        if (!this.compareColor(gl, data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
                     }
                     else {
-                        if (this.compareColor(data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
+                        if (this.compareColor(gl, data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
                             paintQueue.push([wx, ry + 1]);
                             lowerBlocked = false;
                         }
                     }
                     
                     if (!upperBlocked) {
-                        if (!this.compareColor(data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
+                        if (!this.compareColor(gl, data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
                     }
                     else {
-                        if (this.compareColor(data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
+                        if (this.compareColor(gl, data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
                             paintQueue.push([wx, ry - 1]);
                             upperBlocked = false;
                         }

@@ -1,4 +1,23 @@
 editor.extensionMenu = (container, translationKey, onchange) => {
+    container.className = "settings-extensionMenu";
+
+    //So much, dom, manipulation...
+    const infoHolder = document.createElement("div");
+    infoHolder.className = "settings-extensionInfoHolder";
+
+    const bigOlWarninText = document.createElement("h1");
+    bigOlWarninText.innerText = artimus.translate("warning", translationKey);
+
+    const warningDialogue = document.createElement("p");
+    warningDialogue.innerText = artimus.translate("warningText", translationKey);
+
+    const reloadButton = document.createElement("button");
+    reloadButton.className = "artimus-button";
+    reloadButton.innerText = artimus.translate("reload", translationKey);
+
+    const listHolder = document.createElement("div");
+    listHolder.className = "settings-extensionListHolder";
+
     //So much, dom, manipulation...
     const additionHolder = document.createElement("div");
     additionHolder.className = "settings-extensionDisplay settings-extensionAdditionDisplay";
@@ -14,9 +33,10 @@ editor.extensionMenu = (container, translationKey, onchange) => {
     const extensionList = document.createElement("div");
     extensionList.className = "settings-extensionList";
 
-    const addExtensionDisplay = (extension) => {
+    const addExtensionDisplay = (extension, index) => {
         const extensionHolder = document.createElement("div");
         extensionHolder.className = "settings-extensionHolder";
+        extensionHolder.style.setProperty("--index", index);
 
         const extensionIcon = document.createElement("img");
         extensionIcon.src = (extension.icon) ? `${extension.fetchURL}${extension.icon}` : "site/icons/ico48.png";
@@ -61,19 +81,34 @@ editor.extensionMenu = (container, translationKey, onchange) => {
         extensionList.appendChild(extensionHolder);
     }
 
+    reloadButton.onclick = () => location.reload();
+
+    urlInput.oninput = () => {
+        if (editor.hasExtension(urlInput.value)) urlInput.setCustomValidity("Existing");
+        else urlInput.setCustomValidity("");
+    }
+
     extensionAdd.onclick = () => {
+        if (!urlInput.checkValidity()) return;
+
         editor.addExtension(urlInput.value).then((extension) => {
-            addExtensionDisplay(extension);
+            addExtensionDisplay(extension, 0);
             onchange();
+            urlInput.value = "";
         })
     }
 
     for (let extID in editor.settings.extensions) {
-        addExtensionDisplay(editor.settings.extensions[extID]);
+        addExtensionDisplay(editor.settings.extensions[extID], Number(extID) + 1);
     }
 
     additionHolder.appendChild(urlInput);
     additionHolder.appendChild(extensionAdd);
-    container.appendChild(additionHolder);
-    container.appendChild(extensionList);
+    listHolder.appendChild(additionHolder);
+    listHolder.appendChild(extensionList);
+    infoHolder.appendChild(bigOlWarninText);
+    infoHolder.appendChild(warningDialogue);
+    infoHolder.appendChild(reloadButton);
+    container.appendChild(infoHolder);
+    container.appendChild(listHolder);
 }

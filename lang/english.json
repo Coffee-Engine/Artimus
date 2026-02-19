@@ -148,6 +148,17 @@
     "artimus.modal.settings.extensions.versionPlaceholder": "???",
     "artimus.modal.settings.extensions.description": "Author: [author] Version: [version]",
 
+    "artimus.modal.settings.extensions.warning": "Warning!",
+    "artimus.modal.settings.extensions.warningText": [
+        "Be careful when adding extensions!",
+        "Extensions run arbiturary code and if you don't trust one, don't load it!",
+        "You have been warned.",
+        "",
+        "The app will also have to be reloaded for removed extensions to vanish!",
+        "Thankfully there is a button below for that!"
+    ],
+    "artimus.modal.settings.extensions.reload": "Reload",
+
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
     "artimus.modal.exportFile.formatDescription.png": "A well supported transparent image format with a small file size",

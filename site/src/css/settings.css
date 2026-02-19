@@ -85,6 +85,18 @@
     border-right-style: solid;
 }
 
+.settings-extensionMenu {
+    display: grid;
+    grid-template-columns: 30% 70%;
+}
+
+.settings-extensionInfoHolder {
+    background-color: var(--artimus-background-2);
+    animation: 400ms extension-warning-pop-in;
+    z-index: 4;
+    overflow-y: scroll;
+}
+
 .settings-extensionDisplay {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -92,7 +104,6 @@
 }
 
 .settings-extensionAdditionDisplay {
-
     border-radius: 0px;
     border-bottom-color: var(--artimus-background-3);
     border-bottom-width: 4px;
@@ -106,6 +117,7 @@
 }
 
 .settings-extensionHolder {
+    --index: 0;
     display: grid;
     grid-template-columns: auto 1fr auto;
     
@@ -114,6 +126,10 @@
     background-color: var(--artimus-background-2);
 
     text-align: left;
+    
+    animation: 300ms settings-pop-in;
+    animation-fill-mode: backwards;
+    animation-delay: calc(50ms * var(--index));
 }
 
 .settings-extensionRemove {
@@ -155,5 +171,37 @@
     }
     100% {
         transform: scaleY(1) translateY(0%);
+    }
+}
+
+@keyframes extension-warning-pop-in {
+    0% {
+        transform: translateX(-50%) scaleX(0) translateX(50%);
+    }
+    50% {
+        transform: translateX(-50%) scaleX(1.1) translateX(50%);
+    }
+    100% {
+        transform: translateX(-50%) scaleX(1) translateX(50%);
+    }
+}
+
+
+@media screen and (min-height: 100vw) {
+    .settings-extensionMenu {
+        grid-template-columns: auto;
+        grid-template-rows: 30% 70%;
+    }
+
+    @keyframes extension-warning-pop-in {
+        0% {
+            transform: translateY(-50%) scaleY(0) translateY(50%);
+        }
+        50% {
+            transform: translateY(-50%) scaleY(1.1) translateY(50%);
+        }
+        100% {
+            transform: translateY(-50%) scaleY(1) translateY(50%);
+        }
     }
 }

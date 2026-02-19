@@ -1,4 +1,7 @@
 window.editor = {
+    dbName: "artimusDB",
+    dbVersion: 1,
+
     docEdit: {
         width: 256,
         height: 240
