@@ -13,8 +13,8 @@
                 };
 
                 request.onerror = (event) => {
-                    console.log(event);
-                    reject(`Request failed, ${event}`);
+                    console.error(event);
+                    reject(`Request failed`);
                 };
             });
         },
