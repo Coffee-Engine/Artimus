@@ -13,8 +13,8 @@
                 };
 
                 request.onerror = (event) => {
-                    console.error(event);
-                    reject(`Request failed`);
+                    console.error(`IndexedDB error!\n---===---\n${event.target.error.message}`);
+                    reject(`Request failed.`);
                 };
             });
         },
