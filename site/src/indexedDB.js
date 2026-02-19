@@ -14,7 +14,7 @@
 
                 request.onerror = (event) => {
                     console.log(event);
-                    reject("Request failed");
+                    reject(`Request failed, ${event}`);
                 };
             });
         },
