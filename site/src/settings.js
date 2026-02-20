@@ -1,9 +1,25 @@
 editor.settings = {
-    theme: "default",
     maxHistory: 10,
     preferredFormat: "png",
     debug: false,
     preferGreaterAxis: true, 
+
+    theme: "default",
+    lastTheme: "default",
+    customBackground: "#e2e2ff",
+    customText: "#29053a",
+    customEraserInline: "#d0d0ff",
+    customAccent: "#438eff",
+    customGrid1: "#bbbbff",
+    customGrid2: "#7878a4",
+    iconsUseText: true,
+    customIcon: "#29053a",
+    toolsUseAccent: true,
+    customEraserOutline: "#438eff",
+    customSelection: "#438eff",
+    buttonsUseBackground: true,
+    customButton: "#e2e2ff",
+
     hotkeys: {...artimus.hotkeys},
     extensions: []
 };
@@ -24,14 +40,61 @@ editor.settingDefs = {
     theme: [
         {type: "dropdown", target: editor.settings, key: "theme", items: [
             "default",
-            "dark"
-        ], onchange: (value) => {
+            "dark",
+            "custom"
+        ], onchange: (value, item) => {
+            if (value == "custom") editor.useCustomTheme();
+
+            if (item) {
+                //Refresh is switching to or from custom.
+                if (value == "custom" || item.target.lastTheme == "custom") {
+                    item.refreshSelection();
+                    item.target.lastTheme = value;
+                    return;
+                }
+
+                item.target.lastTheme = value;
+            }
+
             if (!editor.themes[value]) value = "default";
 
             const theme = editor.themes[value];
             for (let item in theme) { document.body.style.setProperty(`--${item}`, theme[item]); }
             for (let workspaceID in artimus.activeWorkspaces) { artimus.activeWorkspaces[workspaceID].refreshGridPattern(); }
         }},
+        //The colors
+        {type: "color", target: editor.settings, key: "customBackground", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customText", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customEraserInline", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customAccent", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customGrid1", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customGrid2", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: () => { editor.useCustomTheme(); }},
+
+        //text-ish things
+        {type: "boolean", target: editor.settings, key: "iconsUseText", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: (value, item) => { if (item) { item.refreshSelection(); } editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customIcon", disabled: () => { return (editor.settings.theme != "custom") || (editor.settings.iconsUseText); },
+        onchange: () => { editor.useCustomTheme(); }},
+
+        //Accent-ish things
+        {type: "boolean", target: editor.settings, key: "toolsUseAccent", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: (value, item) => { if (item) { item.refreshSelection(); } editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customEraserOutline", disabled: () => { return (editor.settings.theme != "custom") || (editor.settings.toolsUseAccent); },
+        onchange: () => { editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customSelection", disabled: () => { return (editor.settings.theme != "custom") || (editor.settings.toolsUseAccent); },
+        onchange: () => { editor.useCustomTheme(); }},
+
+        //background-ish things
+        {type: "boolean", target: editor.settings, key: "buttonsUseBackground", disabled: () => { return editor.settings.theme != "custom"; },
+        onchange: (value, item) => { if (item) { item.refreshSelection(); } editor.useCustomTheme(); }},
+        {type: "color", target: editor.settings, key: "customButton", disabled: () => { return (editor.settings.theme != "custom") || (editor.settings.buttonsUseBackground); },
+        onchange: () => { editor.useCustomTheme(); }},
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
     hotkeys: { function: editor.hotkeyMenu, onchange: () => {

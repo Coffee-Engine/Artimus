@@ -42,7 +42,7 @@ window.artimus = {
 
     BrightestChannel: (Color) => {
         if (typeof Color == "string") {
-            const split = coffeeEngine.ColorMath.HexToRGB(Color);
+            const split = artimus.HexToRGB(Color);
 
             let brightest = split.r;
 
@@ -70,7 +70,7 @@ window.artimus = {
 
     DarkestChannel: (Color) => {
         if (typeof Color == "string") {
-            const split = coffeeEngine.ColorMath.HexToRGB(Color);
+            const split = artimus.HexToRGB(Color);
 
             let brightest = split.r;
 
@@ -135,7 +135,7 @@ window.artimus = {
         };
     },
 
-    RGBtoHex: (RGB) => {
+    RGBToHex: (RGB) => {
         let hexR = Math.floor(RGB.r).toString(16);
         let hexG = Math.floor(RGB.g).toString(16);
         let hexB = Math.floor(RGB.b).toString(16);
@@ -162,8 +162,8 @@ window.artimus = {
         RGB.b /= 255;
 
         //Get the brightest and darkest channels
-        const CMax = coffeeEngine.ColorMath.BrightestChannel(RGB);
-        const CMin = coffeeEngine.ColorMath.DarkestChannel(RGB);
+        const CMax = artimus.BrightestChannel(RGB);
+        const CMin = artimus.DarkestChannel(RGB);
 
         const Delta = CMax - CMin;
 
@@ -195,6 +195,8 @@ window.artimus = {
         RGB.r *= 255;
         RGB.g *= 255;
         RGB.b *= 255;
+
+        if (H < 0) H += 360;
 
         return {
             h: H,
@@ -244,6 +246,14 @@ window.artimus = {
         RGB.a = HSV.a;
 
         return RGB;
+    },
+
+    HSVToHex: (HSV) => {
+        return artimus.RGBToHex(artimus.HSVToRGB(HSV));
+    },
+
+    HexToHSV: (Hex) => {
+        return artimus.RGBToHSV(artimus.HexToRGB(Hex));
     },
 
     translate: (item, context) => {
@@ -1303,7 +1313,7 @@ window.artimus = {
 
             if (artimus.pickType == "composite") [red, green, blue, alpha] = this.compositeGL.getImageData(...this.getCanvasPosition(x, y, true), 1, 1).data;
             else [red, green, blue, alpha] = this.editGL.getImageData(x, y, 1, 1).data;
-            const converted = artimus.RGBtoHex({ r:red, g:green, b:blue, a:alpha });
+            const converted = artimus.RGBToHex({ r:red, g:green, b:blue, a:alpha });
             return converted;
         }
 
