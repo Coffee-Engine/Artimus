@@ -78,9 +78,7 @@ artimus.tools.curve = class extends artimus.tools.line {
             if (toolProperties.state == 0) this.drawLine(gl, ...this.start, x, y, x, y, toolProperties);
             else this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);
         }
-        else {
-            this.drawLine(gl, x, y, x + 0.1, y + 0.1, x, y, toolProperties);
-        }
+        else this.drawLine(gl, x, y, x + 0.1, y + 0.1, x, y, toolProperties);
     }
 
     CUGI(artEditor) { return [

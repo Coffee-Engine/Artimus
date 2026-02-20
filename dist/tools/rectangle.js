@@ -46,9 +46,8 @@ artimus.tools.rectangle = class extends artimus.tool {
     }
 
     preview(gl, x, y, toolProperties) {
-        if (this.start) {
-            this.drawRectangle(gl, ...this.start, x, y, toolProperties);
-        }
+        if (this.start) this.drawRectangle(gl, ...this.start, x, y, toolProperties);
+        else this.drawRectangle(gl, x, y, x, y, toolProperties);
     }
 
     CUGI(artEditor) { return [

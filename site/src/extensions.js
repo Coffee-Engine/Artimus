@@ -2,11 +2,12 @@
 window.extensionPrefix = `(function(extensionURL, extensionID) {
     const translate = (key, context) => {
         const translationKey = extensionID + \`.$\{context}.$\{key}\`;
+        if (editor.language[translationKey]) console.warn(\`Translation key "$\{translationKey}" is missing.\`);
         return editor.language[translationKey] || translationKey;
     }
 
     const addTool = (id, tool) => {
-        tool.prototype.name = tool.prototype.name || translate(id, "tool");
+        tool.prototype.name = (tool.prototype.name) ? tool.prototype.name : translate(id, "tool");
         artimus.tools[\`$\{extensionID}_$\{id}\`] = tool;
     }
 `;

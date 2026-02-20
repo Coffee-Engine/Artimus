@@ -40,9 +40,8 @@ artimus.tools.circle = class extends artimus.tool {
     }
 
     preview(gl, x, y, toolProperties) {
-        if (this.start) {
-            this.drawCircle(gl, ...this.start, x, y, toolProperties);
-        }
+        if (this.start) this.drawCircle(gl, ...this.start, x, y, toolProperties);
+        else this.drawCircle(gl, x - 0.5, y - 0.5, x + 0.5, y + 0.5, toolProperties);
     }
 
     CUGI(artEditor) { return [

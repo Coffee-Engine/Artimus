@@ -122,6 +122,11 @@ artimus.tools.paintBucket = class extends artimus.tool {
         gl.putImageData(new ImageData(data, width, height), 0, 0);
     }
 
+    preview(gl, x, y, toolProperties) {
+        gl.fillStyle = toolProperties.fillColor,
+        gl.fillRect(x, y, 1, 1);
+    }
+
     CUGI(artEditor) { return [
         { target: artEditor.toolProperties, key: "fillColor", type: "color" },
         { target: artEditor.toolProperties, key: "pierceTransparency", type: "boolean" },
