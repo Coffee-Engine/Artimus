@@ -76,7 +76,18 @@ artimus.tools.curve = class extends artimus.tools.line {
     preview(gl, x, y, toolProperties) {
         if (this.start) {
             if (toolProperties.state == 0) this.drawLine(gl, ...this.start, x, y, x, y, toolProperties);
-            else this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);
+            else {
+                gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
+                gl.lineWidth = 1;
+                gl.beginPath();
+                gl.moveTo(this.start[0] + 0.5, this.start[1] + 0.5);
+                gl.lineTo(x + 0.5, y + 0.5);
+                gl.lineTo(this.end[0] + 0.5, this.end[1] + 0.5);
+                gl.stroke();
+                gl.closePath();
+
+                this.drawLine(gl, ...this.start, ...this.end, x, y, toolProperties);
+            }
         }
         else this.drawLine(gl, x, y, x + 0.1, y + 0.1, x, y, toolProperties);
     }
