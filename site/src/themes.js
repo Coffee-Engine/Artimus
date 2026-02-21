@@ -44,25 +44,25 @@ editor.themes = {
     },
     
     eclipse: {
-        "artimus-background-1": "#414149",
-        "artimus-background-2": "#26262c",
-        "artimus-background-3": "#151518",
+        "artimus-background-1": "#151518",
+        "artimus-background-2": "#1d1d28",
+        "artimus-background-3": "#3c3c5c",
 
-        "artimus-button-normal": "#454551",
-        "artimus-button-hover": "#8989a0",
-        "artimus-button-click": "#438eff",
-        "artimus-button-selected": "#333362",
+        "artimus-button-normal": "#151518",
+        "artimus-button-hover": "#352550",
+        "artimus-button-click": "#c88de1",
+        "artimus-button-selected": "#473362",
 
-        "artimus-text": "#72aad3",
-        "artimus-icon": "#72aad3",
+        "artimus-text": "#cf72d3",
+        "artimus-icon": "#cf72d3",
 
-        "artimus-selection-outline": "#438eff",
+        "artimus-selection-outline": "#cd43ff",
 
-        "artimus-grid-1": "#3c3c5a",
-        "artimus-grid-2": "#2a2a45",
+        "artimus-grid-1": "#191936",
+        "artimus-grid-2": "#111125",
 
-        "artimus-eraser-outline": "#438eff",
-        "artimus-eraser-inline": "#d0d0ff",
+        "artimus-eraser-outline": "#cd43ff",
+        "artimus-eraser-inline": "#ebc4ff",
     }
 }
 
