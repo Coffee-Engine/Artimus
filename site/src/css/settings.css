@@ -32,6 +32,14 @@
     animation: 300ms settings-pop-in;
 }
 
+.settings-settingsList .CUGI-PropertyHolder:has( .CUGI-Button ) {
+    display: flex;
+
+    background-color: var(--artimus-background-2);
+    align-items: center;
+    justify-content: center;
+}
+
 .settings-settingsList .CUGI-PropertyHolder .CUGI-PropertyName {
     min-width: 50%;
     text-align: right;
