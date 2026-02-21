@@ -44,9 +44,16 @@ editor.themes = {
     }
 }
 
+editor.customCSSEl = document.getElementById("customCSSElement");
+
 //Custom theme code
 //I found a really nice BG color at 221, 184, 245.
 editor.useCustomTheme = () => {
+    if (editor.settings.customCSS) editor.customCSSEl.innerHTML = editor.settings.customCSSCode;
+    else editor.customCSSEl.innerHTML = "";
+
+    if (editor.settings.theme != "custom") return;
+
     //Background
     const bgHSV = artimus.HexToHSV(editor.settings.customBackground);
     let sMove = (bgHSV.s < 0.5) ? 0.05 : -0.05; 

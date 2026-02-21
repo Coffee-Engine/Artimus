@@ -132,6 +132,9 @@
     "artimus.modal.settings.theme.customSelection": "Selection",
     "artimus.modal.settings.theme.buttonsUseBackground": "Buttons Use Background",
     "artimus.modal.settings.theme.customButton": "Button",
+    "artimus.modal.settings.theme.randomize": "Randomize",
+    "artimus.modal.settings.theme.customCSS": "Use Custom CSS",
+    "artimus.modal.settings.theme.customCSSCode": "CSS Code",
 
     "artimus.modal.settings.hotkeys.add": "+",
     "artimus.modal.settings.hotkeys.remove": "-",

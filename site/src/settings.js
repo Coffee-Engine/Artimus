@@ -19,6 +19,8 @@ editor.settings = {
     customSelection: "#438eff",
     buttonsUseBackground: true,
     customButton: "#e2e2ff",
+    customCSS: false,
+    customCSSCode: "",
 
     hotkeys: {...artimus.hotkeys},
     extensions: []
@@ -50,7 +52,7 @@ editor.settingDefs = {
                 if (value == "custom" || item.target.lastTheme == "custom") {
                     item.refreshSelection();
                     item.target.lastTheme = value;
-                    return;
+                    if (value == "custom") return;
                 }
 
                 item.target.lastTheme = value;
@@ -94,6 +96,36 @@ editor.settingDefs = {
         {type: "boolean", target: editor.settings, key: "buttonsUseBackground", disabled: () => { return editor.settings.theme != "custom"; },
         onchange: (value, item) => { if (item) { item.refreshSelection(); } editor.useCustomTheme(); }},
         {type: "color", target: editor.settings, key: "customButton", disabled: () => { return (editor.settings.theme != "custom") || (editor.settings.buttonsUseBackground); },
+        onchange: () => { editor.useCustomTheme(); }},
+
+        //Bad Idea.
+        {type: "button", key: "randomize", onclick: (button, event, item) => {
+            const getRandomColor = () => {
+                return artimus.RGBToHex({
+                    r: Math.floor(Math.random() * 255),
+                    g: Math.floor(Math.random() * 255),
+                    b: Math.floor(Math.random() * 255)
+                });
+            }
+
+            editor.settings.customBackground = getRandomColor();
+            editor.settings.customText = getRandomColor();
+            editor.settings.customEraserInline = getRandomColor();
+            editor.settings.customAccent = getRandomColor();
+            editor.settings.customGrid1 = getRandomColor();
+            editor.settings.customGrid2 = getRandomColor();
+            editor.settings.customIcon = getRandomColor();
+            editor.settings.customEraserOutline = getRandomColor();
+            editor.settings.customSelection = getRandomColor();
+            editor.settings.customButton = getRandomColor();
+
+            editor.useCustomTheme();
+            editor.saveSettings();
+            item.refreshSelection();
+        }},
+
+        {type: "boolean", target: editor.settings, key: "customCSS", onchange: (value, item) => { if (item) { item.refreshSelection(); } editor.useCustomTheme(); }},
+        {type: "multiline", target: editor.settings, key: "customCSSCode", rows: 15, disabled: () => { return !editor.settings.customCSS; },
         onchange: () => { editor.useCustomTheme(); }},
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
