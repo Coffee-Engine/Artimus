@@ -32,7 +32,7 @@
     animation: 300ms settings-pop-in;
 }
 
-.settings-settingsList .CUGI-PropertyHolder:has( .CUGI-Button ) {
+.settings-settingsList .CUGI-DisplayHolder {
     display: flex;
 
     background-color: var(--artimus-background-2);

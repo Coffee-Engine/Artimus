@@ -439,7 +439,7 @@
                     //Displays are just static most of the time
                     if (CUGI.displays[item.type]) {
                         const propertyHolder = document.createElement("div");
-                        propertyHolder.className = "CUGI-PropertyHolder";
+                        propertyHolder.className = "CUGI-PropertyHolder CUGI-DisplayHolder";
 
                         //Add our display
                         propertyHolder.appendChild(CUGI.displays[item.type]({
