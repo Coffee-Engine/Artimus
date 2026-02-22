@@ -329,6 +329,12 @@ input[type=checkbox] {
     transition: 300ms background-color, 300ms border-color;
 }
 
+input[type=color] {
+    aspect-ratio: 1;
+    width: auto;
+    align-self: center;
+}
+
 input[type=checkbox]:checked { background-color: var(--artimus-text); }
 input[type=checkbox]:hover { background-color: var(--artimus-button-hover); }
 input[type="checkbox"]:hover:checked { background-color: var(--artimus-button-selected); }

@@ -1,5 +1,5 @@
 editor.exportMenu = () => {
-    const workspace = artimus.activeWorkspaces[0];
+    const workspace = editor.workspace;
     new editor.modal(artimus.translate("title", "modal.exportFile"), (contents, modal) => {
         contents.className += " popup-exportFile";
 
@@ -114,12 +114,13 @@ editor.exportMenu = () => {
 
         //Finally the final button
         finalButton.onclick = () => {
-            artimus.activeWorkspaces[0].exportToPC(formatMenu.value, {
+            workspace.exportToPC(formatMenu.value, {
                 background: backgroundEnabled.checked,
                 backgroundColor: backgroundColor.value,
                 sizeMul: Number(size.value),
                 quality: Number(formatQuality.value),
-                forceDialogue: true
+                forceDialogue: true,
+                name: name.value,
             });
         }
     }, { width: 21, height: 50 })

@@ -126,7 +126,7 @@ artimus.tools.paintBrush = class extends artimus.tool {
         this.linePos = null;
     }
 
-    preview(gl, x, y, vx, vy, toolProperties) {
+    preview(gl, x, y, toolProperties) {
         //Set stroke properties
         gl.lineCap = "round";
         gl.lineJoin = "round";

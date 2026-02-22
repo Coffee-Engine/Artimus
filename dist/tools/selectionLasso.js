@@ -30,7 +30,7 @@ artimus.tools.selectionLasso = class extends artimus.tool {
         this.drawing = false;
     }
 
-    preview(gl, x, y, vx, vy, toolProperties) {
+    preview(gl, x, y, toolProperties) {
         if (this.drawing) {
             gl.setLineDash([4, 2]);
             gl.strokeStyle = getComputedStyle(document.body).getPropertyValue("--artimus-selection-outline");
