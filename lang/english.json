@@ -49,6 +49,7 @@
 
     "artimus.layerDropdown.delete": "Delete",
     "artimus.layerDropdown.properties": "Properties",
+    "artimus.layerDropdown.duplicate": "Duplicate",
 
     "artimus.blendModes.source-over": "Source over",
     "artimus.blendModes.source-in": "Source in",
@@ -81,7 +82,7 @@
     "artimus.modal.welcome.info": [
         "<img src=\"site/Logo_NoGraffiti.png\" class=\"LOGO\"></img>",
 
-        "<p>A web based art editor and library created by ObviousStudios and open sourced under the MIT liscense</p>",
+        "<p>A web based art editor and library created by ObviousStudios and open sourced under the MIT license</p>",
         "<p>Originally created for <a href=\"https://coffee-engine.github.io/\">Coffee Engine</a></p>",
 
         "<h3>Disclaimer</h3>",
@@ -90,7 +91,13 @@
         "<p>Things may break or be unstable.</p>",
         "<p>If you are fine with this and want to try this web demo click the \"I'm ready!\" button below!</p>",
         
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.newFile(true);\">I'm ready!</button>"
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); new editor.modal(artimus.translate('ready.title', 'modal'), artimus.translate('ready.info', 'modal'), { height: 25, hasClose: false });\">I'm ready!</button>"
+    ],
+    "artimus.modal.ready.title": "Load or create",
+    "artimus.modal.ready.info": [
+        "<p>Do you have an existing file you'd like to open?</p>",
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.loadFile(true);\">Yes, load</button>",
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.newFile(true);\">No, create new</button>"
     ],
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
@@ -100,6 +107,12 @@
 
     "artimus.modal.newFile.title": "New File",
     "artimus.modal.newFile.create": "Create!",
+    "artimus.modal.newFile.loadInstead": "Load a file instead",
+
+    "artimus.modal.loadFile.title": "Load file",
+    "artimus.modal.loadFile.loadAndReplace": "Load and replace",
+    "artimus.modal.loadFile.loadAndAdd": "Load and add as layer",
+    "artimus.modal.loadFile.createInstead": "Create a file instead",
 
     "artimus.modal.resizeFile.title": "Resize",
     "artimus.modal.resizeFile.resize": "Resize!",

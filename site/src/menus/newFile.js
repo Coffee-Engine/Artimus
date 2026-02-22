@@ -16,6 +16,7 @@ editor.newFile = (forced) => {
 
         const finalDiv = document.createElement("div");
         const createButton = document.createElement("button");
+        const loadButton = document.createElement("button");
         
         flipButton.className = "newFile-flip";
         sizingDiv.className = "newFile-sizingDiv";
@@ -26,6 +27,7 @@ editor.newFile = (forced) => {
         currentPreviewHolder.className = "newFile-tuning-previewHolder";
         currentPreview.className = "newFile-tuning-preview";
         createButton.className = "artimus-button";
+        loadButton.className = "artimus-button";
 
         resolutionDiv.appendChild(widthInput);
         resolutionDiv.appendChild(heightInput);
@@ -33,6 +35,7 @@ editor.newFile = (forced) => {
         sizingDiv.appendChild(flipButton);
         currentPreviewHolder.appendChild(currentPreview);
         finalDiv.appendChild(createButton);
+        finalDiv.appendChild(loadButton);
         tuning.appendChild(currentPreviewHolder);
         tuning.appendChild(sizingDiv);
         tuning.appendChild(finalDiv);
@@ -40,6 +43,7 @@ editor.newFile = (forced) => {
         contents.appendChild(tuning);
 
         createButton.innerText = artimus.translate("create", "modal.newFile");
+        loadButton.innerText = artimus.translate("loadInstead", "modal.newFile");
 
         fetch("site/images/flipAspect.svg").then(res => res.text()).then(text => {
             if (flipButton) {
@@ -89,6 +93,11 @@ editor.newFile = (forced) => {
         createButton.onclick = () => {
             editor.workspace.new(width, height);
             modal.close();
+        }
+
+        loadButton.onclick = () => {
+            modal.close();
+            editor.loadFile(true);
         }
 
         //Append resolution presets
