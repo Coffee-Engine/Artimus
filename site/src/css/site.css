@@ -71,6 +71,11 @@ cugi-dropdown:active {
     transition: 0ms background-color;
 }
 
+.CUGI-Multiline {
+    margin-right: 8px;
+    width: 100%;
+}
+
 /* ? Popups ? */
 .modal-background {
     position: absolute;
