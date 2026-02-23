@@ -405,7 +405,7 @@ window.artimus = {
             this.workspace = workspace;
             this.name = name || `${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`;
 
-            //Do a thing, guarenteed to not exist (hopefully)
+            //Do a thing, guaranteed to not exist (hopefully)
             if (this.workspace.layerExists(name)) {
                 let num = 1;
                 name = (`${artimus.translate("layer#", "layer").replace("#", num)}`);
@@ -415,6 +415,7 @@ window.artimus = {
                     num++;
                     name = (`${artimus.translate("layer#", "layer").replace("#", num)}`);
                 }
+                this.name = name
             }
 
             
@@ -1985,6 +1986,16 @@ window.artimus = {
             return layer;
         }
 
+        duplicateLayer(name, noSwitch) {
+            const oldLayer = this.layers.find(layer => layer.name === name);
+            const newLayer = new artimus.layer(this.canvas.width, this.canvas.height, oldLayer.name + " copy", this, noSwitch);
+
+            newLayer.dataRaw.data.set(oldLayer.dataRaw.data); // Copy the image data between the layers
+            newLayer.alpha = oldLayer.alpha;
+            newLayer.visibility = oldLayer.visibility;
+            newLayer.blendMode = oldLayer.blendMode;
+        }
+
         _createLayerElement(layerData) {
             const element = document.createElement("div");
             element.className = "artimus-layerWrapper";
@@ -2001,7 +2012,8 @@ window.artimus = {
             label.CUGI_CONTEXT = () => {
                 return [
                     { type: "button", text: "delete", onclick: () => this.removeLayer(element.targetLayer) },
-                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) }
+                    { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) },
+                    { type: "button", text: "duplicate", onclick: () => this.duplicateLayer(element.targetLayer, false)}
                 ]
             }
 
@@ -2701,7 +2713,9 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData, this.width, this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData,
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2733,7 +2747,9 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData, this.width, this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2766,7 +2782,9 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData, this.width, this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2802,7 +2820,9 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData, this.width, this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData,
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
                 this.layers[layer + 1].alpha = alpha;
 
@@ -2813,7 +2833,7 @@ window.artimus = {
             },
         ];
         
-        importArtimus(input) {
+        importArtimus(input, replaceFile) {
             const data = new Uint8Array(input);
 
             //Make sure it is an artimus image
@@ -2823,12 +2843,14 @@ window.artimus = {
                 data[2] == this.magic[2] &&
                 data[3] == this.magic[3]
             ) {
-                this.new(
-                (data[5] << 16) + (data[6] << 8) + (data[7]),
-                (data[8] << 16) + (data[9] << 8) + (data[10]),
-                () => {
+                const handleImport = () => {
                     //Count bytes needed
-                    const bytesPerLayer = this.width * this.height * 4;
+                    if (replaceFile) {
+                        this.width = (data[5] << 16) + (data[6] << 8) + (data[7])
+                        this.height = (data[8] << 16) + (data[9] << 8) + (data[10])
+                    }
+
+                    const bytesPerLayer = ((data[5] << 16) + (data[6] << 8) + (data[7])) * ((data[8] << 16) + (data[9] << 8) + (data[10])) * 4;
                     const layerCount = (data[11] << 8) + data[12];
                     const format = (data[4]);
 
@@ -2837,7 +2859,7 @@ window.artimus = {
                     let idx = 12;
 
                     //layer 1 is set to NaN as to not confuse it with an actual layer
-                    this.layers[0].name = NaN;
+                    if (replaceFile) this.layers[0].name = NaN;
                     
                     //Loop through layers, and read them with whatever format of reader is needed;
                     let layerReader = this.layerReaders[format];
@@ -2847,11 +2869,12 @@ window.artimus = {
                         return;
                     }
 
-                    for (let layer = 0; layer < layerCount; layer++) {
+                    const fileLayers = this.layers.length;
+                    for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < (replaceFile ? layerCount : layerCount+fileLayers-1); layer++) {
                         idx = layerReader(data, layer, bytesPerLayer, idx);
                     }
 
-                    this.setLayer(1).then(() => {
+                    if (replaceFile) this.setLayer(1).then(() => {
                         this.removeLayer(0)
                         this.setLayer(0);
                     });
@@ -2871,7 +2894,16 @@ window.artimus = {
                             console.error("Json header could possibly be corrupted :(");
                         }
                     }
-                });
+
+
+                }
+
+                if (replaceFile) this.new(
+                (data[5] << 16) + (data[6] << 8) + (data[7]),
+                (data[8] << 16) + (data[9] << 8) + (data[10]),
+                handleImport
+                );
+                else handleImport();
             }
             else console.error("Artimus File invalid!");
         }
@@ -2974,17 +3006,17 @@ window.artimus = {
         // Will be set upon file save/load
         fileSystemHandle = null;
 
-        importFromImage(image) {
+        importFromImage(image, replaceFile) {
             let extension = image.name.split(".");
             extension = extension[extension.length - 1];
             
-            this.fileReader.onload = () => { this.onImageLoad(this.fileReader.result, extension); };
+            this.fileReader.onload = () => { this.onImageLoad(this.fileReader.result, extension, replaceFile); };
             this.fileReader[this.importTypes[extension] || "readAsDataURL"](image);
         }
 
-        importFromPC() {
+        importFromPC(replaceFile) {
             // Not yet widely available, so we will need to check we can use the file system access API
-            if (window.showSaveFilePicker) window.showOpenFilePicker({
+            if (window.showSaveFilePicker) return window.showOpenFilePicker({
                 id: "artimus_file_location",
                 multiple: false,
                 startIn: "documents",
@@ -2995,7 +3027,7 @@ window.artimus = {
                 ]
             }).then(fsHandle => {
                 artimus.activeWorkspaces[0].fileSystemHandle = fsHandle[0];
-                fsHandle[0].getFile().then(file => artimus.activeWorkspaces[0].importFromImage(file));
+                fsHandle[0].getFile().then(file => artimus.activeWorkspaces[0].importFromImage(file, replaceFile));
             });
 
             else {
@@ -3003,29 +3035,41 @@ window.artimus = {
                 fileInput.type = "file";
                 fileInput.accept = "image/*, .artimus";
 
-                fileInput.onchange = () => {
-                    artimus.activeWorkspaces[0].importFromImage(fileInput.files[0]);
-                };
+                const filePromise = new Promise((resolve) => {
+                    fileInput.onchange = () => {
+                        artimus.activeWorkspaces[0].importFromImage(fileInput.files[0], replaceFile);
+                        resolve();
+                    };
+                    fileInput.onError = () => { console.log('file load error wow'); }
+                });
 
-                fileInput.click();                        
+                fileInput.click();
+                return filePromise;
             }
         }
 
-        onImageLoad(data, extension) {
+        onImageLoad(data, extension, replaceFile) {
             switch (extension) {
                 case "art":
                 case "artimus":
-                    this.importArtimus(data);
+                    this.importArtimus(data, replaceFile);
                     break;
             
                 default:
                     const image = new Image();
                     image.onload = () => {
-                        this.new(image.width, image.height, () => {
+                        if (replaceFile) this.new(image.width, image.height, () => {
                             this.setLayer(0, () => {
                                 this.editGL.drawImage(image, 0, 0);
                             });
                         });
+
+                        else {
+                            this.createLayer(`Layer ${this.layers.length+1}`, false);
+                            this.setLayer(this.layers.length-1, () => {
+                                this.editGL.drawImage(image, 0, 0, image.width, image.height); // Todo: Maybe prompt about resizing the canvas?
+                            });
+                        }
                     }
 
                     image.src = data;

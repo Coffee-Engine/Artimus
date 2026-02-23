@@ -53,7 +53,7 @@
                     editor.exportMenu();
                 }}</cugi-option>
                 <cugi-option>{ type: "button", text: "Load", onclick: () => {
-                    artimus.activeWorkspaces[0].importFromPC();
+                    editor.loadFile(false);
                 }}</cugi-option>
             </cugi-dropdown>
             <cugi-dropdown>Edit
@@ -90,6 +90,7 @@
     <script src="site/src/menus/resizeFile.js"></script>
     <script src="site/src/menus/layerProperty.js"></script>
     <script src="site/src/menus/exportFile.js"></script>
+    <script src="site/src/menus/loadFile.js"></script>
     <script src="site/src/menus/settingsPage.js"></script>
     <script src="site/src/extensions.js"></script>
 </body>
