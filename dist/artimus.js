@@ -2737,7 +2737,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData
+                this.layers[layer + 1].dataRaw = new ImageData(imageData,
                     (data[5] << 16) + (data[6] << 8) + (data[7]),
                     (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
@@ -2772,7 +2772,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData
+                this.layers[layer + 1].dataRaw = new ImageData(imageData,
                     (data[5] << 16) + (data[6] << 8) + (data[7]),
                     (data[8] << 16) + (data[9] << 8) + (data[10]));
                 this.layers[layer + 1].blendMode = blendMode;
