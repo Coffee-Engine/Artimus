@@ -164,6 +164,8 @@
 
     "artimus.modal.settings.hotkeys.functions.undo": "Undo",
     "artimus.modal.settings.hotkeys.functions.redo": "Redo",
+    "artimus.modal.settings.hotkeys.functions.copy": "Copy",
+    "artimus.modal.settings.hotkeys.functions.paste": "Paste",
     "artimus.modal.settings.hotkeys.functions.cropToSelection": "Crop",
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",

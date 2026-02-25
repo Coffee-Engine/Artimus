@@ -116,6 +116,8 @@ window.editor = {
     hotkeyFunctions: [
         "undo",
         "redo",
+        "copy",
+        "paste",
         "importFromPC",
         "exportToPC",
         "createLayer",
