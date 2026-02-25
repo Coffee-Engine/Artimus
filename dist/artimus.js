@@ -415,7 +415,8 @@ window.artimus = {
                     num++;
                     name = (`${artimus.translate("layer#", "layer").replace("#", num)}`);
                 }
-                this.name = name
+
+                this.name = name;
             }
 
             
@@ -1982,13 +1983,13 @@ window.artimus = {
         }
 
         createLayer(name, noSwitch) {
-            const layer = new artimus.layer(this.canvas.width, this.canvas.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
+            const layer = new artimus.layer(this.width, this.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
             return layer;
         }
 
         duplicateLayer(name, noSwitch) {
             const oldLayer = this.layers.find(layer => layer.name === name);
-            const newLayer = new artimus.layer(this.canvas.width, this.canvas.height, oldLayer.name + " copy", this, noSwitch);
+            const newLayer = new artimus.layer(this.width, this.height, oldLayer.name + " copy", this, noSwitch);
 
             newLayer.dataRaw.data.set(oldLayer.dataRaw.data); // Copy the image data between the layers
             newLayer.alpha = oldLayer.alpha;
@@ -2674,7 +2675,7 @@ window.artimus = {
         //These align with the artimus format
         layerReaders = [
             1, //Numbers redirect so 0 would redirect to 1
-            (data, layer, bytesPerLayer, index) => {
+            (data, layer, width, height, bytesPerLayer, index) => {
                 //Decode name and blend mode
                 const nameLength = (data[index + 1] << 16) + (data[index + 2] << 8) + (data[index + 3]);
                 const blendMode = artimus.blendModes[data[index + 4]];
@@ -2713,9 +2714,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData,
-                    this.width,
-                    this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData, width, height);
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2723,7 +2722,7 @@ window.artimus = {
                 return index;
             },
             //Format v2
-            (data, layer, bytesPerLayer, index) => {
+            (data, layer, width, height, bytesPerLayer, index) => {
                 //Decode name and blend mode
                 const nameLength = (data[index + 1] << 16) + (data[index + 2] << 8) + (data[index + 3]);
                 const encodingMode = data[index + 4];
@@ -2747,9 +2746,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData,
-                    this.width,
-                    this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData, width, height);
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2757,7 +2754,7 @@ window.artimus = {
                 return index;
             },
             //Format v3
-            (data, layer, bytesPerLayer, index) => {
+            (data, layer, width, height, bytesPerLayer, index) => {
                 //Decode name and blend mode
                 const nameLength = (data[index + 1] << 16) + (data[index + 2] << 8) + (data[index + 3]);
                 const encodingMode = data[index + 4];
@@ -2782,9 +2779,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData,
-                    this.width,
-                    this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData, width, height);
                 this.layers[layer + 1].blendMode = blendMode;
 
                 this.updateLayer(layer + 1);
@@ -2794,7 +2789,7 @@ window.artimus = {
             },
 
             //Format v4
-            (data, layer, bytesPerLayer, index) => {
+            (data, layer, width, height, bytesPerLayer, index) => {
                 //Decode name and blend mode
                 const nameLength = (data[index + 1] << 16) + (data[index + 2] << 8) + (data[index + 3]);
                 const encodingMode = data[index + 4];
@@ -2820,9 +2815,7 @@ window.artimus = {
                 this.createLayer(name, true);
 
                 //Set layer data
-                this.layers[layer + 1].dataRaw = new ImageData(imageData,
-                    this.width,
-                    this.height);
+                this.layers[layer + 1].dataRaw = new ImageData(imageData, width, height);
                 this.layers[layer + 1].blendMode = blendMode;
                 this.layers[layer + 1].alpha = alpha;
 
@@ -2844,13 +2837,15 @@ window.artimus = {
                 data[3] == this.magic[3]
             ) {
                 const handleImport = () => {
-                    //Count bytes needed
-                    if (replaceFile) {
-                        this.width = (data[5] << 16) + (data[6] << 8) + (data[7])
-                        this.height = (data[8] << 16) + (data[9] << 8) + (data[10])
-                    }
+                    //Calculate size based upon the Tri-fecta.
+                    const width = (data[5] << 16) + (data[6] << 8) + (data[7]);
+                    const height = (data[8] << 16) + (data[9] << 8) + (data[10]);
 
-                    const bytesPerLayer = ((data[5] << 16) + (data[6] << 8) + (data[7])) * ((data[8] << 16) + (data[9] << 8) + (data[10])) * 4;
+                    //If we are replacing the file resize.
+                    if (replaceFile) this.resize(width, height);
+
+                    //Count bytes
+                    const bytesPerLayer = width * height * 4;
                     const layerCount = (data[11] << 8) + data[12];
                     const format = (data[4]);
 
@@ -2870,8 +2865,11 @@ window.artimus = {
                     }
 
                     const fileLayers = this.layers.length;
-                    for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < (replaceFile ? layerCount : layerCount+fileLayers-1); layer++) {
-                        idx = layerReader(data, layer, bytesPerLayer, idx);
+                    
+                    //Prevent recalculation of for loop ending.
+                    const forEnd = (replaceFile ? layerCount : layerCount+fileLayers-1);
+                    for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < forEnd; layer++) {
+                        idx = layerReader(data, layer, width, height, bytesPerLayer, idx);
                     }
 
                     if (replaceFile) this.setLayer(1).then(() => {
