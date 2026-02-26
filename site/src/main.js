@@ -94,7 +94,7 @@ window.editor = {
             if (item.items) {
                 for (let optionID in item.items) {
                     const option = item.items[optionID];
-                    if (typeof option != "string") return;
+                    if (typeof option != "string") continue;
 
                     item.items[optionID] = { text: artimus.translate(option, `${context}.${translationKey}`), value: option} 
                 }
