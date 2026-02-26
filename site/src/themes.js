@@ -65,6 +65,28 @@ editor.themes = {
         "artimus-eraser-inline": "#f5e2ca",
     },
     
+    luna: {
+        "artimus-background-1": "#9c9cb4",
+        "artimus-background-2": "#7c7ca7",
+        "artimus-background-3": "#66669e",
+
+        "artimus-button-normal": "#9c9cb4",
+        "artimus-button-hover": "#a28bc7",
+        "artimus-button-click": "#c88de1",
+        "artimus-button-selected": "#b68bc7",
+
+        "artimus-text": "#1e2030",
+        "artimus-icon": "#1e2030",
+
+        "artimus-selection-outline": "#cd43ff",
+
+        "artimus-grid-1": "#cdbed4",
+        "artimus-grid-2": "#b29cbd",
+
+        "artimus-eraser-outline": "#cd43ff",
+        "artimus-eraser-inline": "#ebc4ff",
+    },
+    
     marino: {
         "artimus-background-1": "#252532",
         "artimus-background-2": "#151522",
