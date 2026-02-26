@@ -350,7 +350,7 @@ window.artimus = {
     tool: class {
         get icon() { return artimus.unknownToolIcon; }
 
-        constructor(workspace) { this.workspace = workspace; }
+        constructor(workspace, context) { this.workspace = workspace; }
 
         get shiftHeld() { return this.workspace.shiftHeld; }
 
@@ -370,6 +370,8 @@ window.artimus = {
 
         undo(gl, previewGL, toolProperties) {}
         redo(gl, previewGL, toolProperties) {}
+
+        paste(gl, previewGL, bitmap, sizeMultiplier) {}
 
         CUGI() { return [] }
 
@@ -570,6 +572,7 @@ window.artimus = {
         //Tools
         #tool = ""
         toolFunction = new artimus.tool();
+        suppressSelectionFunction = false;
         set tool(value) {
             //Make sure the tool function gets the deselection notification if possible
             if (this.toolFunction && this.toolFunction.deselected) this.toolFunction.deselected(this.editGL, this.previewGL, this.toolProperties);
@@ -580,7 +583,8 @@ window.artimus = {
 
             //Then call the selection signal after properties.
             this.toolProperties = Object.assign({},this.toolFunction.properties, this.toolProperties);
-            if (this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.editGL, this.previewGL, this.toolProperties);
+
+            if (!this.suppressSelectionFunction && this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.editGL, this.previewGL, this.toolProperties);
 
             this.#tool = value;
             this.refreshToolOptions();
@@ -2399,13 +2403,54 @@ window.artimus = {
 
         paste() {
             navigator.clipboard.read().then((result) => {
-                console.log(result);
-                for (let item in result) {
-                    console.log(item);
+                let imageType = "";
+                let imageID = 0;
+
+                for (let itemID in result) {
+                    const item = result[itemID];
+                    const imageIndex = item.types.findIndex((item) => item.startsWith("image/"));
+                    if (imageIndex != -1) {
+                        imageID = itemID;
+                        imageType = item.types[imageIndex];
+                        break;
+                    }
+                }
+
+                if (imageType) {
+                    const item = result[imageID];
+                    item.getType(imageType).then((imageBlob) => createImageBitmap(imageBlob).then(bitmap => {
+                            //Clear the selection then find the new bounds;
+                            this.clearSelection();
+                            let sizeMultiplier = 1;
+
+                            //Size down if needed to fit, but allow the user to scale up.
+                            if (bitmap.width > this.width || bitmap.height > this.height) {
+                                if (bitmap.width > this.width) sizeMultiplier = this.width / bitmap.width;
+                                if (bitmap.height * sizeMultiplier > this.#height) sizeMultiplier *= this.height / (bitmap.height * sizeMultiplier);
+                            }
+
+                            //Set the new selection
+                            this.setSelection([
+                                0, 0,
+                                0, bitmap.height * sizeMultiplier,
+                                bitmap.width * sizeMultiplier, bitmap.height * sizeMultiplier,
+                                bitmap.width * sizeMultiplier, 0
+                            ]);
+                        
+                            //Supress selection function and select the preferred move tool.
+                            this.suppressSelectionFunction = true;
+                            this.tool = artimus.preferredMoveTool;
+
+                            //Then run onPaste if available.
+                            if (this.toolFunction && this.toolFunction.paste) this.toolFunction.paste(this.GL, this.previewGL, bitmap, sizeMultiplier, this.toolProperties);
+
+                            this.suppressSelectionFunction = false;
+                        })
+                    );
                 }
             })
-            .catch(() => {
-                console.error("Can't read clipboard!");
+            .catch((err) => {
+                console.error("Can't read clipboard!\n", err);
             })
         }
 

@@ -47,41 +47,53 @@ artimus.tools.move = class extends artimus.tool {
 
         if (selectionMaxX - selectionMinX > 0 && selectionMaxY - selectionMinY > 0) {
             createImageBitmap(this.imageData).then(bitmap => {
-                this.bitmap = bitmap;
-                this.ready = true;
-                this.updatePositions();
-
-                //Setup initial variables
-                this.imageX = this.x;
-                this.imageY = this.y;
-                this.imageWidth = this.width;
-                this.imageHeight = this.height;
-            
-                //This is used for the actual transformation of the image
-                this.matrix = [
-                    1, 0, 
-                    0, 1,
-                    this.x, this.y,
-                ];
-
-                this.angle = 0;
-                this.initialAngle = 0;
-                this.undoQueue = [];
-                this.historyPosition = 0;
-
+                this.bitmapReady(previewGL, bitmap, toolProperties);
+                
                 gl.clearRect(
                     selectionMinX,
                     selectionMinY,
                     selectionMaxX - selectionMinX,
                     selectionMaxY - selectionMinY
                 );
-                
-                this.updateHistory();
-
-                this.preview(previewGL, ...this.workspace.lastPosition, toolProperties);
-                this.workspace.dirty = true;
             });
         }
+    }
+
+    //Pretty similar to selections
+    paste(gl, previewGL, bitmap, sizeMultiplier, toolProperties) {
+        this.bitmapReady(previewGL, bitmap, toolProperties);
+        this.matrix[0] *= sizeMultiplier;
+        this.matrix[3] *= sizeMultiplier;
+    }
+
+    bitmapReady(previewGL, bitmap, toolProperties) {
+        
+        this.bitmap = bitmap;
+        this.ready = true;
+        this.updatePositions();
+
+        //Setup initial variables
+        this.imageX = this.x;
+        this.imageY = this.y;
+        this.imageWidth = this.width;
+        this.imageHeight = this.height;
+    
+        //This is used for the actual transformation of the image
+        this.matrix = [
+            1, 0, 
+            0, 1,
+            this.x, this.y,
+        ];
+
+        this.angle = 0;
+        this.initialAngle = 0;
+        this.undoQueue = [];
+        this.historyPosition = 0;
+        
+        this.updateHistory();
+
+        this.preview(previewGL, ...this.workspace.lastPosition, toolProperties);
+        this.workspace.dirty = true;
     }
 
     deselected(gl, previewGL, toolProperties) {
