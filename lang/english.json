@@ -45,7 +45,9 @@
     "artimus.toolDropdown.use": "Use",
 
     "artimus.layer.layer#": "Layer #",
+    "artimus.layer.copy": "Copy of [NAME]",
     "artimus.layer.inputPlaceholder": "New Layer",
+    "artimus.layer.incrementalName": "[NAME] #",
 
     "artimus.layerDropdown.delete": "Delete",
     "artimus.layerDropdown.properties": "Properties",

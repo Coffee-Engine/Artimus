@@ -414,14 +414,15 @@ window.artimus = {
             this.name = name || `${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`;
 
             //Do a thing, guaranteed to not exist (hopefully)
+            const preferredName = name;
             if (this.workspace.layerExists(name)) {
                 let num = 1;
-                name = (`${artimus.translate("layer#", "layer").replace("#", num)}`);
+                name = (`${artimus.translate("incrementalName", "layer").replace("#", num).replace("[NAME]", preferredName)}`);
                 
                 //Find one that doesn't exist.
                 while (this.workspace.layerExists(name)) {
                     num++;
-                    name = (`${artimus.translate("layer#", "layer").replace("#", num)}`);
+                    name = (`${artimus.translate("incrementalName", "layer").replace("#", num).replace("[NAME]", preferredName)}`);
                 }
 
                 this.name = name;
@@ -1999,7 +2000,7 @@ window.artimus = {
 
         duplicateLayer(name, noSwitch) {
             const oldLayer = this.layers.find(layer => layer.name === name);
-            const newLayer = new artimus.layer(this.width, this.height, oldLayer.name + " copy", this, noSwitch);
+            const newLayer = new artimus.layer(this.width, this.height, artimus.translate("copy", "layer").replace("[NAME]", oldLayer.name), this, noSwitch);
 
             newLayer.dataRaw.data.set(oldLayer.dataRaw.data); // Copy the image data between the layers
             newLayer.alpha = oldLayer.alpha;
