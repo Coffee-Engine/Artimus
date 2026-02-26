@@ -43,6 +43,50 @@ editor.themes = {
         "artimus-eraser-inline": "#d0d0ff",
     },
     
+    sola: {
+        "artimus-background-1": "#f5d7b0",
+        "artimus-background-2": "#eecca0",
+        "artimus-background-3": "#e5c191",
+
+        "artimus-button-normal": "#f5d7b0",
+        "artimus-button-hover": "#eea87a",
+        "artimus-button-click": "#e98158",
+        "artimus-button-selected": "#ecbd9e",
+
+        "artimus-text": "#46140e",
+        "artimus-icon": "#46140e",
+
+        "artimus-selection-outline": "#e75541",
+
+        "artimus-grid-1": "#f1b397",
+        "artimus-grid-2": "#f1a07b",
+
+        "artimus-eraser-outline": "#e75541",
+        "artimus-eraser-inline": "#f5e2ca",
+    },
+    
+    marino: {
+        "artimus-background-1": "#252532",
+        "artimus-background-2": "#151522",
+        "artimus-background-3": "#050512",
+
+        "artimus-button-normal": "#252532",
+        "artimus-button-hover": "#0e4261",
+        "artimus-button-click": "#8dd0e1",
+        "artimus-button-selected": "#1b4466",
+
+        "artimus-text": "#72b7d3",
+        "artimus-icon": "#72b7d3",
+
+        "artimus-selection-outline": "#72b7d3",
+
+        "artimus-grid-1": "#484e5f",
+        "artimus-grid-2": "#383f53",
+
+        "artimus-eraser-outline": "#72b7d3",
+        "artimus-eraser-inline": "#d0d0ff",
+    },
+    
     eclipse: {
         "artimus-background-1": "#151518",
         "artimus-background-2": "#1d1d28",

@@ -41,9 +41,7 @@ editor.settingDefs = {
     ],
     theme: [
         {type: "dropdown", target: editor.settings, key: "theme", items: [
-            "default",
-            "dark",
-            "eclipse",
+            ...Object.keys(editor.themes),
             "custom"
         ], onchange: (value, item) => {
             if (value == "custom") editor.useCustomTheme();
