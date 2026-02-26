@@ -74,8 +74,8 @@ window.editor = {
             switch (typeof contents) {
                 case "function": contents(this.content, this); break;
                 case "string": this.content.innerHTML = contents; break;
-                case "object": this.content.appendChild(CUGI.createList(contents, {
-                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, item)
+                case "object": this.content.appendChild(CUGI.createList({...contents}, {
+                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, {...item})
                 }));
                 break;
 
@@ -89,7 +89,16 @@ window.editor = {
         }
 
         CUGIPreprocess(context, item) {
-            item.text = artimus.translate(item.translationKey || item.key || item.text, context) || item.text || item.key;
+            const translationKey = item.translationKey || item.key || item.text;
+            item.text = artimus.translate(translationKey, context) || item.text || item.key;
+            if (item.items) {
+                for (let optionID in item.items) {
+                    const option = item.items[optionID];
+                    if (typeof option != "string") return;
+
+                    item.items[optionID] = { text: artimus.translate(option, `${context}.${translationKey}`), value: option} 
+                }
+            }
             return item;
         }
 

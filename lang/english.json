@@ -130,10 +130,23 @@
 
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
+    "artimus.modal.settings.general.preferredFormat.png": "png",
+    "artimus.modal.settings.general.preferredFormat.jpeg": "jpeg",
+    "artimus.modal.settings.general.preferredFormat.jpg": "jpg",
+    "artimus.modal.settings.general.preferredFormat.webp": "webp",
+
     "artimus.modal.settings.general.preferGreaterAxis": "Prefer Greater Axis",
     "artimus.modal.settings.general.debug": "\"Nerd Numbers\"",
 
     "artimus.modal.settings.theme.theme": "Theme",
+    "artimus.modal.settings.theme.theme.default": "Light",
+    "artimus.modal.settings.theme.theme.dark": "Dark",
+    "artimus.modal.settings.theme.theme.sola": "Sola",
+    "artimus.modal.settings.theme.theme.luna": "Luna",
+    "artimus.modal.settings.theme.theme.marino": "Marino",
+    "artimus.modal.settings.theme.theme.eclipse": "Eclipse",
+    "artimus.modal.settings.theme.theme.custom": "Custom",
+
     "artimus.modal.settings.theme.customBackground": "Background",
     "artimus.modal.settings.theme.customText": "Text",
     "artimus.modal.settings.theme.iconsUseText": "Icons Use Text",
