@@ -93,8 +93,10 @@
         "<p>Things may break or be unstable.</p>",
         "<p>If you are fine with this and want to try this web demo click the \"I'm ready!\" button below!</p>",
         
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); new editor.modal(artimus.translate('ready.title', 'modal'), artimus.translate('ready.info', 'modal'), { height: 25, hasClose: false });\">I'm ready!</button>"
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); \">I'm ready!</button>"
     ],
+    "artimus.modal.welcome.ready": "I'm ready!",
+
     "artimus.modal.ready.title": "Load or create",
     "artimus.modal.ready.info": [
         "<p>Do you have an existing file you'd like to open?</p>",

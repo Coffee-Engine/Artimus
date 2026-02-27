@@ -202,7 +202,8 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
         editor.startExtension(editor.settings.extensions[idx]);
     }
 
-    new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+    if (localStorage.getItem("settings")) new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+    else new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
 
     const element = document.getElementById("versionIdentifier");
     const loop = () => {
