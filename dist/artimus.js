@@ -2023,6 +2023,7 @@ window.artimus = {
             //Create CUGI bindings for the button, more specifically the label
             label.CUGI_CONTEXT = () => {
                 return [
+                    { type: "button", text: "importLayer", onclick: () => this.importFromPC(false) },
                     { type: "button", text: "delete", onclick: () => this.removeLayer(element.targetLayer) },
                     { type: "button", text: "properties", onclick: () => (artimus.layerPropertyMenu)(this, this.getLayer(element.targetLayer)) },
                     { type: "button", text: "duplicate", onclick: () => this.duplicateLayer(element.targetLayer, false)}

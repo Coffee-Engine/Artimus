@@ -49,6 +49,7 @@
     "artimus.layer.inputPlaceholder": "New Layer",
     "artimus.layer.incrementalName": "[NAME] #",
 
+    "artimus.layerDropdown.importLayer": "Import Layer(s)",
     "artimus.layerDropdown.delete": "Delete",
     "artimus.layerDropdown.properties": "Properties",
     "artimus.layerDropdown.duplicate": "Duplicate",
