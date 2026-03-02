@@ -1,4 +1,6 @@
 window.editor = {
+    version: "Γ 1.3",
+
     dbName: "artimusDB",
     dbVersion: 1,
 
@@ -181,6 +183,7 @@ artimus.unfocusedHotkeys = true;
 artimus.hotkeys["ctrl+s"] = "exportToPC";
 artimus.hotkeys["ctrl+l"] = "importFromPC";
 
+
 //Finally initialize the editor by fetching needed json data
 fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
     try {
@@ -202,7 +205,7 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
         editor.startExtension(editor.settings.extensions[idx]);
     }
 
-    if (localStorage.getItem("settings")) new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
+    if (localStorage.getItem("settings")) editor.startMenu.open();
     else new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
 
     const element = document.getElementById("versionIdentifier");

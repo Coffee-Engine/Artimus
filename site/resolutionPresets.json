@@ -35,6 +35,11 @@
         "height": 600
     },
     {
+        "name": "Art Contest Banner",
+        "width": 800,
+        "height": 400
+    },
+    {
         "name": "4x3 720p",
         "width": 960,
         "height": 720

@@ -54,6 +54,12 @@ body {
     margin: 0px;
 }
 
+hr {
+    width: 100%;
+    border: none;
+    border-top: 4px dotted var(--artimus-text);
+}
+
 cugi-dropdown {
     text-align: center;
     user-select: none;

@@ -97,12 +97,11 @@
     ],
     "artimus.modal.welcome.ready": "I'm ready!",
 
-    "artimus.modal.ready.title": "Load or create",
-    "artimus.modal.ready.info": [
-        "<p>Do you have an existing file you'd like to open?</p>",
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.loadFile(true);\">Yes, load</button>",
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.newFile(true);\">No, create new</button>"
-    ],
+    "artimus.modal.ready.title": "Artimus [VERSION]",
+    "artimus.modal.ready.newFile": "New File",
+    "artimus.modal.ready.loadFile": "Load File",
+    "artimus.modal.ready.settings": "Settings",
+    "artimus.modal.ready.recentFiles": "Recent Files",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",
