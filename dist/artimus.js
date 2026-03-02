@@ -1324,7 +1324,7 @@ window.artimus = {
         pickColorAt(x, y) {
             let red = 255; let green = 255; let blue = 255; let alpha = 255;
 
-            if (artimus.pickType == "composite") [red, green, blue, alpha] = this.compositeGL.getImageData(...this.getCanvasPosition(x, y, true), 1, 1).data;
+            if (artimus.pickType == "composite") [red, green, blue, alpha] = this.compositeGL.getImageData(x, y, 1, 1).data;
             else [red, green, blue, alpha] = this.editGL.getImageData(x, y, 1, 1).data;
             const converted = artimus.RGBToHex({ r:red, g:green, b:blue, a:alpha });
             return converted;
