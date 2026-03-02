@@ -139,6 +139,10 @@
     "artimus.modal.settings.general.preferredFormat.jpg": "jpg",
     "artimus.modal.settings.general.preferredFormat.webp": "webp",
 
+    "artimus.modal.settings.general.pickTarget": "Pick Target",
+    "artimus.modal.settings.general.pickTarget.composite": "Composite",
+    "artimus.modal.settings.general.pickTarget.layer": "Layer",
+
     "artimus.modal.settings.general.preferGreaterAxis": "Prefer Greater Axis",
     "artimus.modal.settings.general.debug": "\"Nerd Numbers\"",
 

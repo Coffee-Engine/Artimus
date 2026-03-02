@@ -34,6 +34,12 @@ editor.settingDefs = {
             artimus.maxHistory = value;
         }},
         {type: "dropdown", target: editor.settings, key: "preferredFormat", items: Object.keys(artimus.extensionToMIME)},
+        {type: "dropdown", target: editor.settings, key: "pickTarget", items: [
+            "composite",
+            "layer"
+        ], onchange: (value) => {
+            artimus.pickType = value;
+        }},
         {type: "boolean", target: editor.settings, key: "preferGreaterAxis", onchange: (value) => {
             artimus.preferGreaterAxis = value;
         }},
