@@ -102,6 +102,7 @@
     "artimus.modal.ready.loadFile": "Load File",
     "artimus.modal.ready.settings": "Settings",
     "artimus.modal.ready.recentFiles": "Recent Files",
+    "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",

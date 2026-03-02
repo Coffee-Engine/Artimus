@@ -21,18 +21,23 @@ editor.startMenu = {
             const recentList = document.createElement("div");
             recentList.className = "ready-recentList";
 
+            if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
+            else {
+
+            }
+
             const fileButtons = document.createElement("div");
             fileButtons.className = "ready-list ready-options";
             
             const newFile = document.createElement('button');
             newFile.className = "artimus-button";
             newFile.innerText = artimus.translate("ready.newFile", "modal");
-            newFile.onclick = () => { modal.close(); editor.newFile(true); }
+            newFile.onclick = () => { editor.newFile(modal); }
             
             const loadFile = document.createElement('button');
             loadFile.className = "artimus-button";
             loadFile.innerText = artimus.translate("ready.loadFile", "modal");
-            loadFile.onclick = () => { modal.close(); editor.loadFile(true); }
+            loadFile.onclick = () => { editor.loadFile(modal); }
             
             const settings = document.createElement('button');
             settings.className = "artimus-button";
