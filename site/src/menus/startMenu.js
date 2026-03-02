@@ -32,7 +32,7 @@ editor.startMenu = {
             const loadFile = document.createElement('button');
             loadFile.className = "artimus-button";
             loadFile.innerText = artimus.translate("ready.loadFile", "modal");
-            loadFile.onclick = () => { modal.close(); editor.newFile(true); }
+            loadFile.onclick = () => { modal.close(); editor.loadFile(true); }
             
             const settings = document.createElement('button');
             settings.className = "artimus-button";
