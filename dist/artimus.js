@@ -3101,8 +3101,8 @@ window.artimus = {
                     }
                 ]
             }).then(fsHandle => {
-                artimus.activeWorkspaces[0].fileSystemHandle = fsHandle[0];
-                fsHandle[0].getFile().then(file => artimus.activeWorkspaces[0].importFromImage(file, replaceFile));
+                editor.workspace.fileSystemHandle = fsHandle[0];
+                fsHandle[0].getFile().then(file => editor.workspace.importFromImage(file, replaceFile));
             });
 
             else {
@@ -3112,7 +3112,7 @@ window.artimus = {
 
                 const filePromise = new Promise((resolve) => {
                     fileInput.onchange = () => {
-                        artimus.activeWorkspaces[0].importFromImage(fileInput.files[0], replaceFile);
+                        editor.workspace.importFromImage(fileInput.files[0], replaceFile);
                         resolve();
                     };
                     fileInput.onError = () => { console.log('file load error wow'); }
