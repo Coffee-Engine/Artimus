@@ -6,6 +6,14 @@ editor.startMenu = {
             const banner = document.createElement("div");
             banner.className = "ready-banner";
 
+            const bannerText = document.createElement("p");
+            bannerText.innerText = artimus.translate("ready.authorTag", "modal").replace("[TITLE]", editor.bannerTitle);
+            bannerText.className = "ready-banner-text";
+
+            const authorLink = document.createElement("a");
+            authorLink.innerText = editor.bannerAuthor;
+            authorLink.href = editor.bannerAuthorURL;
+
             const seperator = document.createElement('hr');
 
             const divider = document.createElement('div');
@@ -54,7 +62,10 @@ editor.startMenu = {
             divider.appendChild(recentFiles);
             divider.appendChild(fileButtons);
 
+            bannerText.appendChild(authorLink);
+
             content.appendChild(banner);
+            content.appendChild(bannerText);
             content.appendChild(seperator);
             content.appendChild(divider);
         }, { hasClose: false })

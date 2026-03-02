@@ -1,5 +1,8 @@
 window.editor = {
     version: "Γ 1.3",
+    bannerTitle: "Help Wanted",
+    bannerAuthor: "ObviousAlexC",
+    bannerAuthorURL: "https://ObviousStudios.dev",
 
     dbName: "artimusDB",
     dbVersion: 1,

@@ -1,7 +1,7 @@
 
 .ready-popup {
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
 }
 
 .ready-banner {
@@ -24,6 +24,10 @@
     aspect-ratio: 2/1;
     background-size: 100% auto;
     background-position: 0% 25%;
+}
+
+.ready-banner-text {
+    margin: 4px;
 }
 
 .ready-divider {

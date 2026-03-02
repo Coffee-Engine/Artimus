@@ -94,7 +94,7 @@
         "<p>Things may break or be unstable.</p>",
         "<p>If you are fine with this and want to try this web demo click the \"I'm ready!\" button below!</p>",
         
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); \">I'm ready!</button>"
+        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.startMenu.open();\">I'm ready!</button>"
     ],
     "artimus.modal.welcome.ready": "I'm ready!",
 
@@ -104,6 +104,7 @@
     "artimus.modal.ready.settings": "Settings",
     "artimus.modal.ready.recentFiles": "Recent Files",
     "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
+    "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",
