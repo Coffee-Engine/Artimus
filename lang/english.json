@@ -102,9 +102,12 @@
     "artimus.modal.ready.newFile": "New File",
     "artimus.modal.ready.loadFile": "Load File",
     "artimus.modal.ready.settings": "Settings",
+    "artimus.modal.ready.credits": "Credits",
     "artimus.modal.ready.recentFiles": "Recent Files",
     "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
     "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",
+
+    "artimus.modal.credits.title": "The Developers!",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",

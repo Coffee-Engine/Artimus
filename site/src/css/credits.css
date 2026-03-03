@@ -1,0 +1,53 @@
+.credits-menu {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.credit-container {
+    display: flex;
+    height: auto;
+    aspect-ratio: 4/1;
+
+    margin: 4px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--artimus-background-3);
+
+    background-color: var(--artimus-background-2);
+}
+
+@media screen and (min-height: 100vw) {
+    .credits-menu {
+        display: block;
+    }
+
+    .credit-container {
+        width: auto;
+        height: auto;
+        aspect-ratio: 4/1;
+    }
+}
+
+.credit-icon {
+    height: 100%;
+    border-radius: 8px;
+}
+
+.credit-divider {
+    display: grid;
+    grid-template-rows: 60% 40%;
+    align-items: center;
+    width: 100%;
+}
+
+.credit-text {
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    text-align: center;
+}
+
+.credit-username {
+    font-size: 1.5em;
+}
