@@ -2488,9 +2488,7 @@ window.artimus = {
         }
 
         copy() {
-            navigator.permissions.query({ name: "clipboard-write" }).then(result => {
-                if (result.state != "granted") return;
-
+            const doCopy = () => {
                 let toCopy = [];
                 let imgData = {};
                 
@@ -2541,8 +2539,15 @@ window.artimus = {
                 };
 
                 //Now convert it to a base64 string;
-                navigator.clipboard.writeText(artimus.clipboardMagic + btoa(final));
+                navigator.clipboard.writeText(artimus.clipboardMagic + final);
                 this.sendEvent("copy", { copied: toCopy, hex: final });
+            }
+            
+            navigator.permissions.query({ name: "clipboard-write" }).then(result => {
+                if (result.state != "granted") return;
+                doCopy();
+            }).catch(() => {
+                doCopy();
             });
         }
 
