@@ -31,7 +31,7 @@ editor.startMenu = {
 
             if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
             else {
-
+                
             }
 
             const fileButtons = document.createElement("div");

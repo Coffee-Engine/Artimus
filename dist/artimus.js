@@ -544,6 +544,58 @@ window.artimus = {
     },
 
     workspace: class {
+        events = [
+            "redraw",
+            "import",
+            "importLocal",
+            "export",
+            "exportLocal",
+            "new",
+            "undo",
+            "redo",
+            "copy",
+            "paste",
+            "layerCreated",
+            "layerRemoved",
+            "layerSwitched",
+            "layerRenamed",
+            "resized",
+            "toolsRefreshed",
+            "toolSwitched",
+            "tabSwitched",
+            "selected",
+            "selectionCleared",
+        ];
+        listeners = {};
+
+        addEventListener(event, callback) {
+            //Add the callback
+            if (this.events.includes(event)) {
+                if (!this.listeners[event]) this.listeners[event] = [];
+                this.listeners[event].push(callback);
+            }
+        }
+
+        sendEvent(event, data) {
+            //Make sure the event list exists
+            if (Array.isArray(this.listeners[event])) {
+                //Run the callbacks
+                const callbacks = this.listeners[event];
+                for (let i = 0; i<callbacks.length; i++) {
+                    callbacks[i](data, this);
+                }
+            }
+        }
+
+        removeEventListener(event, callback) {
+            if (this.events.includes(event)) {
+                if (!this.listeners[event]) return;
+                const index = this.listeners[event].indexOf(callback);
+                if (index < 0) return;
+                this.listeners[event].splice(index, 1);
+            }
+        }
+
         //Viewbounds
         viewBounds = [0, 0, 0, 0];
 
@@ -592,6 +644,8 @@ window.artimus = {
 
             //We also want to clear the previewGL
             if (this.toolFunction.preview) this.previewGL.clearRect(...this.viewBounds);
+
+            this.sendEvent("toolSwitched", { tab: value });
         }
         get tool() { return this.#tool; }
 
@@ -628,6 +682,8 @@ window.artimus = {
 
             this.toolbar.style.setProperty(`--tab-${value + 1}`, 1);
             this._toolbarTab = value;
+
+            this.sendEvent("tabSwitched", { tab: value });
         }
         get toolbarTab() {
             return this._toolbarTab;
@@ -1133,6 +1189,9 @@ window.artimus = {
                 //Bind and edit the composite texture
                 this.GL.bindTexture(this.GL.TEXTURE_2D, this.webgl.compositeTexture);
                 this.GL.texSubImage2D(this.GL.TEXTURE_2D, 0, ...this.viewBounds, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.compositeGL.getImageData(...this.viewBounds).data);
+                
+                this.sendEvent("redraw", { delta: delta, time: this.time, bounds: this.viewBounds });
+                this.dirty = false;
             }
 
             //Set buffers to the position buffer/quad buffer.
@@ -1821,6 +1880,8 @@ window.artimus = {
                 this.toolbox.appendChild(button);
                 button.appendChild(label);
             }
+
+            this.sendEvent("toolsRefreshed", { tools: artimus.tools });
         }
 
         //For selections
@@ -1909,10 +1970,14 @@ window.artimus = {
                 //update the buffer
                 this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.webgl.selectionBuffer);
                 this.GL.bufferData(this.GL.ARRAY_BUFFER, new Float32Array(toGL), this.GL.STATIC_DRAW);
+
+                this.sendEvent("selected", { selection: this.selection });
             }
             else {
                 this.editGL.restore();
                 this.hasSelection = false;
+
+                this.sendEvent("selectionCleared", {});
             }
         }
 
@@ -1959,6 +2024,8 @@ window.artimus = {
 
                         if (then) then();
                         resolve();
+
+                        this.sendEvent("layerSwitched", { layer: this.layers[ID], id: ID });
                     });
                 }
                 else {
@@ -1995,6 +2062,7 @@ window.artimus = {
 
         createLayer(name, noSwitch) {
             const layer = new artimus.layer(this.width, this.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
+            this.sendEvent("layerCreated", { layer: layer, duplicate: false });
             return layer;
         }
 
@@ -2006,6 +2074,8 @@ window.artimus = {
             newLayer.alpha = oldLayer.alpha;
             newLayer.visibility = oldLayer.visibility;
             newLayer.blendMode = oldLayer.blendMode;
+
+            this.sendEvent("layerCreated", { layer: layer, duplicate: true });
         }
 
         _createLayerElement(layerData) {
@@ -2229,6 +2299,7 @@ window.artimus = {
             }
 
             if (typeof ID == "number") {
+                this.sendEvent("layerRenamed", { layer: this.layers[ID], id: ID, oldName: this.layers[ID].name, name: name });
                 this.layers[ID].rename(name);
             }
         }
@@ -2272,6 +2343,7 @@ window.artimus = {
                 }
 
                 this.layers[ID].dispose(ID);
+                this.sendEvent("layerRemoved", { layerID: ID });
             }
         }
 
@@ -2354,6 +2426,7 @@ window.artimus = {
             //Update textures
             this._updateTextures();
             this.dirty = true;
+            this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
         }
 
         resizeByAnchor(width, height, anchor) {
@@ -2379,6 +2452,7 @@ window.artimus = {
             //Update textures
             this._updateTextures();
             this.dirty = true;
+            this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
         }
 
         undo() {
@@ -2389,6 +2463,8 @@ window.artimus = {
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
+
+            this.sendEvent("undo", { historyIndex: this.historyIndex });
         }
 
         redo() {
@@ -2399,9 +2475,13 @@ window.artimus = {
 
             this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
+
+            this.sendEvent("redo", { historyIndex: this.historyIndex });
         }
 
-        copy() {}
+        copy() {
+            this.sendEvent("copy", { });
+        }
 
         paste() {
             navigator.clipboard.read().then((result) => {
@@ -2450,6 +2530,8 @@ window.artimus = {
                                 this.suppressSelectionFunction = false;
                             })
                         );
+
+                        this.sendEvent("paste", { item: item });
                     }
 
                     //If we prefer a new layer use a new layer.
@@ -2488,6 +2570,8 @@ window.artimus = {
             this.historyIndex = 0;
             this.layerHistory = [];
             this.fileSystemHandle = null;
+
+            this.sendEvent("new", { width: width, height: height });
         }
         
         //Artimus Files
@@ -2979,6 +3063,8 @@ window.artimus = {
                 handleImport
                 );
                 else handleImport();
+
+                this.sendEvent("import", { file: input });
             }
             else console.error("Artimus File invalid!");
         }
@@ -3068,7 +3154,10 @@ window.artimus = {
 
                 //With the slight, and somewhat strange compression I added above I'm sure this will be good
                 const file = new Uint8Array(data.flat(5));
-                this.fileReader.onload = () => resolve(this.fileReader.result);
+                this.fileReader.onload = () => {
+                    resolve(this.fileReader.result);
+                    this.sendEvent("export", { raw: file, format: "artimus", file: this.fileReader.result });
+                };
                 this.fileReader.readAsDataURL(new Blob([file]));
             });
         }
@@ -3087,6 +3176,7 @@ window.artimus = {
             
             this.fileReader.onload = () => { this.onImageLoad(this.fileReader.result, extension, replaceFile); };
             this.fileReader[this.importTypes[extension] || "readAsDataURL"](image);
+            this.sendEvent("import", { file: image });
         }
 
         importFromPC(replaceFile) {
@@ -3103,6 +3193,7 @@ window.artimus = {
             }).then(fsHandle => {
                 editor.workspace.fileSystemHandle = fsHandle[0];
                 fsHandle[0].getFile().then(file => editor.workspace.importFromImage(file, replaceFile));
+                this.sendEvent("importLocal", { file: fsHandle });
             });
 
             else {
@@ -3113,6 +3204,7 @@ window.artimus = {
                 const filePromise = new Promise((resolve) => {
                     fileInput.onchange = () => {
                         editor.workspace.importFromImage(fileInput.files[0], replaceFile);
+                        this.sendEvent("importLocal", { file: fileInput.files[0] });
                         resolve();
                     };
                     fileInput.onError = () => { console.log('file load error wow'); }
@@ -3185,7 +3277,9 @@ window.artimus = {
                             //Draw the final composite
                             artimus.exportGL.drawImage(this.compositeCanvas, 0, 0, artimus.exportCanvas.width, artimus.exportCanvas.height);
 
-                            resolve(artimus.exportCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png, options.quality));
+                            const dataURI = artimus.exportCanvas.toDataURL(artimus.extensionToMIME[format] || artimus.extensionToMIME.png, options.quality);
+                            resolve(dataURI);
+                            this.sendEvent("export", { raw: dataURI, format: format, options: options });
                             
                             //Reset export canvas and return;
                             artimus.exportCanvas.width = 1;
@@ -3230,6 +3324,7 @@ window.artimus = {
                                 fsHandle.createWritable().then(async writableStream => {
                                     await writableStream.write(buffer);
                                     await writableStream.close();
+                                    this.sendEvent("exportLocal", { raw: value, file: this.fileSystemHandle, name: name || "picture", format: format, options: options });
                                 });
                             });
                         }
@@ -3237,9 +3332,9 @@ window.artimus = {
                             this.fileSystemHandle.createWritable().then(async writableStream => {
                                 await writableStream.write(buffer);
                                 await writableStream.close();
+                                this.sendEvent("exportLocal", { raw: value, file: this.fileSystemHandle, name: name || "picture", format: format, options: options });
                             });
                         }
-
                     }));
                 }
                 else {
@@ -3248,6 +3343,7 @@ window.artimus = {
                     link.href = value;
                     link.download = `${name || "picture"}.${format}`;
                     link.click();
+                    this.sendEvent("exportLocal", { raw: value, name: name || "picture", format: format, options: options });
                 }
 
             });
