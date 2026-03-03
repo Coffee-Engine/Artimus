@@ -2496,7 +2496,7 @@ window.artimus = {
                 toCopy["application/artimus-selection"] = JSON.stringify(editor.workspace.selection);
             }
             
-            navigator.clipboard.write([toCopy);
+            navigator.clipboard.write(toCopy);
             this.sendEvent("copy", { });
         }
 
