@@ -201,6 +201,14 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
 
     editor.workspace = artimus.inject(document.getElementById("workspace-area"));
     editor.workspace.resize(0, 0);
+
+    editor.workspace.addEventListener("importLocal", (event) => {
+        console.log(event);
+    });
+
+    editor.workspace.addEventListener("exportLocal", (event) => {
+        console.log(event);
+    });
     artimus.globalRefreshTools();
 
     //Add extensions

@@ -3191,9 +3191,9 @@ window.artimus = {
                     }
                 ]
             }).then(fsHandle => {
-                editor.workspace.fileSystemHandle = fsHandle[0];
-                fsHandle[0].getFile().then(file => editor.workspace.importFromImage(file, replaceFile));
-                this.sendEvent("importLocal", { file: fsHandle });
+                this.fileSystemHandle = fsHandle[0];
+                fsHandle[0].getFile().then(file => this.importFromImage(file, replaceFile));
+                this.sendEvent("importLocal", { file: fsHandle[0] });
             });
 
             else {
@@ -3203,7 +3203,7 @@ window.artimus = {
 
                 const filePromise = new Promise((resolve) => {
                     fileInput.onchange = () => {
-                        editor.workspace.importFromImage(fileInput.files[0], replaceFile);
+                        this.importFromImage(fileInput.files[0], replaceFile);
                         this.sendEvent("importLocal", { file: fileInput.files[0] });
                         resolve();
                     };
