@@ -89,7 +89,7 @@ editor.newFile = (parentModal) => {
         createButton.onclick = () => {
             editor.workspace.new(width, height);
             modal.close();
-            parentModal.close();
+            if (parentModal) parentModal.close();
         }
 
         //Append resolution presets
