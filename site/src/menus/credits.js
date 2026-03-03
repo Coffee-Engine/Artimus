@@ -1,7 +1,7 @@
 editor.credits = {
-    "ObviousAlexC": { icon: "https://avatars.githubusercontent.com/u/76855369", role: "Lead Developer", website: "https://obviousstudios.dev" },
-    "DerpyGamer2142": { icon: "https://avatars.githubusercontent.com/u/93667155", role: "Additional Features", website: "https://derpygamer2142.com/"}
-}
+    "ObviousAlexC": { icon: "https://avatars.githubusercontent.com/u/76855369", role: "leadDeveloper", website: "https://obviousstudios.dev" },
+    "DerpyGamer2142": { icon: "https://avatars.githubusercontent.com/u/93667155", role: "addtionalFeatures", website: "https://derpygamer2142.com/"}
+};
 
 editor.creditsMenu = () => {
     new editor.modal(artimus.translate("credits.title", "modal"), (content, modal) => {
@@ -28,7 +28,7 @@ editor.creditsMenu = () => {
 
             const role = document.createElement("p");
             role.className = "credit-text credit-role";
-            role.innerText = user.role;
+            role.innerText = artimus.translate(`credits.role.${user.role}`, "modal");
 
             name.appendChild(link)
             divider.appendChild(name);
@@ -37,5 +37,5 @@ editor.creditsMenu = () => {
             container.appendChild(divider);
             content.appendChild(container);
         }
-    })
+    }, { width: 35, height: 20 })
 }
