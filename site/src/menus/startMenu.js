@@ -33,6 +33,7 @@ editor.startMenu = {
             if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
             else {
                 editor.recentStorage.getKey("recentProjects").then((arr) => {
+                    arr = arr || [];
                     for (let i = arr.length - 1; i >= 0; i--) {
                         const fileHandle = arr[i];
 
