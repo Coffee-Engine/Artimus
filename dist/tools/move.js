@@ -301,11 +301,6 @@ artimus.tools.move = class extends artimus.tool {
                         this.workspace.selection = selection;
                         this.updatePositions();
                     }
-
-                    if (this.shiftHeld) {
-                        this.drawImage(gl);
-                        this.workspace.dirty = true;
-                    }
                     break;
             }
         }
