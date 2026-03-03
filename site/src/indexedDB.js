@@ -91,7 +91,8 @@
         editor.indexedDB.upgraded = true;
         editor.indexedDB.db = event.target.result;
 
-        editor.storage = editor.indexedDB.getStore("recentprojects", true);
+        editor.storage = editor.indexedDB.getStore("extensionStorage", true);
+        editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
     };
 
     coffeeDBRequest.onsuccess = (event) => {
@@ -99,6 +100,9 @@
         editor.indexedDB.available = true;
         editor.indexedDB.db = event.target.result;
 
-        if (!editor.indexedDB.upgraded) editor.storage = editor.indexedDB.getStore("recentprojects", false);
+        if (!editor.indexedDB.upgraded) {
+            editor.storage = editor.indexedDB.getStore("extensionStorage", true);
+            editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
+        }
     };
 })();

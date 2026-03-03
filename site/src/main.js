@@ -1,11 +1,11 @@
 window.editor = {
-    version: "Γ 1.3",
+    version: "Γ 1.4",
     bannerTitle: "Help Wanted",
     bannerAuthor: "ObviousAlexC",
     bannerAuthorURL: "https://ObviousStudios.dev",
 
     dbName: "artimusDB",
-    dbVersion: 1,
+    dbVersion: 2,
 
     docEdit: {
         width: 256,
@@ -203,11 +203,41 @@ fetch("lang/english.json").then(result => result.text()).then(text => {
     editor.workspace.resize(0, 0);
 
     editor.workspace.addEventListener("importLocal", (event) => {
-        console.log(event);
+        if (event.file instanceof window.FileSystemHandle) {
+            editor.recentStorage.getKey("recentProjects").then((arr) => {
+                //Get array and append current file to top
+                arr = arr || [];
+                
+                const index = arr.findIndex((value) => value.name == event.file.name);
+                if (index >= 0) arr.splice(index, 1);
+                arr.push(event.file);
+
+                //If there are more than 10, remove the 11th or 12th
+                if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                //Array
+                editor.recentStorage.setKey("recentProjects", arr);
+            });
+        }
     });
 
     editor.workspace.addEventListener("exportLocal", (event) => {
-        console.log(event);
+        if (event.file instanceof window.FileSystemHandle) {
+            editor.recentStorage.getKey("recentProjects").then((arr) => {
+                //Get array and append current file to top
+                arr = arr || [];
+
+                const index = arr.findIndex((value) => value.name == event.file.name);
+                if (index >= 0) arr.splice(index, 1);
+                arr.push(event.file);
+
+                //If there are more than 10, remove the 11th or 12th
+                if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                //Array
+                editor.recentStorage.setKey("recentProjects", arr);
+            });
+        }
     });
     artimus.globalRefreshTools();
 

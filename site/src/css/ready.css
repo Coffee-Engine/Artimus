@@ -60,3 +60,7 @@
     background-color: var(--artimus-background-2);
     border-radius: 8px;
 }
+
+.ready-recentButton {
+    width: 90%;
+}

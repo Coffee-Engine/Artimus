@@ -29,9 +29,37 @@ editor.startMenu = {
             const recentList = document.createElement("div");
             recentList.className = "ready-recentList";
 
+            //Show recent projects if possible
             if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
             else {
-                
+                editor.recentStorage.getKey("recentProjects").then((arr) => {
+                    for (let i = arr.length - 1; i >= 0; i--) {
+                        const fileHandle = arr[i];
+
+                        //Create the button and add the text
+                        const recentButton = document.createElement("button");
+                        recentButton.className = "artimus-button ready-recentButton";
+
+                        let extensionless = fileHandle.name.split(".");
+                        extensionless.splice(extensionless.length - 1, 1);
+                        
+                        recentButton.innerText = extensionless.join(".");
+
+                        recentList.appendChild(recentButton);
+
+                        //Finally add functionality.
+                        recentButton.onclick = () => {
+                            fileHandle.requestPermission().then((val) => {
+                                if (val != "granted") return;
+                                fileHandle.getFile().then((file) => {
+                                    editor.workspace.fileSystemHandle = fileHandle;
+                                    editor.workspace.importFromImage(file, true);
+                                    modal.close();
+                                })
+                            })
+                        }
+                    }
+                });
             }
 
             const fileButtons = document.createElement("div");
