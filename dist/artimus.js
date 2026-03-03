@@ -2594,6 +2594,7 @@ window.artimus = {
 
                             this.suppressSelectionFunction = false;
 
+                            this.sendEvent("paste", { bitmap: bitmap, mode: "text" });
                         });
                     }
                 })
@@ -2648,7 +2649,7 @@ window.artimus = {
                                 })
                             );
 
-                            this.sendEvent("paste", { item: item });
+                            this.sendEvent("paste", { item: item, mode: "image" });
                         }
 
                         //If we prefer a new layer use a new layer.
