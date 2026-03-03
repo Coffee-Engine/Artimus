@@ -2,6 +2,11 @@ window.artimus = {
     tools: {},
     maxHistory: 10,
 
+    //Just a small performance thing to prevent un-needed function alls while copying
+    clipboardMagic: "H_ARTIMUS",
+    hexArray: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"],
+    clipboardMimeType: "text/plain",
+
     windRule: "evenodd",
     pickType: "layer",
     preferGreaterAxis: true,
@@ -2482,18 +2487,18 @@ window.artimus = {
             this.sendEvent("redo", { historyIndex: this.historyIndex });
         }
 
-        clipboardMimeType = "text/plain";
         copy() {
             navigator.permissions.query({ name: "clipboard-write" }).then(result => {
                 if (result.state != "granted") return;
 
-                const toCopy = {}
-                toCopy[this.clipboardMimeType] = {};
-
+                let toCopy = [];
                 let imgData = {};
                 
-                //Get data we want to copy
-                if (!this.hasSelection) imgData = this.editGL.getImageData(0, 0, this.width, this.height);
+                //Get data we want to copy, and if possible copy over the selection
+                if (!this.hasSelection) {
+                    imgData = this.editGL.getImageData(0, 0, this.width, this.height);
+                    toCopy.push( 0, 0, 0 );
+                }
                 else {
                     imgData = this.editGL.getImageData(
                         this.selectionMinX, this.selectionMinY,
@@ -2501,17 +2506,43 @@ window.artimus = {
                         this.selectionMaxY - this.selectionMinY
                     );
 
-                    toCopy[this.clipboardMimeType] = { selection: editor.workspace.selection };
+                    const selection = editor.workspace.selection;
+
+                    toCopy.push(
+                        (selection.length >> 16),
+                        ((selection.length >> 8) & 255),
+                        (selection.length & 255)
+                    )
+
+                    for (let i = 0; i < selection.length; i++) {
+                        toCopy.push(
+                            ((selection[i] >> 8) & 255),
+                            (selection[i] & 255),
+                        );
+                    }
                 }
 
-                //Then parse needed inner data, stringify, and blob it before finally writing to the clipboard.
-                toCopy[this.clipboardMimeType].data = btoa(imgData.data);
-                toCopy[this.clipboardMimeType].width = imgData.width;
-                toCopy[this.clipboardMimeType].height = imgData.height;
+                //Now we can copy over the actual image data;
+                toCopy.push(
+                    ((imgData.width >> 8) & 255),
+                    (imgData.width & 255),
+                    ((imgData.width >> 8) & 255),
+                    (imgData.width & 255)
+                )
 
-                toCopy[this.clipboardMimeType] = new Blob([JSON.stringify(toCopy[this.clipboardMimeType])], { type: this.clipboardMimeType });
-                navigator.clipboard.write([new ClipboardItem(toCopy)]);
-                this.sendEvent("copy", { copied: toCopy });
+                //It's quick and dirty but it contains the image and selection data.
+                for (let i = 0; i < imgData.data.length; i++) { toCopy.push(imgData.data[i]); }
+                
+                //Now convert it to a hex string;
+                let final = "";
+                for (let i = 0; i < toCopy.length; i++) {
+                    final += artimus.hexArray[(toCopy[i] >> 4) & 15];
+                    final += artimus.hexArray[toCopy[i] & 15];
+                };
+
+                //Now convert it to a base64 string;
+                navigator.clipboard.writeText(artimus.clipboardMagic + btoa(final));
+                this.sendEvent("copy", { copied: toCopy, hex: final });
             });
         }
 
