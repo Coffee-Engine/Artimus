@@ -37,5 +37,5 @@ editor.creditsMenu = () => {
             container.appendChild(divider);
             content.appendChild(container);
         }
-    }, { width: 35, height: 20 })
+    }, { width: 50, height: 25 })
 }
