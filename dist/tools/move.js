@@ -301,6 +301,12 @@ artimus.tools.move = class extends artimus.tool {
                         this.workspace.selection = selection;
                         this.updatePositions();
                     }
+
+                    if (this.shiftHeld) {
+                        this.drawImage(gl);
+                        this.workspace.dirty = true;
+                        this.flailedCards = true;
+                    }
                     break;
             }
         }
@@ -310,6 +316,11 @@ artimus.tools.move = class extends artimus.tool {
         if (this.ready) {
             this.dragging = false;
             this.updateHistory();
+        }
+
+        if (this.flailedCards) {
+            this.workspace.updateLayerHistory();
+            this.flailedCards = false;
         }
     }
 
