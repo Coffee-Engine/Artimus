@@ -2488,135 +2488,124 @@ window.artimus = {
         }
 
         copy() {
-            const doCopy = () => {
-                let toCopy = [];
-                let imgData = {};
-                
-                //Get data we want to copy, and if possible copy over the selection
-                if (!this.hasSelection) {
-                    imgData = this.editGL.getImageData(0, 0, this.width, this.height);
-                    toCopy.push( 0, 0, 0 );
-                }
-                else {
-                    imgData = this.editGL.getImageData(
-                        this.selectionMinX, this.selectionMinY,
-                        this.selectionMaxX - this.selectionMinX,
-                        this.selectionMaxY - this.selectionMinY
-                    );
+            let toCopy = [];
+            let imgData = {};
+            
+            //Get data we want to copy, and if possible copy over the selection
+            if (!this.hasSelection) {
+                imgData = this.editGL.getImageData(0, 0, this.width, this.height);
+                toCopy.push( 0, 0, 0 );
+            }
+            else {
+                imgData = this.editGL.getImageData(
+                    this.selectionMinX, this.selectionMinY,
+                    this.selectionMaxX - this.selectionMinX,
+                    this.selectionMaxY - this.selectionMinY
+                );
 
-                    const selection = editor.workspace.selection;
+                const selection = editor.workspace.selection;
 
-                    toCopy.push(
-                        (selection.length >> 16),
-                        ((selection.length >> 8) & 255),
-                        (selection.length & 255)
-                    )
-
-                    for (let i = 0; i < selection.length; i++) {
-                        toCopy.push(
-                            ((selection[i] >> 8) & 255),
-                            (selection[i] & 255),
-                        );
-                    }
-                }
-
-                //Now we can copy over the actual image data;
                 toCopy.push(
-                    ((imgData.width >> 8) & 255),
-                    (imgData.width & 255),
-                    ((imgData.width >> 8) & 255),
-                    (imgData.width & 255)
+                    (selection.length >> 16),
+                    ((selection.length >> 8) & 255),
+                    (selection.length & 255)
                 )
 
-                //It's quick and dirty but it contains the image and selection data.
-                for (let i = 0; i < imgData.data.length; i++) { toCopy.push(imgData.data[i]); }
-                
-                //Now convert it to a hex string;
-                let final = "";
-                for (let i = 0; i < toCopy.length; i++) {
-                    final += artimus.hexArray[(toCopy[i] >> 4) & 15];
-                    final += artimus.hexArray[toCopy[i] & 15];
-                };
-
-                //Now convert it to a base64 string;
-                navigator.clipboard.writeText(artimus.clipboardMagic + final);
-                this.sendEvent("copy", { copied: toCopy, hex: final });
+                for (let i = 0; i < selection.length; i++) {
+                    toCopy.push(
+                        ((selection[i] >> 8) & 255),
+                        (selection[i] & 255),
+                    );
+                }
             }
+
+            //Now we can copy over the actual image data;
+            toCopy.push(
+                ((imgData.width >> 8) & 255),
+                (imgData.width & 255),
+                ((imgData.width >> 8) & 255),
+                (imgData.width & 255)
+            )
+
+            //It's quick and dirty but it contains the image and selection data.
+            for (let i = 0; i < imgData.data.length; i++) { toCopy.push(imgData.data[i]); }
             
-            navigator.permissions.query({ name: "clipboard-write" }).then(result => {
-                if (result.state != "granted") return;
-                doCopy();
-            }).catch(() => {
-                doCopy();
-            });
+            //Now convert it to a hex string;
+            let final = "";
+            for (let i = 0; i < toCopy.length; i++) {
+                final += artimus.hexArray[(toCopy[i] >> 4) & 15];
+                final += artimus.hexArray[toCopy[i] & 15];
+            };
+
+            //Now convert it to a base64 string;
+            navigator.clipboard.writeText(artimus.clipboardMagic + final);
+            //This is utterly stupid. Why is octet stream not supported to write on web browsers?
+            this.sendEvent("copy", { copied: toCopy, hex: final });
         }
 
         paste() {
-            navigator.permissions.query({ name: "clipboard-write" }).then(result => {
-                if (result.state != "granted") return;
-                navigator.clipboard.read().then((result) => {
-                    let imageType = "";
-                    let imageID = 0;
+            navigator.clipboard.read().then((result) => {
+                let imageType = "";
+                let imageID = 0;
 
-                    for (let itemID in result) {
-                        const item = result[itemID];
-                        const imageIndex = item.types.findIndex((item) => item.startsWith("image/"));
-                        if (imageIndex != -1) {
-                            imageID = itemID;
-                            imageType = item.types[imageIndex];
-                            break;
-                        }
+                for (let itemID in result) {
+                    const item = result[itemID];
+                    const imageIndex = item.types.findIndex((item) => item.startsWith("image/"));
+                    if (imageIndex != -1) {
+                        imageID = itemID;
+                        imageType = item.types[imageIndex];
+                        break;
+                    }
+                }
+
+                if (imageType) {
+                    const item = result[imageID];
+                    const performPaste = () => {
+                        item.getType(imageType).then((imageBlob) => createImageBitmap(imageBlob).then(bitmap => {
+                                //Clear the selection then find the new bounds;
+                                this.clearSelection();
+                                let sizeMultiplier = 1;
+
+                                //Size down if needed to fit, but allow the user to scale up.
+                                if (bitmap.width > this.width || bitmap.height > this.height) {
+                                    if (bitmap.width > this.width) sizeMultiplier = this.width / bitmap.width;
+                                    if (bitmap.height * sizeMultiplier > this.#height) sizeMultiplier *= this.height / (bitmap.height * sizeMultiplier);
+                                }
+
+                                //Set the new selection
+                                this.setSelection([
+                                    0, 0,
+                                    0, bitmap.height * sizeMultiplier,
+                                    bitmap.width * sizeMultiplier, bitmap.height * sizeMultiplier,
+                                    bitmap.width * sizeMultiplier, 0
+                                ]);
+                            
+                                //Supress selection function and select the preferred move tool.
+                                this.suppressSelectionFunction = true;
+                                this.tool = artimus.preferredMoveTool;
+
+                                //Then run onPaste if available.
+                                if (this.toolFunction && this.toolFunction.paste) this.toolFunction.paste(this.GL, this.previewGL, bitmap, sizeMultiplier, this.toolProperties);
+
+                                this.suppressSelectionFunction = false;
+                            })
+                        );
+
+                        this.sendEvent("paste", { item: item });
                     }
 
-                    if (imageType) {
-                        const item = result[imageID];
-                        const performPaste = () => {
-                            item.getType(imageType).then((imageBlob) => createImageBitmap(imageBlob).then(bitmap => {
-                                    //Clear the selection then find the new bounds;
-                                    this.clearSelection();
-                                    let sizeMultiplier = 1;
-
-                                    //Size down if needed to fit, but allow the user to scale up.
-                                    if (bitmap.width > this.width || bitmap.height > this.height) {
-                                        if (bitmap.width > this.width) sizeMultiplier = this.width / bitmap.width;
-                                        if (bitmap.height * sizeMultiplier > this.#height) sizeMultiplier *= this.height / (bitmap.height * sizeMultiplier);
-                                    }
-
-                                    //Set the new selection
-                                    this.setSelection([
-                                        0, 0,
-                                        0, bitmap.height * sizeMultiplier,
-                                        bitmap.width * sizeMultiplier, bitmap.height * sizeMultiplier,
-                                        bitmap.width * sizeMultiplier, 0
-                                    ]);
-                                
-                                    //Supress selection function and select the preferred move tool.
-                                    this.suppressSelectionFunction = true;
-                                    this.tool = artimus.preferredMoveTool;
-
-                                    //Then run onPaste if available.
-                                    if (this.toolFunction && this.toolFunction.paste) this.toolFunction.paste(this.GL, this.previewGL, bitmap, sizeMultiplier, this.toolProperties);
-
-                                    this.suppressSelectionFunction = false;
-                                })
-                            );
-
-                            this.sendEvent("paste", { item: item });
-                        }
-
-                        //If we prefer a new layer use a new layer.
-                        if (artimus.preferredPasteLayer == "new") {
-                            const layer = this.createLayer("Pasted", true);
-                            this.setLayer(layer.name).then(performPaste);
-                        }
-                        else performPaste();
-                        
+                    //If we prefer a new layer use a new layer.
+                    if (artimus.preferredPasteLayer == "new") {
+                        const layer = this.createLayer("Pasted", true);
+                        this.setLayer(layer.name).then(performPaste);
                     }
-                })
-                .catch((err) => {
-                    console.error("Can't read clipboard!\n", err);
-                })
-            });
+                    else performPaste();
+                    
+                }
+            })
+            .catch((err) => {
+                console.error("Can't read clipboard!\n", err);
+            })
         }
 
         new(width, height, then) {
