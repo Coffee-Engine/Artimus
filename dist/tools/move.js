@@ -41,6 +41,9 @@ artimus.tools.move = class extends artimus.tool {
         else {
             //Set data needed if we are doing the whole screen
             this.imageData = gl.getImageData(0, 0, this.workspace.width, this.workspace.height);
+
+            //Add a selection.
+            this.workspace.selection = [ 0,0, this.workspace.width,0, this.workspace.width,this.workspace.height, 0,this.workspace.height ]
             selectionMinX = 0; selectionMinY = 0;
             selectionMaxX = this.workspace.width; selectionMaxY = this.workspace.height;
         }
@@ -129,14 +132,22 @@ artimus.tools.move = class extends artimus.tool {
     get resizePoints() {
         //Format, bounding box | X, Y, width, height
         //        Direction    | DX, DY, TX, TY
+        const minX = Math.min(Math.max(0, this.x - 5), this.workspace.width - 5);
+        const maxX = Math.min(Math.max(0, this.x + this.width), this.workspace.width - 5);
+        const midX = Math.min(Math.max(6, this.x + (this.width / 3)), this.workspace.width - (this.width / 3) - 6);
+
+        const minY = Math.min(Math.max(0, this.y - 5), this.workspace.height - 5);
+        const maxY = Math.min(Math.max(0, this.y + this.height), this.workspace.height - 5);
+        const midY = Math.min(Math.max(6, this.y + (this.height / 3)), this.workspace.height - (this.height / 3) - 6);
+        
         return [
-            [this.x + (this.width / 3), this.y - 5, this.width / 3, 5,
+            [midX, minY, this.width / 3, 5,
             0, -1, 0, this.y + this.height],
-            [this.x + (this.width / 3), (this.y + this.height), this.width / 3, 5,
+            [midX, maxY, this.width / 3, 5,
             0, 1, 0, this.y],
-            [this.x - 5, this.y + (this.height / 3), 5, this.height / 3,
+            [minX, midY, 5, this.height / 3,
             -1, 0, this.x + this.width, 0],
-            [this.x + this.width, this.y + (this.height / 3), 5, this.height / 3,
+            [maxX, midY, 5, this.height / 3,
             1, 0, this.x, 0]
         ]
     }

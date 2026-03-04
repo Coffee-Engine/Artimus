@@ -340,7 +340,8 @@ window.artimus = {
         "ctrl+z": "undo",
         "ctrl+shift+z": "redo",
         "ctrl+c": "copy",
-        "ctrl+v": "paste"
+        "ctrl+v": "paste",
+        "c": "clearSelection",
     },
 
     modifierKeys: [
