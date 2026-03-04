@@ -15,7 +15,7 @@ window.editor = {
     popup: document.getElementById("popupContent"),
     popupTitle: document.getElementById("popupTitle"),
 
-    language: {},
+    language: { "artimus.layer.layer#": "Layer #" },
     resolutionPresets: {},
 
     modals: [],
@@ -137,7 +137,82 @@ window.editor = {
         "createLayer",
         "clearSelection",
         "cropToSelection",
-    ]
+    ],
+
+    refreshLanguage: () => {
+        editor.workspace.refreshTranslation();
+    },
+
+    initialize: () => {
+    
+
+    //Inject our workspace.
+    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
+    editor.workspace.resize(0, 0);
+
+    //Then add our event listeners for file I/O
+    editor.workspace.addEventListener("importLocal", (event) => {
+        if (event.file instanceof window.FileSystemHandle) {
+            editor.recentStorage.getKey("recentProjects").then((arr) => {
+                //Get array and append current file to top
+                arr = arr || [];
+                
+                const index = arr.findIndex((value) => value.name == event.file.name);
+                if (index >= 0) arr.splice(index, 1);
+                arr.push(event.file);
+
+                //If there are more than 10, remove the 11th or 12th
+                if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                //Array
+                editor.recentStorage.setKey("recentProjects", arr);
+            });
+        }
+    });
+
+    editor.workspace.addEventListener("exportLocal", (event) => {
+        if (event.file instanceof window.FileSystemHandle) {
+            editor.recentStorage.getKey("recentProjects").then((arr) => {
+                //Get array and append current file to top
+                arr = arr || [];
+
+                const index = arr.findIndex((value) => value.name == event.file.name);
+                if (index >= 0) arr.splice(index, 1);
+                arr.push(event.file);
+
+                //If there are more than 10, remove the 11th or 12th
+                if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                //Array
+                editor.recentStorage.setKey("recentProjects", arr);
+            });
+        }
+    });
+    artimus.globalRefreshTools();
+
+    //Add extensions
+    for (let idx in editor.settings.extensions) {
+        editor.startExtension(editor.settings.extensions[idx]);
+    }
+
+    //Debugger loop
+    const element = document.getElementById("versionIdentifier");
+    const loop = () => {
+        if (editor.settings.debug) {
+            //Timing
+            element.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
+            //Canvas
+            element.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
+
+            if (editor.workspace.tool) element.innerText = element.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
+            else element.innerText += ` || t: none`;
+            element.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
+        }
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+}
 };
 
 //Artimus configuration
@@ -187,83 +262,26 @@ artimus.unfocusedHotkeys = true;
 artimus.hotkeys["ctrl+s"] = "exportToPC";
 artimus.hotkeys["ctrl+l"] = "importFromPC";
 
-
 //Finally initialize the editor by fetching needed json data
 fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
     try {
         const parsed = JSON.parse(text);
         if (parsed) editor.resolutionPresets = parsed;
     } catch (error) {}
+
+    //Load the language file
+    if (localStorage.getItem("language")) {
+        editor.language = JSON.parse(localStorage.getItem("language"));
+        editor.startMenu.open();
+        editor.initialize();
+    }
+    else {
+        fetch("lang/english.json").then(res => res.text()).then(text => {
+            try { editor.language = JSON.parse(text); }
+            catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
+            
+            editor.initialize();
+            editor.languageMenu(true);
+        })
+    }
 })
-
-fetch("lang/english.json").then(result => result.text()).then(text => {
-    //Parse the language file.
-    editor.language = JSON.parse(text);
-
-    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
-    editor.workspace.resize(0, 0);
-
-    editor.workspace.addEventListener("importLocal", (event) => {
-        if (event.file instanceof window.FileSystemHandle) {
-            editor.recentStorage.getKey("recentProjects").then((arr) => {
-                //Get array and append current file to top
-                arr = arr || [];
-                
-                const index = arr.findIndex((value) => value.name == event.file.name);
-                if (index >= 0) arr.splice(index, 1);
-                arr.push(event.file);
-
-                //If there are more than 10, remove the 11th or 12th
-                if (arr.length > 10) arr.splice(0, arr.length - 10);
-
-                //Array
-                editor.recentStorage.setKey("recentProjects", arr);
-            });
-        }
-    });
-
-    editor.workspace.addEventListener("exportLocal", (event) => {
-        if (event.file instanceof window.FileSystemHandle) {
-            editor.recentStorage.getKey("recentProjects").then((arr) => {
-                //Get array and append current file to top
-                arr = arr || [];
-
-                const index = arr.findIndex((value) => value.name == event.file.name);
-                if (index >= 0) arr.splice(index, 1);
-                arr.push(event.file);
-
-                //If there are more than 10, remove the 11th or 12th
-                if (arr.length > 10) arr.splice(0, arr.length - 10);
-
-                //Array
-                editor.recentStorage.setKey("recentProjects", arr);
-            });
-        }
-    });
-    artimus.globalRefreshTools();
-
-    //Add extensions
-    for (let idx in editor.settings.extensions) {
-        editor.startExtension(editor.settings.extensions[idx]);
-    }
-
-    if (localStorage.getItem("settings")) editor.startMenu.open();
-    else new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
-
-    const element = document.getElementById("versionIdentifier");
-    const loop = () => {
-        if (editor.settings.debug) {
-            //Timing
-            element.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
-            //Canvas
-            element.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
-
-            if (editor.workspace.tool) element.innerText = element.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
-            else element.innerText += ` || t: none`;
-            element.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
-        }
-        requestAnimationFrame(loop);
-    }
-
-    loop();
-});

@@ -1,0 +1,8 @@
+.language-modal {
+    display: flex;
+    flex-direction: column;
+}
+
+.language-button {
+    font-size: 1.5em;
+}
