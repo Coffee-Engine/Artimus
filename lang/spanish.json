@@ -1,9 +1,9 @@
 {
     "identifier": "espanol",
     
-    "artimus.tool.paintBrush": "Brush",
-    "artimus.tool.eraser": "Eraser",
-    "artimus.tool.sprayPaint": "Spray Paint",
+    "artimus.tool.paintBrush": "Pincel",
+    "artimus.tool.eraser": "Borrador",
+    "artimus.tool.sprayPaint": "Pintura Espray",
     "artimus.tool.line": "Line",
     "artimus.tool.curve": "Curve",
     "artimus.tool.paintBucket": "Paint Bucket",
