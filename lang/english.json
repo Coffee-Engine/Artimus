@@ -144,6 +144,10 @@
     "artimus.modal.settings.general.preferredFormat.jpg": "jpg",
     "artimus.modal.settings.general.preferredFormat.webp": "webp",
 
+    "artimus.modal.settings.general.preferredPasteLayer": "Paste Layer",
+    "artimus.modal.settings.general.preferredPasteLayer.new": "New Layer",
+    "artimus.modal.settings.general.preferredPasteLayer.current": "Current Layer",
+
     "artimus.modal.settings.general.pickTarget": "Pick Target",
     "artimus.modal.settings.general.pickTarget.composite": "Composite",
     "artimus.modal.settings.general.pickTarget.layer": "Layer",

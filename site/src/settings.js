@@ -1,8 +1,10 @@
 editor.settings = {
     maxHistory: 10,
     preferredFormat: "png",
+    preferredPasteLayer: "new",
+    pickTarget: "layer",
     debug: false,
-    preferGreaterAxis: true, 
+    preferGreaterAxis: true,
 
     theme: "default",
     lastTheme: "default",
@@ -34,6 +36,12 @@ editor.settingDefs = {
             artimus.maxHistory = value;
         }},
         {type: "dropdown", target: editor.settings, key: "preferredFormat", items: Object.keys(artimus.extensionToMIME)},
+        {type: "dropdown", target: editor.settings, key: "preferredPasteLayer", items: [
+            "new",
+            "current"
+        ], onchange: (value) => {
+            artimus.preferredPasteLayer = value;
+        }},
         {type: "dropdown", target: editor.settings, key: "pickTarget", items: [
             "composite",
             "layer"
