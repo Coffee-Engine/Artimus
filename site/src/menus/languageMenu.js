@@ -19,8 +19,10 @@ editor.languageMenu = (forced) => {
                         fetch(`lang/${language.id}.json`).then(res => res.text()).then((text) => {
                             try {
                                 const parsed = JSON.parse(text);
+                                parsed.src = `lang/${language.id}.json`;
                                 editor.language = parsed;
-                                localStorage.setItem("language", text);
+
+                                localStorage.setItem("language", JSON.stringify(parsed));
                                 editor.refreshLanguage();
 
                                 editor.startMenu.open();
