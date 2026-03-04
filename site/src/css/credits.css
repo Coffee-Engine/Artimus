@@ -46,8 +46,16 @@
     padding: 0px;
     width: 100%;
     text-align: center;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .credit-username {
-    font-size: 1.5em;
+    font-size: 1.25em;
+}
+
+.credit-role {
+    font-size: 0.75em;
 }
