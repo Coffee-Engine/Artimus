@@ -232,5 +232,21 @@
     "artimus.modal.exportFile.qualityText": "Quality",
     "artimus.modal.exportFile.size": "Size",
     "artimus.modal.exportFile.background": "Background",
-    "artimus.modal.exportFile.export": "Export"
+    "artimus.modal.exportFile.export": "Export",
+
+    "artimus.toolbar.file": "File",
+    "artimus.toolbar.file.new": "New",
+    "artimus.toolbar.file.save": "Save",
+    "artimus.toolbar.file.saveAs": "Save as",
+    "artimus.toolbar.file.export": "Export",
+    "artimus.toolbar.file.load": "Load",
+
+    "artimus.toolbar.edit": "Edit",
+    "artimus.toolbar.edit.sprite": "Sprite",
+    "artimus.toolbar.edit.resize": "Resize",
+    "artimus.toolbar.edit.crop": "Crop",
+    "artimus.toolbar.edit.undo": "Undo",
+    "artimus.toolbar.edit.redo": "Redo",
+    "artimus.toolbar.edit.editor": "Editor",
+    "artimus.toolbar.edit.settings": "Settings"
 }

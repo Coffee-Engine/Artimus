@@ -60,19 +60,26 @@ hr {
     border-top: 4px dotted var(--artimus-text);
 }
 
-cugi-dropdown {
+.CUGI-popup-button {
     text-align: center;
     user-select: none;
 
     background-color: var(--artimus-button-normal);
     transition: 300ms background-color;
+
+    min-width: 3em;
+    border: none;
+
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 4px;
 }
 
-cugi-dropdown:hover {
+.CUGI-popup-button:hover {
     background-color: var(--artimus-button-hover);
 }
 
-cugi-dropdown:active {
+.CUGI-popup-button:active {
     background-color: var(--artimus-button-click);
     transition: 0ms background-color;
 }

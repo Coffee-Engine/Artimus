@@ -41,11 +41,9 @@
     <script src="dist/tools/move.js"></script>
     
     <div class="main-grid">
-        <div class="top-bar">
+        <div id="toolbar" class="top-bar">
             <cugi-dropdown>File
-                <cugi-option>{ type: "button", text: "New", onclick: () => {
-                    editor.newFile();
-                }}</cugi-option>
+                <cugi-option></cugi-option>
                 <cugi-option>{ type: "button", text: "Save", onclick: () => {
                     artimus.activeWorkspaces[0].exportToPC();
                 }}</cugi-option>
@@ -84,6 +82,7 @@
     </div>
 
     <script src="site/src/main.js"></script>
+    <script src="site/src/toolbar.js"></script>
     <script src="site/src/indexedDB.js"></script>
     <script src="site/src/themes.js"></script>
     <script src="site/src/settingsPages/hotkeyPage.js"></script>

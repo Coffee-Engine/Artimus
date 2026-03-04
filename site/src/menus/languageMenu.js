@@ -18,13 +18,16 @@ editor.languageMenu = (forced) => {
                     button.onclick = () => {
                         fetch(`lang/${language.id}.json`).then(res => res.text()).then((text) => {
                             try {
+                                //Get data
                                 const parsed = JSON.parse(text);
                                 parsed.src = `lang/${language.id}.json`;
                                 editor.language = parsed;
 
+                                //Save and refresh
                                 localStorage.setItem("language", JSON.stringify(parsed));
                                 editor.refreshLanguage();
 
+                                //Finally ready the editor
                                 editor.startMenu.open();
                                 modal.close();
                             } catch (error) { console.error(`Language ${language.id} isn't valid!\n===---===\n${error}\n===---===`) }
