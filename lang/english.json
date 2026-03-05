@@ -92,6 +92,7 @@
     "artimus.modal.credits.title": "The Developers!",
     "artimus.modal.credits.role.leadDeveloper": "Lead Developer",
     "artimus.modal.credits.role.addtionalFeatures": "Additional Features",
+    "artimus.modal.credits.role.translator": "[SPECIAL] Translator",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",

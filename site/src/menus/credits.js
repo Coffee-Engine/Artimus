@@ -1,6 +1,7 @@
 editor.credits = {
     "ObviousAlexC": { icon: "https://avatars.githubusercontent.com/u/76855369", role: "leadDeveloper", website: "https://obviousstudios.dev" },
-    "DerpyGamer2142": { icon: "https://avatars.githubusercontent.com/u/93667155", role: "addtionalFeatures", website: "https://derpygamer2142.com/"}
+    "DerpyGamer2142": { icon: "https://avatars.githubusercontent.com/u/93667155", role: "addtionalFeatures", website: "https://derpygamer2142.com/" },
+    "Äs Nödt": { icon: "https://m.gjcdn.net/user-avatar/200/5161034-crop346_0_1202_856-a9h5psbg-v4.webp", role: "translator", website: "https://gamejolt.com/@As_Nodt", special: "Türkçe" }
 };
 
 editor.creditsMenu = () => {
@@ -28,7 +29,7 @@ editor.creditsMenu = () => {
 
             const role = document.createElement("p");
             role.className = "credit-text credit-role";
-            role.innerText = artimus.translate(`credits.role.${user.role}`, "modal");
+            role.innerText = artimus.translate(`credits.role.${user.role}`, "modal").replace("[SPECIAL]", user.special || "");
 
             name.appendChild(link)
             divider.appendChild(name);
