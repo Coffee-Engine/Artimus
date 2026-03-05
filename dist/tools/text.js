@@ -278,7 +278,7 @@ artimus.tools.text = class extends artimus.tool {
         { target: artEditor.toolProperties, key: "fillColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 0 },
-        { target: artEditor.toolProperties, key: "pixelBrush", type: "boolean" },
+        //{ target: artEditor.toolProperties, key: "pixelBrush", type: "boolean" },
     ]}
 
     colorProperties = [ "strokeColor", "fillColor" ];
