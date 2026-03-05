@@ -69,7 +69,7 @@ editor.settingDefs = {
         {type: "button", text: "changeLanguage", onclick: () => {
             const openStart = editor.modals.length < 2;
             for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
-            editor.languageMenu(false, openStart);
+            editor.languageMenu(!openStart, openStart);
         }},
         {type: "button", text: "customLanguage", onclick: () => {
             const inp = document.createElement("input");
@@ -79,7 +79,7 @@ editor.settingDefs = {
                     for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
 
                     editor.fileReader.onload = () => {
-                        editor.customLanguageLoad();
+                        editor.customLanguageLoad(openStart);
                         if (!openStart) editor.startMenu.open();
                     }
                     editor.fileReader.readAsText(inp.files[0]);

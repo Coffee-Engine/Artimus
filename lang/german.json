@@ -93,6 +93,7 @@
     "artimus.modal.credits.title": "Die Entwickler!!",
     "artimus.modal.credits.role.leadDeveloper": "Leitender Entwickler",
     "artimus.modal.credits.role.addtionalFeatures": "zusätzliche Funktionen",
+    "artimus.modal.credits.role.translator": "[SPECIAL] Übersetzer",
 
 	"artimus.modal.layerProperty.title": "Bearbeitung von \"[LAYER]\"",
 	"artimus.modal.layerProperty.blendMode": "Überblendmodus",

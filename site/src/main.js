@@ -1,5 +1,5 @@
 window.editor = {
-    version: "Γ 1.4",
+    version: "Γ 1.4.1",
     bannerTitle: "Help Wanted",
     bannerAuthor: "ObviousAlexC",
     bannerAuthorURL: "https://ObviousStudios.dev",
@@ -98,6 +98,8 @@ window.editor = {
             const translationKey = item.translationKey || item.key || item.text;
             item.text = artimus.translate(translationKey, context) || item.text || item.key;
             if (item.items) {
+                //Make it original
+                item.items = [...item.items];
                 for (let optionID in item.items) {
                     const option = item.items[optionID];
                     if (typeof option != "string") continue;
