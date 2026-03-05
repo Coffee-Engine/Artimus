@@ -17,6 +17,10 @@
 
 .settings-categoryButton {
     border-radius: 0px;
+    
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .settings-settingsList {
@@ -70,7 +74,6 @@
 }
 
 .settings-hotkeyAdditionDisplay {
-
     border-radius: 0px;
     border-bottom-color: var(--artimus-background-3);
     border-bottom-width: 4px;

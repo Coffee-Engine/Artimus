@@ -1,7 +1,9 @@
 editor.credits = {
     "ObviousAlexC": { icon: "https://avatars.githubusercontent.com/u/76855369", role: "leadDeveloper", website: "https://obviousstudios.dev" },
     "DerpyGamer2142": { icon: "https://avatars.githubusercontent.com/u/93667155", role: "addtionalFeatures", website: "https://derpygamer2142.com/" },
-    "Äs Nödt": { icon: "https://m.gjcdn.net/user-avatar/200/5161034-crop346_0_1202_856-a9h5psbg-v4.webp", role: "translator", website: "https://gamejolt.com/@As_Nodt", special: "Türkçe" }
+    "Äs Nödt": { icon: "https://m.gjcdn.net/user-avatar/200/5161034-crop346_0_1202_856-a9h5psbg-v4.webp", role: "translator", website: "https://youtu.be/wtb4z9IUY88", special: "Türkçe" },
+    "Bamfyu": { icon: "https://m.gjcdn.net/user-avatar/200/5860051-crop221_0_1542_1321-zsi5byvu-v4.webp", role: "translator", website: "https://gamejolt.com/@bamfyu", special: "Deutsch" },
+    "Myrixx": { icon: "https://m.gjcdn.net/user-avatar/200/5161034-crop346_0_1202_856-a9h5psbg-v4.webp", role: "translator", website: "https://gamejolt.com/@As_Nodt", special: "Deutsch" }
 };
 
 editor.creditsMenu = () => {
