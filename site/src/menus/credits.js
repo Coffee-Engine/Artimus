@@ -17,6 +17,8 @@ editor.creditsMenu = () => {
             icon.className = "credit-icon";
             icon.src = user.icon;
 
+            icon.onerror = () => { icon.src = "site/images/credits/unknown.png"; }
+
             const divider = document.createElement("div");
             divider.className = "credit-divider";
 
