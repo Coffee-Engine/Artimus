@@ -1,5 +1,6 @@
 [
     { "name": "English", "id": "english" },
     { "name": "Español", "id": "spanish" },
-    { "name": "Türkçe", "id": "turkish" }
+    { "name": "Türkçe", "id": "turkish" },
+    { "name": "Lol Cat! - Kingdom of the Cats!", "id": "lolcat" }
 ]

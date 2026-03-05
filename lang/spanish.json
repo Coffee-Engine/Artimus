@@ -162,9 +162,9 @@
 
     "artimus.modal.settings.hotkeys.add": "+",
     "artimus.modal.settings.hotkeys.remove": "-",
-    "artimus.modal.settings.hotkeys.clickToInput": "Click to Input!",
-    "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for Input.",
-    "artimus.modal.settings.hotkeys.hotkeyExists": "Hotkey exists!",
+    "artimus.modal.settings.hotkeys.clickToInput": "Clic para Entrada!",
+    "artimus.modal.settings.hotkeys.waitingForInput": "Tener Esperar para Entrada.",
+    "artimus.modal.settings.hotkeys.hotkeyExists": "Acceso Directos Existe!",
 
     "artimus.modal.settings.hotkeys.ctrl": "ctrl",
     "artimus.modal.settings.hotkeys.shift": "shift",
