@@ -9,7 +9,10 @@
     <link rel="manifest" href="webapp.json" />
     <link rel="stylesheet" href="dist/default.css">
     <link rel="stylesheet" href="site/src/css/site.css">
+    <link rel="stylesheet" href="site/src/css/language.css">
+    <link rel="stylesheet" href="site/src/css/ready.css">
     <link rel="stylesheet" href="site/src/css/newFile.css">
+    <link rel="stylesheet" href="site/src/css/credits.css">
     <link rel="stylesheet" href="site/src/css/resizeFile.css">
     <link rel="stylesheet" href="site/src/css/exportFile.css">
     <link rel="stylesheet" href="site/src/css/layerProperties.css">
@@ -18,6 +21,7 @@
     <title>Artimus test</title>
 </head>
 <body>
+    <style id="customCSSElement"></style>
     <!-- For some reason outside scripts aren't allowed to have context menus? -->
     <script src="site/src/CUGI.js"></script>
     <script src="dist/artimus.js"></script>
@@ -37,11 +41,9 @@
     <script src="dist/tools/move.js"></script>
     
     <div class="main-grid">
-        <div class="top-bar">
+        <div id="toolbar" class="top-bar">
             <cugi-dropdown>File
-                <cugi-option>{ type: "button", text: "New", onclick: () => {
-                    editor.newFile();
-                }}</cugi-option>
+                <cugi-option></cugi-option>
                 <cugi-option>{ type: "button", text: "Save", onclick: () => {
                     artimus.activeWorkspaces[0].exportToPC();
                 }}</cugi-option>
@@ -80,12 +82,16 @@
     </div>
 
     <script src="site/src/main.js"></script>
+    <script src="site/src/toolbar.js"></script>
     <script src="site/src/indexedDB.js"></script>
     <script src="site/src/themes.js"></script>
     <script src="site/src/settingsPages/hotkeyPage.js"></script>
     <script src="site/src/settingsPages/extensionPage.js"></script>
     <script src="site/src/settings.js"></script>
     <script src="site/src/menus/newFile.js"></script>
+    <script src="site/src/menus/languageMenu.js"></script>
+    <script src="site/src/menus/startMenu.js"></script>
+    <script src="site/src/menus/credits.js"></script>
     <script src="site/src/menus/resizeFile.js"></script>
     <script src="site/src/menus/layerProperty.js"></script>
     <script src="site/src/menus/exportFile.js"></script>

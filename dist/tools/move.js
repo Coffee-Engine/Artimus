@@ -41,47 +41,62 @@ artimus.tools.move = class extends artimus.tool {
         else {
             //Set data needed if we are doing the whole screen
             this.imageData = gl.getImageData(0, 0, this.workspace.width, this.workspace.height);
+
+            //Add a selection.
+            this.workspace.selection = [ 0,0, this.workspace.width,0, this.workspace.width,this.workspace.height, 0,this.workspace.height ]
             selectionMinX = 0; selectionMinY = 0;
             selectionMaxX = this.workspace.width; selectionMaxY = this.workspace.height;
         }
 
         if (selectionMaxX - selectionMinX > 0 && selectionMaxY - selectionMinY > 0) {
             createImageBitmap(this.imageData).then(bitmap => {
-                this.bitmap = bitmap;
-                this.ready = true;
-                this.updatePositions();
-
-                //Setup initial variables
-                this.imageX = this.x;
-                this.imageY = this.y;
-                this.imageWidth = this.width;
-                this.imageHeight = this.height;
-            
-                //This is used for the actual transformation of the image
-                this.matrix = [
-                    1, 0, 
-                    0, 1,
-                    this.x, this.y,
-                ];
-
-                this.angle = 0;
-                this.initialAngle = 0;
-                this.undoQueue = [];
-                this.historyPosition = 0;
-
+                this.bitmapReady(previewGL, bitmap, toolProperties);
+                
                 gl.clearRect(
                     selectionMinX,
                     selectionMinY,
                     selectionMaxX - selectionMinX,
                     selectionMaxY - selectionMinY
                 );
-                
-                this.updateHistory();
-
-                this.preview(previewGL, ...this.workspace.lastPosition, toolProperties);
-                this.workspace.dirty = true;
             });
         }
+    }
+
+    //Pretty similar to selections
+    paste(gl, previewGL, bitmap, sizeMultiplier, toolProperties) {
+        this.bitmapReady(previewGL, bitmap, toolProperties);
+        this.matrix[0] *= sizeMultiplier;
+        this.matrix[3] *= sizeMultiplier;
+    }
+
+    bitmapReady(previewGL, bitmap, toolProperties) {
+        
+        this.bitmap = bitmap;
+        this.ready = true;
+        this.updatePositions();
+
+        //Setup initial variables
+        this.imageX = this.x;
+        this.imageY = this.y;
+        this.imageWidth = this.width;
+        this.imageHeight = this.height;
+    
+        //This is used for the actual transformation of the image
+        this.matrix = [
+            1, 0, 
+            0, 1,
+            this.x, this.y,
+        ];
+
+        this.angle = 0;
+        this.initialAngle = 0;
+        this.undoQueue = [];
+        this.historyPosition = 0;
+        
+        this.updateHistory();
+
+        this.preview(previewGL, ...this.workspace.lastPosition, toolProperties);
+        this.workspace.dirty = true;
     }
 
     deselected(gl, previewGL, toolProperties) {
@@ -117,14 +132,22 @@ artimus.tools.move = class extends artimus.tool {
     get resizePoints() {
         //Format, bounding box | X, Y, width, height
         //        Direction    | DX, DY, TX, TY
+        const minX = Math.min(Math.max(0, this.x - 5), this.workspace.width - 5);
+        const maxX = Math.min(Math.max(0, this.x + this.width), this.workspace.width - 5);
+        const midX = Math.min(Math.max(6, this.x + (this.width / 3)), this.workspace.width - (this.width / 3) - 6);
+
+        const minY = Math.min(Math.max(0, this.y - 5), this.workspace.height - 5);
+        const maxY = Math.min(Math.max(0, this.y + this.height), this.workspace.height - 5);
+        const midY = Math.min(Math.max(6, this.y + (this.height / 3)), this.workspace.height - (this.height / 3) - 6);
+        
         return [
-            [this.x + (this.width / 3), this.y - 5, this.width / 3, 5,
+            [midX, minY, this.width / 3, 5,
             0, -1, 0, this.y + this.height],
-            [this.x + (this.width / 3), (this.y + this.height), this.width / 3, 5,
+            [midX, maxY, this.width / 3, 5,
             0, 1, 0, this.y],
-            [this.x - 5, this.y + (this.height / 3), 5, this.height / 3,
+            [minX, midY, 5, this.height / 3,
             -1, 0, this.x + this.width, 0],
-            [this.x + this.width, this.y + (this.height / 3), 5, this.height / 3,
+            [maxX, midY, 5, this.height / 3,
             1, 0, this.x, 0]
         ]
     }
@@ -289,6 +312,12 @@ artimus.tools.move = class extends artimus.tool {
                         this.workspace.selection = selection;
                         this.updatePositions();
                     }
+
+                    if (this.shiftHeld) {
+                        this.drawImage(gl);
+                        this.workspace.dirty = true;
+                        this.flailedCards = true;
+                    }
                     break;
             }
         }
@@ -298,6 +327,11 @@ artimus.tools.move = class extends artimus.tool {
         if (this.ready) {
             this.dragging = false;
             this.updateHistory();
+        }
+
+        if (this.flailedCards) {
+            this.workspace.updateLayerHistory();
+            this.flailedCards = false;
         }
     }
 

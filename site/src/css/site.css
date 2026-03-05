@@ -54,21 +54,39 @@ body {
     margin: 0px;
 }
 
-cugi-dropdown {
+hr {
+    width: 100%;
+    border: none;
+    border-top: 4px dotted var(--artimus-text);
+}
+
+.CUGI-popup-button {
     text-align: center;
     user-select: none;
 
     background-color: var(--artimus-button-normal);
     transition: 300ms background-color;
+
+    min-width: 3em;
+    border: none;
+
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 4px;
 }
 
-cugi-dropdown:hover {
+.CUGI-popup-button:hover {
     background-color: var(--artimus-button-hover);
 }
 
-cugi-dropdown:active {
+.CUGI-popup-button:active {
     background-color: var(--artimus-button-click);
     transition: 0ms background-color;
+}
+
+.CUGI-Multiline {
+    margin-right: 8px;
+    width: 100%;
 }
 
 /* ? Popups ? */
@@ -255,6 +273,7 @@ select {
     border-color: var(--artimus-background-3);
     border-style: solid;
     border-radius: 8px;
+    border-width: 2px;
 
     transition: 300ms background-color, 300ms border-color;
 }
@@ -274,6 +293,36 @@ select:active {
     transition: 0ms background-color, 300ms border-color;
 }
 
+textarea {
+    color: var(--artimus-text);
+    background-color: var(--artimus-background-1);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+    border-width: 2px;
+
+    outline: none;
+
+    transition: 300ms background-color, 300ms border-color;
+
+    resize: none;
+}
+
+textarea:hover {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-background-2);
+}
+
+textarea:focus {
+    background-color: var(--artimus-background-3);
+    border-color: var(--artimus-button-hover);
+}
+
+textarea:active {
+    border-color: var(--artimus-button-click);
+    transition: 0ms background-color, 0ms border-color;
+}
 input {
     color: var(--artimus-text);
     background-color: var(--artimus-background-1);
@@ -281,6 +330,9 @@ input {
     border-color: var(--artimus-background-3);
     border-style: solid;
     border-radius: 8px;
+    border-width: 2px;
+
+    outline: none;
 
     transition: 300ms background-color, 300ms border-color;
 }
@@ -292,12 +344,12 @@ input:hover {
 
 input:focus {
     background-color: var(--artimus-background-3);
-    border-color: var(--artimus-button-click);
+    border-color: var(--artimus-button-hover);
 }
 
 input:active {
-    background-color: var(--artimus-button-click);
-    transition: 0ms background-color, 300ms border-color;
+    border-color: var(--artimus-button-click);
+    transition: 0ms background-color, 0ms border-color;
 }
 
 input:invalid {

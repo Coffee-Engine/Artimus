@@ -41,5 +41,169 @@ editor.themes = {
 
         "artimus-eraser-outline": "#438eff",
         "artimus-eraser-inline": "#d0d0ff",
+    },
+    
+    sola: {
+        "artimus-background-1": "#f5d7b0",
+        "artimus-background-2": "#eecca0",
+        "artimus-background-3": "#e5c191",
+
+        "artimus-button-normal": "#f5d7b0",
+        "artimus-button-hover": "#eea87a",
+        "artimus-button-click": "#e98158",
+        "artimus-button-selected": "#ecbd9e",
+
+        "artimus-text": "#46140e",
+        "artimus-icon": "#46140e",
+
+        "artimus-selection-outline": "#e75541",
+
+        "artimus-grid-1": "#f1b397",
+        "artimus-grid-2": "#f1a07b",
+
+        "artimus-eraser-outline": "#e75541",
+        "artimus-eraser-inline": "#f5e2ca",
+    },
+    
+    luna: {
+        "artimus-background-1": "#9c9cb4",
+        "artimus-background-2": "#7c7ca7",
+        "artimus-background-3": "#66669e",
+
+        "artimus-button-normal": "#9c9cb4",
+        "artimus-button-hover": "#a28bc7",
+        "artimus-button-click": "#c88de1",
+        "artimus-button-selected": "#b68bc7",
+
+        "artimus-text": "#1e2030",
+        "artimus-icon": "#1e2030",
+
+        "artimus-selection-outline": "#cd43ff",
+
+        "artimus-grid-1": "#cdbed4",
+        "artimus-grid-2": "#b29cbd",
+
+        "artimus-eraser-outline": "#cd43ff",
+        "artimus-eraser-inline": "#ebc4ff",
+    },
+    
+    marino: {
+        "artimus-background-1": "#252532",
+        "artimus-background-2": "#151522",
+        "artimus-background-3": "#050512",
+
+        "artimus-button-normal": "#252532",
+        "artimus-button-hover": "#0e4261",
+        "artimus-button-click": "#8dd0e1",
+        "artimus-button-selected": "#1b4466",
+
+        "artimus-text": "#72b7d3",
+        "artimus-icon": "#72b7d3",
+
+        "artimus-selection-outline": "#72b7d3",
+
+        "artimus-grid-1": "#484e5f",
+        "artimus-grid-2": "#383f53",
+
+        "artimus-eraser-outline": "#72b7d3",
+        "artimus-eraser-inline": "#d0d0ff",
+    },
+    
+    eclipse: {
+        "artimus-background-1": "#151518",
+        "artimus-background-2": "#1d1d28",
+        "artimus-background-3": "#3c3c5c",
+
+        "artimus-button-normal": "#151518",
+        "artimus-button-hover": "#352550",
+        "artimus-button-click": "#c88de1",
+        "artimus-button-selected": "#473362",
+
+        "artimus-text": "#cf72d3",
+        "artimus-icon": "#cf72d3",
+
+        "artimus-selection-outline": "#cd43ff",
+
+        "artimus-grid-1": "#191936",
+        "artimus-grid-2": "#111125",
+
+        "artimus-eraser-outline": "#cd43ff",
+        "artimus-eraser-inline": "#ebc4ff",
+    }
+}
+
+editor.customCSSEl = document.getElementById("customCSSElement");
+
+//Custom theme code
+//I found a really nice BG color at 221, 184, 245.
+editor.useCustomTheme = () => {
+    if (editor.settings.customCSS) editor.customCSSEl.innerHTML = editor.settings.customCSSCode;
+    else editor.customCSSEl.innerHTML = "";
+
+    if (editor.settings.theme != "custom") return;
+
+    //Background
+    const bgHSV = artimus.HexToHSV(editor.settings.customBackground);
+    let sMove = (bgHSV.s < 0.5) ? 0.05 : -0.05; 
+    let vMove = (bgHSV.v < 0.5) ? 0.05 : -0.05;
+
+    document.body.style.setProperty("--artimus-background-1", editor.settings.customBackground);
+    document.body.style.setProperty("--artimus-background-2", artimus.HSVToHex({h: bgHSV.h, s: bgHSV.s + sMove, v: bgHSV.v + vMove}));
+    document.body.style.setProperty("--artimus-background-3", artimus.HSVToHex({h: bgHSV.h, s: bgHSV.s + (sMove * 2), v: bgHSV.v + (vMove * 2)}));
+
+    document.body.style.setProperty("--artimus-grid-1", editor.settings.customGrid1);
+    document.body.style.setProperty("--artimus-grid-2", editor.settings.customGrid2);
+    if (editor.workspace) editor.workspace.refreshGridPattern();
+
+    //Text and icons
+    document.body.style.setProperty("--artimus-text", editor.settings.customText);
+    if (editor.settings.iconsUseText) document.body.style.setProperty("--artimus-icon", editor.settings.customText);
+    else document.body.style.setProperty("--artimus-icon", editor.settings.customIcon);
+
+    //Tools
+    document.body.style.setProperty("--artimus-eraser-inline", editor.settings.customEraserInline);
+    if (editor.settings.toolsUseAccent) {
+        document.body.style.setProperty("--artimus-selection-outline", editor.settings.customAccent);
+        document.body.style.setProperty("--artimus-eraser-outline", editor.settings.customAccent);
+    }
+    else {
+        document.body.style.setProperty("--artimus-selection-outline", editor.settings.customSelection);
+        document.body.style.setProperty("--artimus-eraser-outline", editor.settings.customEraserOutline);
+    }
+
+    //Buttons
+    const accentHSV = artimus.HexToHSV(editor.settings.customAccent);
+    //The click is fairly universal being the accent
+    document.body.style.setProperty("--artimus-button-click", editor.settings.customAccent);
+    if (editor.settings.buttonsUseBackground) {
+        document.body.style.setProperty("--artimus-button-normal", editor.settings.customBackground);
+
+        //The hover and selection are interpolated between the background and accent;
+        document.body.style.setProperty("--artimus-button-hover", artimus.HSVToHex({
+            h: bgHSV.h + (accentHSV.h - bgHSV.h) * 0.25,
+            s: bgHSV.s + (accentHSV.s - bgHSV.s) * 0.5,
+            v: bgHSV.v + (accentHSV.v - bgHSV.v) * 0.2,
+        }));
+        document.body.style.setProperty("--artimus-button-selected", artimus.HSVToHex({
+            h: bgHSV.h + (accentHSV.h - bgHSV.h) * 0.45,
+            s: bgHSV.s + (accentHSV.s - bgHSV.s) * 0.65,
+            v: bgHSV.v + (accentHSV.v - bgHSV.v) * 0.50,
+        }));
+    }
+    else {
+        const buttonHSV = artimus.HexToHSV(editor.settings.customButton);
+        document.body.style.setProperty("--artimus-button-normal", editor.settings.customButton);
+
+        //The hover and selection are interpolated between the button and accent;
+        document.body.style.setProperty("--artimus-button-hover", artimus.HSVToHex({
+            h: buttonHSV.h + (accentHSV.h - buttonHSV.h) * 0.25,
+            s: buttonHSV.s + (accentHSV.s - buttonHSV.s) * 0.5,
+            v: buttonHSV.v + (accentHSV.v - buttonHSV.v) * 0.2,
+        }));
+        document.body.style.setProperty("--artimus-button-selected", artimus.HSVToHex({
+            h: buttonHSV.h + (accentHSV.h - buttonHSV.h) * 0.45,
+            s: buttonHSV.s + (accentHSV.s - buttonHSV.s) * 0.65,
+            v: buttonHSV.v + (accentHSV.v - buttonHSV.v) * 0.50,
+        }));
     }
 }

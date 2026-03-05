@@ -1,6 +1,11 @@
 window.editor = {
+    version: "Γ 1.4",
+    bannerTitle: "Help Wanted",
+    bannerAuthor: "ObviousAlexC",
+    bannerAuthorURL: "https://ObviousStudios.dev",
+
     dbName: "artimusDB",
-    dbVersion: 1,
+    dbVersion: 2,
 
     docEdit: {
         width: 256,
@@ -10,7 +15,7 @@ window.editor = {
     popup: document.getElementById("popupContent"),
     popupTitle: document.getElementById("popupTitle"),
 
-    language: {},
+    language: { "artimus.layer.layer#": "Layer #" },
     resolutionPresets: {},
 
     modals: [],
@@ -74,8 +79,8 @@ window.editor = {
             switch (typeof contents) {
                 case "function": contents(this.content, this); break;
                 case "string": this.content.innerHTML = contents; break;
-                case "object": this.content.appendChild(CUGI.createList(contents, {
-                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, item)
+                case "object": this.content.appendChild(CUGI.createList({...contents}, {
+                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, {...item})
                 }));
                 break;
 
@@ -88,8 +93,18 @@ window.editor = {
             this.init(name, contents, options);
         }
 
-        CUGIPreprocess(context, item) {
-            item.text = artimus.translate(item.translationKey || item.key || item.text, context) || item.text || item.key;
+        CUGIPreprocess(context, inItem) {
+            const item = {...inItem, modal: this};
+            const translationKey = item.translationKey || item.key || item.text;
+            item.text = artimus.translate(translationKey, context) || item.text || item.key;
+            if (item.items) {
+                for (let optionID in item.items) {
+                    const option = item.items[optionID];
+                    if (typeof option != "string") continue;
+
+                    item.items[optionID] = { text: artimus.translate(option, `${context}.${translationKey}`), value: option} 
+                }
+            }
             return item;
         }
 
@@ -116,11 +131,90 @@ window.editor = {
     hotkeyFunctions: [
         "undo",
         "redo",
+        "copy",
+        "paste",
         "importFromPC",
         "exportToPC",
         "createLayer",
-        "cropToSelection"
-    ]
+        "clearSelection",
+        "cropToSelection",
+    ],
+
+    refreshLanguage: () => {
+        editor.workspace.refreshTranslation();
+        editor.toolbar.refresh();
+    },
+
+    initialize: (noStartMenu) => {
+        if (!noStartMenu) editor.startMenu.open();
+        editor.toolbar.refresh();
+
+        //Inject our workspace.
+        editor.workspace = artimus.inject(document.getElementById("workspace-area"));
+        editor.workspace.resize(0, 0);
+
+        //Then add our event listeners for file I/O
+        editor.workspace.addEventListener("importLocal", (event) => {
+            if (event.file instanceof window.FileSystemHandle) {
+                editor.recentStorage.getKey("recentProjects").then((arr) => {
+                    //Get array and append current file to top
+                    arr = arr || [];
+                    
+                    const index = arr.findIndex((value) => value.name == event.file.name);
+                    if (index >= 0) arr.splice(index, 1);
+                    arr.push(event.file);
+
+                    //If there are more than 10, remove the 11th or 12th
+                    if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                    //Array
+                    editor.recentStorage.setKey("recentProjects", arr);
+                });
+            }
+        });
+
+        editor.workspace.addEventListener("exportLocal", (event) => {
+            if (event.file instanceof window.FileSystemHandle) {
+                editor.recentStorage.getKey("recentProjects").then((arr) => {
+                    //Get array and append current file to top
+                    arr = arr || [];
+
+                    const index = arr.findIndex((value) => value.name == event.file.name);
+                    if (index >= 0) arr.splice(index, 1);
+                    arr.push(event.file);
+
+                    //If there are more than 10, remove the 11th or 12th
+                    if (arr.length > 10) arr.splice(0, arr.length - 10);
+
+                    //Array
+                    editor.recentStorage.setKey("recentProjects", arr);
+                });
+            }
+        });
+        artimus.globalRefreshTools();
+
+        //Add extensions
+        for (let idx in editor.settings.extensions) {
+            editor.startExtension(editor.settings.extensions[idx]);
+        }
+
+        //Debugger loop
+        const loop = () => {
+            if (editor.settings.debug && editor.versionIdentifier) {
+                //Timing
+                editor.versionIdentifier.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
+                //Canvas
+                editor.versionIdentifier.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
+
+                if (editor.workspace.tool) editor.versionIdentifier.innerText = editor.versionIdentifier.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
+                else editor.versionIdentifier.innerText += ` || t: none`;
+                editor.versionIdentifier.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
+            }
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    }
 };
 
 //Artimus configuration
@@ -176,37 +270,39 @@ fetch("site/resolutionPresets.json").then(result => result.text()).then(text => 
         const parsed = JSON.parse(text);
         if (parsed) editor.resolutionPresets = parsed;
     } catch (error) {}
-})
 
-fetch("lang/english.json").then(result => result.text()).then(text => {
-    //Parse the language file.
-    editor.language = JSON.parse(text);
+    //Load the language file
+    if (localStorage.getItem("language")) {
+        editor.language = JSON.parse(localStorage.getItem("language"));
+        if (navigator.onLine && editor.language.src) {
+            fetch(editor.language.src).then(res => res.text()).then(text => {
+                try {
+                    //Parse new file and save
+                    const parsed = JSON.parse(text);
+                    editor.language = parsed;
 
-    editor.workspace = artimus.inject(document.getElementById("workspace-area"));
-    editor.workspace.resize(0, 0);
-    artimus.globalRefreshTools();
-
-    //Add extensions
-    for (let idx in editor.settings.extensions) {
-        editor.startExtension(editor.settings.extensions[idx]);
-    }
-
-    new editor.modal(artimus.translate("welcome.title", "modal"), artimus.translate("welcome.info", "modal"), { height: 45, hasClose: false });
-
-    const element = document.getElementById("versionIdentifier");
-    const loop = () => {
-        if (editor.settings.debug) {
-            //Timing
-            element.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
-            //Canvas
-            element.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
-
-            if (editor.workspace.tool) element.innerText = element.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
-            else element.innerText += ` || t: none`;
-            element.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
+                    //In all outcomes we will load the new data
+                    console.log("Sucessfully updated language file!")
+                    editor.initialize();
+                } catch (error) {
+                    console.error(`Parsing of updated language file failed. Loading old one.\n===---===\n${error}\n===---===`);
+                    editor.initialize(); 
+                }
+            }).catch(() => {
+                editor.initialize();
+            })
         }
-        requestAnimationFrame(loop);
+        else {
+            editor.initialize();
+        }
     }
-
-    loop();
-});
+    else {
+        fetch("lang/english.json").then(res => res.text()).then(text => {
+            try { editor.language = JSON.parse(text); }
+            catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
+            
+            editor.initialize(true);
+            editor.languageMenu(true);
+        })
+    }
+})

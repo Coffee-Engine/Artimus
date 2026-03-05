@@ -310,7 +310,9 @@
                 const { target, key } = data;
 
                 const input = CUGI.macros.inputElement("color", {
-                    value: String(target[key])
+                    value: String(target[key]),
+                    className: "CUGI-Color",
+                    disabled: (typeof data.disabled == "function") ? data.disabled() : data.disabled
                 });
 
                 input.onchange = CUGI.macros.onchange(data, input);
@@ -437,7 +439,7 @@
                     //Displays are just static most of the time
                     if (CUGI.displays[item.type]) {
                         const propertyHolder = document.createElement("div");
-                        propertyHolder.className = "CUGI-PropertyHolder";
+                        propertyHolder.className = "CUGI-PropertyHolder CUGI-DisplayHolder";
 
                         //Add our display
                         propertyHolder.appendChild(CUGI.displays[item.type]({

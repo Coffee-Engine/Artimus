@@ -1,0 +1,66 @@
+
+.ready-popup {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+}
+
+.ready-banner {
+    width: 100%;
+    aspect-ratio: 3/1;
+    
+    background-image: url("../../images/banner.png");
+    background-size: 100% auto;
+    background-position: 0% 0%;
+
+    mask-image: linear-gradient(transparent 0%, white 50%, transparent 100%);
+
+    transition: 300ms all;
+}
+
+.ready-banner:hover {
+    mask-image: linear-gradient(white 1000%, transparent 101%);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+
+    aspect-ratio: 2/1;
+    background-size: 100% auto;
+    background-position: 0% 25%;
+}
+
+.ready-banner-text {
+    margin: 4px;
+}
+
+.ready-divider {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.ready-list > button {
+    margin-bottom: 4px;
+}
+
+.ready-list {
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+}
+
+.ready-recent {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 4px;
+}
+
+.ready-recentText {
+    margin: 2px;
+}
+
+.ready-recentList {
+    margin: 4px;
+    background-color: var(--artimus-background-2);
+    border-radius: 8px;
+}
+
+.ready-recentButton {
+    width: 90%;
+}

@@ -7,7 +7,6 @@
     "artimus.tool.line": "Line",
     "artimus.tool.curve": "Curve",
     "artimus.tool.paintBucket": "Paint Bucket",
-    "artimus.tool.sheetTool": "Atlas Editor",
     "artimus.tool.rectangle": "Rectangle",
     "artimus.tool.circle": "Circle",
     "artimus.tool.text": "Text",
@@ -45,8 +44,11 @@
     "artimus.toolDropdown.use": "Use",
 
     "artimus.layer.layer#": "Layer #",
+    "artimus.layer.copy": "Copy of [NAME]",
     "artimus.layer.inputPlaceholder": "New Layer",
+    "artimus.layer.incrementalName": "[NAME] #",
 
+    "artimus.layerDropdown.importLayer": "Import Layer(s)",
     "artimus.layerDropdown.delete": "Delete",
     "artimus.layerDropdown.properties": "Properties",
     "artimus.layerDropdown.duplicate": "Duplicate",
@@ -78,27 +80,18 @@
     "artimus.blendModes.color": "Color",
     "artimus.blendModes.luminosity": "Luminosity",
 
-    "artimus.modal.welcome.title": "Welcome",
-    "artimus.modal.welcome.info": [
-        "<img src=\"site/Logo_NoGraffiti.png\" class=\"LOGO\"></img>",
+    "artimus.modal.ready.title": "Artimus [VERSION]",
+    "artimus.modal.ready.newFile": "New File",
+    "artimus.modal.ready.loadFile": "Load File",
+    "artimus.modal.ready.settings": "Settings",
+    "artimus.modal.ready.credits": "Credits",
+    "artimus.modal.ready.recentFiles": "Recent Files",
+    "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
+    "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",
 
-        "<p>A web based art editor and library created by ObviousStudios and open sourced under the MIT license</p>",
-        "<p>Originally created for <a href=\"https://coffee-engine.github.io/\">Coffee Engine</a></p>",
-
-        "<h3>Disclaimer</h3>",
-
-        "<p>Please note that this software and the library behind it is under development.</p>",
-        "<p>Things may break or be unstable.</p>",
-        "<p>If you are fine with this and want to try this web demo click the \"I'm ready!\" button below!</p>",
-        
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); new editor.modal(artimus.translate('ready.title', 'modal'), artimus.translate('ready.info', 'modal'), { height: 25, hasClose: false });\">I'm ready!</button>"
-    ],
-    "artimus.modal.ready.title": "Load or create",
-    "artimus.modal.ready.info": [
-        "<p>Do you have an existing file you'd like to open?</p>",
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.loadFile(true);\">Yes, load</button>",
-        "<button class=\"artimus-button\" onclick=\"editor.modals[editor.modals.length - 1].close(); editor.newFile(true);\">No, create new</button>"
-    ],
+    "artimus.modal.credits.title": "The Developers!",
+    "artimus.modal.credits.role.leadDeveloper": "Lead Developer",
+    "artimus.modal.credits.role.addtionalFeatures": "Additional Features",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",
@@ -128,10 +121,49 @@
 
     "artimus.modal.settings.general.maxHistory": "History Length",
     "artimus.modal.settings.general.preferredFormat": "Preferred Format",
+    "artimus.modal.settings.general.preferredFormat.png": "png",
+    "artimus.modal.settings.general.preferredFormat.jpeg": "jpeg",
+    "artimus.modal.settings.general.preferredFormat.jpg": "jpg",
+    "artimus.modal.settings.general.preferredFormat.webp": "webp",
+
+    "artimus.modal.settings.general.preferredPasteLayer": "Paste Layer",
+    "artimus.modal.settings.general.preferredPasteLayer.new": "New Layer",
+    "artimus.modal.settings.general.preferredPasteLayer.current": "Current Layer",
+
+    "artimus.modal.settings.general.pickTarget": "Pick Target",
+    "artimus.modal.settings.general.pickTarget.composite": "Composite",
+    "artimus.modal.settings.general.pickTarget.layer": "Layer",
+
     "artimus.modal.settings.general.preferGreaterAxis": "Prefer Greater Axis",
     "artimus.modal.settings.general.debug": "\"Nerd Numbers\"",
+    "artimus.modal.settings.general.changeLanguage": "Change Language",
+    "artimus.modal.settings.general.customLanguage": "Import Language JSON",
 
     "artimus.modal.settings.theme.theme": "Theme",
+    "artimus.modal.settings.theme.theme.default": "Light",
+    "artimus.modal.settings.theme.theme.dark": "Dark",
+    "artimus.modal.settings.theme.theme.sola": "Sola",
+    "artimus.modal.settings.theme.theme.luna": "Luna",
+    "artimus.modal.settings.theme.theme.marino": "Marino",
+    "artimus.modal.settings.theme.theme.eclipse": "Eclipse",
+    "artimus.modal.settings.theme.theme.custom": "Custom",
+
+    "artimus.modal.settings.theme.customBackground": "Background",
+    "artimus.modal.settings.theme.customText": "Text",
+    "artimus.modal.settings.theme.iconsUseText": "Icons Use Text",
+    "artimus.modal.settings.theme.customIcon": "Icon",
+    "artimus.modal.settings.theme.customEraserInline": "Preview Center",
+    "artimus.modal.settings.theme.customAccent": "Accent",
+    "artimus.modal.settings.theme.customGrid1": "Grid Primary",
+    "artimus.modal.settings.theme.customGrid2": "Grid Secondary",
+    "artimus.modal.settings.theme.toolsUseAccent": "Tools Use Accent",
+    "artimus.modal.settings.theme.customEraserOutline": "Preview Outline",
+    "artimus.modal.settings.theme.customSelection": "Selection",
+    "artimus.modal.settings.theme.buttonsUseBackground": "Buttons Use Background",
+    "artimus.modal.settings.theme.customButton": "Button",
+    "artimus.modal.settings.theme.randomize": "Randomize",
+    "artimus.modal.settings.theme.customCSS": "Use Custom CSS",
+    "artimus.modal.settings.theme.customCSSCode": "CSS Code",
 
     "artimus.modal.settings.hotkeys.add": "+",
     "artimus.modal.settings.hotkeys.remove": "-",
@@ -148,6 +180,9 @@
 
     "artimus.modal.settings.hotkeys.functions.undo": "Undo",
     "artimus.modal.settings.hotkeys.functions.redo": "Redo",
+    "artimus.modal.settings.hotkeys.functions.copy": "Copy",
+    "artimus.modal.settings.hotkeys.functions.paste": "Paste",
+    "artimus.modal.settings.hotkeys.functions.clearSelection": "Clear Selection",
     "artimus.modal.settings.hotkeys.functions.cropToSelection": "Crop",
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
@@ -182,5 +217,21 @@
     "artimus.modal.exportFile.qualityText": "Quality",
     "artimus.modal.exportFile.size": "Size",
     "artimus.modal.exportFile.background": "Background",
-    "artimus.modal.exportFile.export": "Export"
+    "artimus.modal.exportFile.export": "Export",
+
+    "artimus.toolbar.file": "File",
+    "artimus.toolbar.file.new": "New",
+    "artimus.toolbar.file.save": "Save",
+    "artimus.toolbar.file.saveAs": "Save as",
+    "artimus.toolbar.file.export": "Export",
+    "artimus.toolbar.file.load": "Load",
+
+    "artimus.toolbar.edit": "Edit",
+    "artimus.toolbar.edit.sprite": "Sprite",
+    "artimus.toolbar.edit.resize": "Resize",
+    "artimus.toolbar.edit.crop": "Crop",
+    "artimus.toolbar.edit.undo": "Undo",
+    "artimus.toolbar.edit.redo": "Redo",
+    "artimus.toolbar.edit.editor": "Editor",
+    "artimus.toolbar.edit.settings": "Settings"
 }
