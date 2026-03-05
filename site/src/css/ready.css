@@ -2,6 +2,7 @@
 .ready-popup {
     display: grid;
     grid-template-rows: auto auto auto 1fr;
+    overflow-y: hidden !important;
 }
 
 .ready-banner {

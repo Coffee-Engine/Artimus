@@ -1,4 +1,10 @@
 .credits-menu {
+    width: 100%;
+    display:block;
+}
+
+.credits-list {
+    width: 100%;
     display: grid;
     grid-template-columns: 50% 50%;
 }
@@ -18,7 +24,7 @@
 }
 
 @media screen and (min-height: 100vw) {
-    .credits-menu {
+    .credits-list {
         display: block;
     }
 
@@ -57,5 +63,5 @@
 }
 
 .credit-role {
-    font-size: 0.75em;
+    font-size: 1em;
 }
