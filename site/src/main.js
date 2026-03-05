@@ -144,8 +144,8 @@ window.editor = {
         editor.toolbar.refresh();
     },
 
-    initialize: () => {
-        editor.startMenu.open();
+    initialize: (noStartMenu) => {
+        if (!noStartMenu) editor.startMenu.open();
         editor.toolbar.refresh();
 
         //Inject our workspace.
@@ -300,7 +300,7 @@ fetch("site/resolutionPresets.json").then(result => result.text()).then(text => 
             try { editor.language = JSON.parse(text); }
             catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
             
-            editor.initialize();
+            editor.initialize(true);
             editor.languageMenu(true);
         })
     }
