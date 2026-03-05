@@ -93,7 +93,8 @@ window.editor = {
             this.init(name, contents, options);
         }
 
-        CUGIPreprocess(context, item) {
+        CUGIPreprocess(context, inItem) {
+            const item = {...inItem, modal: this};
             const translationKey = item.translationKey || item.key || item.text;
             item.text = artimus.translate(translationKey, context) || item.text || item.key;
             if (item.items) {

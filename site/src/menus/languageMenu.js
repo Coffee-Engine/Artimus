@@ -1,4 +1,4 @@
-editor.languageMenu = (forced) => {
+editor.languageMenu = (forced, noStartMenu) => {
     new editor.modal("Artimus!", (content, modal) => {
         content.className += " language-modal";
 
@@ -28,7 +28,7 @@ editor.languageMenu = (forced) => {
                                 editor.refreshLanguage();
 
                                 //Finally ready the editor
-                                editor.startMenu.open();
+                                if (!noStartMenu) editor.startMenu.open();
                                 modal.close();
                             } catch (error) { console.error(`Language ${language.id} isn't valid!\n===---===\n${error}\n===---===`) }
                         })

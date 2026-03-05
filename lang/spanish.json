@@ -130,6 +130,8 @@
 
     "artimus.modal.settings.general.preferGreaterAxis": "Preferir Eje Mayor",
     "artimus.modal.settings.general.debug": "\"Números de Nerd\"",
+    "artimus.modal.settings.general.changeLanguage": "Cambiar Idioma",
+    "artimus.modal.settings.general.customLanguage": "Importar Idioma de JSON",
 
     "artimus.modal.settings.theme.theme": "Tema",
     "artimus.modal.settings.theme.theme.default": "Luz",

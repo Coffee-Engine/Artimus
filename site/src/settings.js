@@ -28,6 +28,20 @@ editor.settings = {
     extensions: []
 };
 
+editor.fileReader = new FileReader();
+editor.customLanguageLoad = () => {
+    try {
+        const parsed = JSON.parse(editor.fileReader.result);
+        editor.language = parsed;
+
+        //Save and refresh
+        localStorage.setItem("language", JSON.stringify(parsed));
+        editor.refreshLanguage();
+    }
+    catch (error) { console.error(`Error in language JSON \n===---===\n${error}\n===---===`); }
+}
+
+
 editor.saveSettings = () => localStorage.setItem("settings", JSON.stringify(editor.settings));
 
 editor.settingDefs = {
@@ -51,7 +65,30 @@ editor.settingDefs = {
         {type: "boolean", target: editor.settings, key: "preferGreaterAxis", onchange: (value) => {
             artimus.preferGreaterAxis = value;
         }},
-        {type: "boolean", target: editor.settings, key: "debug" }
+        {type: "boolean", target: editor.settings, key: "debug" },
+        {type: "button", text: "changeLanguage", onclick: () => {
+            const openStart = editor.modals.length < 2;
+            for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
+            editor.languageMenu(false, openStart);
+        }},
+        {type: "button", text: "customLanguage", onclick: () => {
+            const inp = document.createElement("input");
+            inp.onchange = () => {
+                if (inp.files.length > 0) {
+                    const openStart = editor.modals.length < 2;
+                    for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
+
+                    editor.fileReader.onload = () => {
+                        editor.customLanguageLoad();
+                        if (!openStart) editor.startMenu.open();
+                    }
+                    editor.fileReader.readAsText(inp.files[0]);
+                }
+            }
+            inp.type = "file";
+            inp.accept = "json";
+            inp.click();
+        }}
     ],
     theme: [
         {type: "dropdown", target: editor.settings, key: "theme", items: [
@@ -168,7 +205,7 @@ if (localStorage.getItem("settings")) {
         for (let item in categoryObj) {
             const setting = categoryObj[item];
 
-            if (setting.onchange) setting.onchange(editor.settings[setting.key]);
+            if (setting.onchange && setting.type != "button") setting.onchange(editor.settings[setting.key]);
         }
     }
 }
