@@ -656,6 +656,7 @@ window.artimus = {
             //Set the last selected to not be selected
             if (this.selectedElement) this.selectedElement.className = this.toolClass;
 
+            //Set the new one to be selected.
             this.selectedElement = this.toolButtons[value];
             if (this.selectedElement) this.selectedElement.className = this.toolClass + this.toolClassSelected;
 

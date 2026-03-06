@@ -21,6 +21,8 @@ window.editor = {
     modals: [],
     modal: class {
         constructor(name, contents, options) {
+            artimus.unfocusedHotkeys = false;
+
             options = Object.assign({
                 hasClose: true,
                 width: 40,
@@ -118,6 +120,8 @@ window.editor = {
             //Remove from global modals list.
             const index = editor.modals.indexOf(this);
             if (index > -1) editor.modals.splice(index, 1);
+
+            if (editor.modals.length == 0) artimus.unfocusedHotkeys = true;
 
             delete this;
         }
