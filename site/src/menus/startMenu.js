@@ -6,6 +6,10 @@ editor.startMenu = {
             const banner = document.createElement("div");
             banner.className = "ready-banner";
 
+            banner.onclick = () => {
+                window.open(location.href + "site/images/banner.png");
+            }
+
             const bannerText = document.createElement("p");
             bannerText.innerText = artimus.translate("ready.authorTag", "modal").replace("[TITLE]", editor.bannerTitle);
             bannerText.className = "ready-banner-text";
