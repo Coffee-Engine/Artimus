@@ -270,45 +270,47 @@ artimus.unfocusedHotkeys = true;
 artimus.hotkeys["ctrl+s"] = "exportToPC";
 artimus.hotkeys["ctrl+l"] = "importFromPC";
 
-//Finally initialize the editor by fetching needed json data
-fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
-    try {
-        const parsed = JSON.parse(text);
-        if (parsed) editor.resolutionPresets = parsed;
-    } catch (error) {}
+editor.storageReady = () => {
+    //Finally initialize the editor by fetching needed json data
+    fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
+        try {
+            const parsed = JSON.parse(text);
+            if (parsed) editor.resolutionPresets = parsed;
+        } catch (error) {}
 
-    //Load the language file
-    if (localStorage.getItem("language")) {
-        editor.language = JSON.parse(localStorage.getItem("language"));
-        if (navigator.onLine && editor.language.src) {
-            fetch(editor.language.src).then(res => res.text()).then(text => {
-                try {
-                    //Parse new file and save
-                    const parsed = JSON.parse(text);
-                    editor.language = parsed;
+        //Load the language file
+        if (localStorage.getItem("language")) {
+            editor.language = JSON.parse(localStorage.getItem("language"));
+            if (navigator.onLine && editor.language.src) {
+                fetch(editor.language.src).then(res => res.text()).then(text => {
+                    try {
+                        //Parse new file and save
+                        const parsed = JSON.parse(text);
+                        editor.language = parsed;
 
-                    //In all outcomes we will load the new data
-                    console.log("Sucessfully updated language file!")
+                        //In all outcomes we will load the new data
+                        console.log("Sucessfully updated language file!")
+                        editor.initialize();
+                    } catch (error) {
+                        console.error(`Parsing of updated language file failed. Loading old one.\n===---===\n${error}\n===---===`);
+                        editor.initialize(); 
+                    }
+                }).catch(() => {
                     editor.initialize();
-                } catch (error) {
-                    console.error(`Parsing of updated language file failed. Loading old one.\n===---===\n${error}\n===---===`);
-                    editor.initialize(); 
-                }
-            }).catch(() => {
+                })
+            }
+            else {
                 editor.initialize();
-            })
+            }
         }
         else {
-            editor.initialize();
+            fetch("lang/english.json").then(res => res.text()).then(text => {
+                try { editor.language = JSON.parse(text); }
+                catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
+                
+                editor.initialize(true);
+                editor.languageMenu(true);
+            })
         }
-    }
-    else {
-        fetch("lang/english.json").then(res => res.text()).then(text => {
-            try { editor.language = JSON.parse(text); }
-            catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
-            
-            editor.initialize(true);
-            editor.languageMenu(true);
-        })
-    }
-})
+    });
+}

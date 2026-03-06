@@ -93,6 +93,7 @@
 
         editor.storage = editor.indexedDB.getStore("extensionStorage", true);
         editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
+        editor.storageReady();
     };
 
     coffeeDBRequest.onsuccess = (event) => {
@@ -103,6 +104,7 @@
         if (!editor.indexedDB.upgraded) {
             editor.storage = editor.indexedDB.getStore("extensionStorage", true);
             editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
+            editor.storageReady();
         }
     };
 })();
