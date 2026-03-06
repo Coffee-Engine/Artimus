@@ -632,8 +632,10 @@ window.artimus = {
 
         //Tools
         #tool = ""
+        toolButtons = {};
         toolFunction = new artimus.tool();
         suppressSelectionFunction = false;
+
         set tool(value) {
             //Make sure the tool function gets the deselection notification if possible
             if (this.toolFunction && this.toolFunction.deselected) this.toolFunction.deselected(this.editGL, this.previewGL, this.toolProperties);
@@ -647,8 +649,15 @@ window.artimus = {
 
             if (!this.suppressSelectionFunction && this.toolFunction && this.toolFunction.selected) this.toolFunction.selected(this.editGL, this.previewGL, this.toolProperties);
 
+            //Tool stuffs
             this.#tool = value;
             this.refreshToolOptions();
+
+            //Set the last selected to not be selected
+            if (this.selectedElement) this.selectedElement.className = this.toolClass;
+
+            this.selectedElement = this.toolButtons[value];
+            if (this.selectedElement) this.selectedElement.className = this.toolClass + this.toolClassSelected;
 
             //We also want to clear the previewGL
             if (this.toolFunction.preview) this.previewGL.clearRect(...this.viewBounds);
@@ -1823,13 +1832,16 @@ window.artimus = {
         }
 
         refreshTools() {
+            this.toolButtons = {};
             this.toolbox.innerHTML = "";
             this.selectedElement = null;
 
             for (let toolID in artimus.tools) {
+                //Get tool and setup button;
                 const tool = artimus.tools[toolID].prototype;
-
                 const button = document.createElement("button");
+
+                this.toolButtons[toolID] = button;
 
                 //Set icon and text if needed
                 if (typeof tool.icon == "string") {
@@ -1855,12 +1867,6 @@ window.artimus = {
 
                 button.onclick = () => {
                     this.tool = toolID;
-
-                    //Set the last selected to not be selected
-                    if (this.selectedElement) this.selectedElement.className = this.toolClass;
-                    button.className = this.toolClass + this.toolClassSelected;
-
-                    this.selectedElement = button;
                 }
 
                 //Add cugi related things
@@ -2563,7 +2569,6 @@ window.artimus = {
                             selectionPath.push((data[idx + 1] << 8) + (data[idx + 2]));
                             idx += 2;
                         }
-                        this.selection = selectionPath;
 
                         //Calculate size and read pixel data.
                         const width = (data[idx + 1] << 8) + (data[idx + 2]);
@@ -2589,6 +2594,7 @@ window.artimus = {
                             //Supress selection function and select the preferred move tool.
                             this.suppressSelectionFunction = true;
                             this.tool = artimus.preferredMoveTool;
+                            this.selection = selectionPath;
 
                             //Then run onPaste if available.
                             if (this.toolFunction && this.toolFunction.paste) this.toolFunction.paste(this.GL, this.previewGL, bitmap, sizeMultiplier, this.toolProperties);
@@ -2630,6 +2636,10 @@ window.artimus = {
                                         if (bitmap.width > this.width) sizeMultiplier = this.width / bitmap.width;
                                         if (bitmap.height * sizeMultiplier > this.#height) sizeMultiplier *= this.height / (bitmap.height * sizeMultiplier);
                                     }
+                                
+                                    //Supress selection function and select the preferred move tool.
+                                    this.suppressSelectionFunction = true;
+                                    this.tool = artimus.preferredMoveTool;
 
                                     //Set the new selection
                                     this.setSelection([
@@ -2638,10 +2648,6 @@ window.artimus = {
                                         bitmap.width * sizeMultiplier, bitmap.height * sizeMultiplier,
                                         bitmap.width * sizeMultiplier, 0
                                     ]);
-                                
-                                    //Supress selection function and select the preferred move tool.
-                                    this.suppressSelectionFunction = true;
-                                    this.tool = artimus.preferredMoveTool;
 
                                     //Then run onPaste if available.
                                     if (this.toolFunction && this.toolFunction.paste) this.toolFunction.paste(this.GL, this.previewGL, bitmap, sizeMultiplier, this.toolProperties);
