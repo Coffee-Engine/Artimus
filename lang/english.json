@@ -86,6 +86,7 @@
     "artimus.modal.ready.loadFile": "Load File",
     "artimus.modal.ready.settings": "Settings",
     "artimus.modal.ready.credits": "Credits",
+    "artimus.modal.ready.socials": "Socials",
     "artimus.modal.ready.recentFiles": "Recent Files",
     "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
     "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",

@@ -89,6 +89,11 @@ editor.startMenu = {
             credits.className = "artimus-button";
             credits.innerText = artimus.translate("ready.credits", "modal");
             credits.onclick = () => { editor.creditsMenu(); }
+            
+            const socials = document.createElement('button');
+            socials.className = "artimus-button";
+            socials.innerText = artimus.translate("ready.socials", "modal");
+            socials.onclick = () => { editor.creditsMenu(); }
 
             recentFiles.appendChild(recentText);
             recentFiles.appendChild(recentList);
@@ -97,6 +102,7 @@ editor.startMenu = {
             fileButtons.appendChild(loadFile);
             fileButtons.appendChild(settings);
             fileButtons.appendChild(credits);
+            fileButtons.appendChild(socials);
 
             divider.appendChild(recentFiles);
             divider.appendChild(fileButtons);

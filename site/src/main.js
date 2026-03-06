@@ -16,6 +16,8 @@ window.editor = {
     popupTitle: document.getElementById("popupTitle"),
 
     language: { "artimus.layer.layer#": "Layer #" },
+    englishFallback: {},
+
     resolutionPresets: {},
 
     modals: [],
@@ -225,9 +227,13 @@ window.editor = {
 
 //Artimus configuration
 artimus.translate = (item, context, noComplaints) => {
-    if ((!noComplaints) && !editor.language[`artimus.${context}.${item}`]) console.warn(`Translation key "${`artimus.${context}.${item}`}" is missing!`);
+    const key = `artimus.${context}.${item}`;
+    if ((!noComplaints) && !editor.language[key]) console.warn(`Translation key "${key}" is missing!`);
 
-    const translated = editor.language[`artimus.${context}.${item}`] || ((noComplaints) ? item : `artimus.${context}.${item}`);
+    let translated = (noComplaints) ? item : key;
+    if (editor.language[key]) translated = editor.language[key] || translated;
+    else translated = editor.englishFallback[key] || translated;
+
     if (Array.isArray(translated)) return translated.join("\n");
     return translated;
 }
@@ -270,47 +276,54 @@ artimus.unfocusedHotkeys = true;
 artimus.hotkeys["ctrl+s"] = "exportToPC";
 artimus.hotkeys["ctrl+l"] = "importFromPC";
 
-editor.storageReady = () => {
+//Prepare storage ready function
+editor.storageReady = async () => {
+    //Get fallback data
+    editor.englishFallback = await fetch("lang/english.json").then(result => result.text());
+    try {
+        const parsed = JSON.parse(editor.englishFallback);
+        editor.englishFallback = parsed;
+    } catch (error) { console.error(`Fallback english error!\n===---===\n${error}\n===---===`)}
+
     //Finally initialize the editor by fetching needed json data
-    fetch("site/resolutionPresets.json").then(result => result.text()).then(text => {
-        try {
-            const parsed = JSON.parse(text);
-            if (parsed) editor.resolutionPresets = parsed;
-        } catch (error) {}
+    const unparsedResolutions = await fetch("site/resolutionPresets.json").then(result => result.text())
+    try {
+        const parsed = JSON.parse(unparsedResolutions);
+        if (parsed) editor.resolutionPresets = parsed;
+    } catch (error) {}
 
-        //Load the language file
-        if (localStorage.getItem("language")) {
-            editor.language = JSON.parse(localStorage.getItem("language"));
-            if (navigator.onLine && editor.language.src) {
-                fetch(editor.language.src).then(res => res.text()).then(text => {
-                    try {
-                        //Parse new file and save
-                        const parsed = JSON.parse(text);
-                        editor.language = parsed;
+    //Load the language file
+    if (localStorage.getItem("language")) {
+        editor.language = JSON.parse(localStorage.getItem("language"));
+        if (navigator.onLine && editor.language.src) {
+            fetch(editor.language.src).then(res => res.text()).then(text => {
+                try {
+                    //Parse new file and save
+                    const parsed = JSON.parse(text);
+                    editor.language = parsed;
 
-                        //In all outcomes we will load the new data
-                        console.log("Sucessfully updated language file!")
-                        editor.initialize();
-                    } catch (error) {
-                        console.error(`Parsing of updated language file failed. Loading old one.\n===---===\n${error}\n===---===`);
-                        editor.initialize(); 
-                    }
-                }).catch(() => {
+                    //In all outcomes we will load the new data
+                    console.log("Sucessfully updated language file!")
                     editor.initialize();
-                })
-            }
-            else {
+                } catch (error) {
+                    console.error(`Parsing of updated language file failed. Loading old one.\n===---===\n${error}\n===---===`);
+                    editor.initialize(); 
+                }
+            }).catch(() => {
                 editor.initialize();
-            }
-        }
-        else {
-            fetch("lang/english.json").then(res => res.text()).then(text => {
-                try { editor.language = JSON.parse(text); }
-                catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
-                
-                editor.initialize(true);
-                editor.languageMenu(true);
             })
         }
-    });
+        else {
+            editor.initialize();
+        }
+    }
+    else {
+        fetch("lang/english.json").then(res => res.text()).then(text => {
+            try { editor.language = JSON.parse(text); }
+            catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
+            
+            editor.initialize(true);
+            editor.languageMenu(true);
+        })
+    }
 }
