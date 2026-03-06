@@ -1,5 +1,6 @@
 {
     "identifier": "deutsch",
+    "name": "Deutsch",
     
     "artimus.tool.paintBrush": "Freihandpinsel",
     "artimus.tool.eraser": "Radierer",

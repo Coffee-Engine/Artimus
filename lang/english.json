@@ -1,5 +1,6 @@
 {
     "identifier": "english",
+    "name": "English",
     
     "artimus.tool.paintBrush": "Brush",
     "artimus.tool.eraser": "Eraser",

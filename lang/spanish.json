@@ -1,5 +1,6 @@
 {
     "identifier": "español",
+    "name": "Español",
     
     "artimus.tool.paintBrush": "Pincel",
     "artimus.tool.eraser": "Borrador",
