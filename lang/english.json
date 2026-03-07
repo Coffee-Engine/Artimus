@@ -91,6 +91,10 @@
     "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
     "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",
 
+    "artimus.modal.socials.title": "Socials",
+    "artimus.modal.socials.github": "GitHub",
+    "artimus.modal.socials.discordServer": "The Coffee Shop (EN)",
+
     "artimus.modal.credits.title": "The Developers!",
     "artimus.modal.credits.role.leadDeveloper": "Lead Developer",
     "artimus.modal.credits.role.addtionalFeatures": "Additional Features",
