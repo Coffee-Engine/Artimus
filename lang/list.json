@@ -1,4 +1,7 @@
 [
-    { "name": "🇬🇧 English", "id": "english" },
-    { "name": "🇪🇸 Español", "id": "spanish" }
+    { "name": "English", "id": "english" },
+    { "name": "Español", "id": "spanish" },
+    { "name": "Türkçe", "id": "turkish" },
+    { "name": "Deutsch", "id": "german" },
+    { "name": "Lol Cat! - Kingdom of the Cats!", "id": "lolcat" }
 ]

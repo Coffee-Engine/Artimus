@@ -1,5 +1,6 @@
 {
-    "identifier": "espanol",
+    "identifier": "español",
+    "name": "Español",
     
     "artimus.tool.paintBrush": "Pincel",
     "artimus.tool.eraser": "Borrador",
@@ -92,6 +93,7 @@
     "artimus.modal.credits.title": "¡La Programadoras!",
     "artimus.modal.credits.role.leadDeveloper": "Programador de Dirigir",
     "artimus.modal.credits.role.addtionalFeatures": "Herramientas Adicional",
+    "artimus.modal.credits.role.translator": "Traductor de [SPECIAL]",
 
     "artimus.modal.layerProperty.title": "Propiedades de \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Modo Mezcla",
@@ -121,7 +123,7 @@
     "artimus.modal.settings.general.preferredFormat.webp": "webp",
 
     "artimus.modal.settings.general.preferredPasteLayer": "Paste Capa",
-    "artimus.modal.settings.general.preferredPasteLayer.new": "New Capa",
+    "artimus.modal.settings.general.preferredPasteLayer.new": "Nuevo Capa",
     "artimus.modal.settings.general.preferredPasteLayer.current": "Current Capa",
 
     "artimus.modal.settings.general.pickTarget": "Meta de Muestra",
@@ -161,9 +163,9 @@
 
     "artimus.modal.settings.hotkeys.add": "+",
     "artimus.modal.settings.hotkeys.remove": "-",
-    "artimus.modal.settings.hotkeys.clickToInput": "Click to Input!",
-    "artimus.modal.settings.hotkeys.waitingForInput": "Waiting for Input.",
-    "artimus.modal.settings.hotkeys.hotkeyExists": "Hotkey exists!",
+    "artimus.modal.settings.hotkeys.clickToInput": "Clic para Entrada!",
+    "artimus.modal.settings.hotkeys.waitingForInput": "Tener Esperar para Entrada.",
+    "artimus.modal.settings.hotkeys.hotkeyExists": "Acceso Directos Existe!",
 
     "artimus.modal.settings.hotkeys.ctrl": "ctrl",
     "artimus.modal.settings.hotkeys.shift": "shift",

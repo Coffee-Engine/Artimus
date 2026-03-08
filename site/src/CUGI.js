@@ -421,7 +421,7 @@
                     if (!item.type) return;
 
                     if (preprocess) {
-                        item = preprocess(item);
+                        item = preprocess({...item});
                     }
 
                     //If we have an globalChange add that

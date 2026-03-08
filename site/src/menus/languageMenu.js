@@ -11,8 +11,19 @@ editor.languageMenu = (forced, noStartMenu) => {
 
                     //Create button
                     const button = document.createElement("button");
-                    button.innerText = language.name;
                     button.className = "artimus-button language-button";
+
+                    //Create the icon
+                    const icon = document.createElement("img");
+                    icon.src = language.icon || `site/images/languages/${language.id}.png`;
+                    icon.className = "language-icon";
+
+                    const name = document.createElement("p");
+                    name.innerText = language.name;
+                    name.className = "language-name";
+
+                    button.appendChild(icon);
+                    button.appendChild(name);
 
                     //When we click prepare the world for our arrival
                     button.onclick = () => {

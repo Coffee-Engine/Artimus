@@ -56,7 +56,6 @@ editor.hotkeyMenu = (container, translationKey, onchange) => {
                 translatedDescription[idx] = artimus.translate(translatedDescription[idx], translationKey, true);
             }
             
-            artimus.unfocusedHotkeys = true;
             hotkeyInput.innerText = translatedDescription.join(joiner);
             hotkeyToAdd = keyDescription;
             document.removeEventListener("keydown", inputCapturer);
@@ -104,7 +103,6 @@ editor.hotkeyMenu = (container, translationKey, onchange) => {
     }
 
     hotkeyInput.onclick = () => {
-        artimus.unfocusedHotkeys = false;
         hotkeyInput.innerText = artimus.translate("waitingForInput", translationKey);
 
         document.addEventListener("keydown", inputCapturer);

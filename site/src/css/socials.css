@@ -1,0 +1,14 @@
+.socials-container {
+    display: flex;
+    justify-content: center;
+}
+
+.socials-icon {
+    height: 3em;
+}
+
+.socials-link {
+    padding: 0px;
+    margin: 0.5em;
+    font-size: 1.5em;
+}

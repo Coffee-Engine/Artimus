@@ -1,5 +1,6 @@
 {
     "identifier": "english",
+    "name": "English",
     
     "artimus.tool.paintBrush": "Brush",
     "artimus.tool.eraser": "Eraser",
@@ -85,13 +86,19 @@
     "artimus.modal.ready.loadFile": "Load File",
     "artimus.modal.ready.settings": "Settings",
     "artimus.modal.ready.credits": "Credits",
+    "artimus.modal.ready.socials": "Socials",
     "artimus.modal.ready.recentFiles": "Recent Files",
     "artimus.modal.ready.recentFiles.notSupported": "Your browser does not support this feature!\n:(",
     "artimus.modal.ready.authorTag": "\"[TITLE]\" | by: ",
 
+    "artimus.modal.socials.title": "Socials",
+    "artimus.modal.socials.github": "GitHub",
+    "artimus.modal.socials.discordServer": "The Coffee Shop (EN)",
+
     "artimus.modal.credits.title": "The Developers!",
     "artimus.modal.credits.role.leadDeveloper": "Lead Developer",
     "artimus.modal.credits.role.addtionalFeatures": "Additional Features",
+    "artimus.modal.credits.role.translator": "[SPECIAL] Translator",
 
     "artimus.modal.layerProperty.title": "Editing \"[LAYER]\"",
     "artimus.modal.layerProperty.blendMode": "Blend Mode",
