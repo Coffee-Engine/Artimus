@@ -86,9 +86,14 @@
     "artimus.modal.ready.loadFile": "Cargar Archivo",
     "artimus.modal.ready.settings": "Configuración",
     "artimus.modal.ready.credits": "Créditos",
+    "artimus.modal.ready.socials": "Redes Sociales",
     "artimus.modal.ready.recentFiles": "Archivo Reciente",
     "artimus.modal.ready.recentFiles.notSupported": "¡Tu navegador no compatible con herramienta!\n:(",
     "artimus.modal.ready.authorTag": "\"[TITLE]\" | De: ",
+
+    "artimus.modal.socials.title": "Redes Sociales",
+    "artimus.modal.socials.github": "GitHub",
+    "artimus.modal.socials.discordServer": "The Coffee Shop (IN)",
 
     "artimus.modal.credits.title": "¡La Programadoras!",
     "artimus.modal.credits.role.leadDeveloper": "Programador de Dirigir",
