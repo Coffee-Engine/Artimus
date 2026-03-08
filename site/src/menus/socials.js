@@ -1,17 +1,25 @@
 editor.creditsMenu = () => {
     new editor.modal(artimus.translate("socials.title", "modal"), (content, modal) => {
-        const dServer = document.createElement("a");
-        dServer.className = "socials-link";
-        dServer.href = "https://discord.gg/R4AhDBNZZ7";
+        const addSocial = (type, url, icon) => {
+            const dServer = document.createElement("a");
+            dServer.className = "socials-container";
+            dServer.href = url;
 
-        const dImage = document.createElement("img");
-        dImage.src = "site/images/socials/disk.png";
-        const dText = document.createElement("p");
-        dText.innerText = artimus.translate("socials.discordServer", "modal");
+            const dImage = document.createElement("img");
+            dImage.src = `site/images/socials/${icon}`;
+            dImage.className = "socials-icon";
 
-        dServer.appendChild(dImage);
-        dServer.appendChild(dText);
+            const dText = document.createElement("p");
+            dText.innerText = artimus.translate(`socials.${type}`, "modal");
+            dText.className = "socials-link";
 
-        content.appendChild(dServer);
-    });
+            dServer.appendChild(dImage);
+            dServer.appendChild(dText);
+
+            content.appendChild(dServer);
+        }
+
+        addSocial("discordServer", "https://discord.gg/R4AhDBNZZ7", "disk.png");
+        addSocial("github", "https://github.com/Coffee-Engine", "git.png");
+    }, { height: 20 });
 }
