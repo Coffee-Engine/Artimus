@@ -124,14 +124,20 @@
         }
 
         .elemental-color-picker-adjust  {
+            --color: #ff0000;
+
             margin: 4px 4px 2px 2px;
             border: 2px #dfdfdf inset;
 
-            background: linear-gradient(to right, #000 0%, #f00 100%);
+            background: linear-gradient(to right, #000 0%, var(--color) 100%);
 
             overflow: hidden;
             display: block;
         }
+
+        .elemental-color-picker-firstAdjust { --color: #ff0000; }
+        .elemental-color-picker-secondAdjust { --color: #00ff00; }
+        .elemental-color-picker-thirdAdjust { --color: #0000ff; }
 
         .elemental-color-picker-slider {
             --color: #000000;
