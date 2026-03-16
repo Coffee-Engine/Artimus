@@ -1,4 +1,7 @@
 window.artimus = {
+    tools: {},
+    maxHistory: 10,
+
     //Just a small performance thing to prevent un-needed function alls while copying
     clipboardMagic: "H_ARTIMUS",
     hexArray: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ],
@@ -349,7 +352,6 @@ window.artimus = {
         "+"
     ],
 
-    tools: {},
     tool: class {
         get icon() { return artimus.unknownToolIcon; }
 
@@ -386,26 +388,6 @@ window.artimus = {
         properties = {};
         colorProperties = [];
         constructive = true;
-    },
-
-    //History is important, and it's finally getting some TLC
-    maxHistory: 10,
-    historicalEventTypes: {
-        "imageChange": (workspace, data) => {
-            console.log(data);
-        }
-    },
-
-    historicalEvent: class {
-        constructor(type, data, workspace) {
-            this.type = type;
-            this.data = data;
-            this.workspace = workspace;
-        }
-
-        restoreTo() {
-            artimus.historicalEventTypes[this.type](this.workspace, this.data);
-        }
     },
     
     layer: class {
@@ -726,7 +708,7 @@ window.artimus = {
         }
 
         //History
-        history = [];
+        layerHistory = [];
         historyIndex = 0;
 
         //CSS classes
@@ -2050,6 +2032,7 @@ window.artimus = {
                         //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
                         const current = this.layers[this.#currentLayer];
                         this.editGL.putImageData(current.dataRaw, 0, 0);
+                        this.layerHistory = [this.editGL.getImageData(0, 0, this.width, this.height)];
 
                         label.className = this.layerClass;
                         current.label.className = this.layerClass + this.layerClassSelected;
@@ -2306,12 +2289,16 @@ window.artimus = {
             return [];
         }
 
-        //Legacy history function
         updateLayerHistory() {
-            this.addHistoricalEvent("imageChange", {
-                data: this.editGL.getImageData(0, 0, this.width, this.height),
-                rect: [0, 0, this.width, this.height]
-            });
+            if (this.historyIndex > 0) {
+                this.layerHistory.splice(0, this.historyIndex);
+            }
+
+            this.historyIndex = 0;
+            this.layerHistory.splice(0, 0, this.editGL.getImageData(0, 0, this.width, this.height));
+            if (this.layerHistory.length > artimus.maxHistory) {
+                this.layerHistory.pop();
+            }
         }
 
         transferLayerData(from, to) {
@@ -2486,10 +2473,10 @@ window.artimus = {
         undo() {
             if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
-            if (this.historyIndex >= this.history.length - 1) return;
+            if (this.historyIndex >= this.layerHistory.length - 1) return;
             this.historyIndex++;
 
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
+            this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
 
             this.sendEvent("undo", { historyIndex: this.historyIndex });
@@ -2501,22 +2488,10 @@ window.artimus = {
             if (this.historyIndex <= 0) return;
             this.historyIndex--;
 
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
+            this.editGL.putImageData(this.layerHistory[this.historyIndex], 0, 0);
             this.dirty = true;
 
             this.sendEvent("redo", { historyIndex: this.historyIndex });
-        }
-
-        addHistoricalEvent(type, data) {
-            if (this.historyIndex > 0) {
-                this.history.splice(0, this.historyIndex);
-            }
-
-            this.historyIndex = 0;
-            this.history.splice(0, 0, new artimus.historicalEvent(type, data, this));
-            if (this.history.length > artimus.maxHistory) {
-                this.history.pop();
-            }
         }
 
         copy() {
@@ -2722,7 +2697,7 @@ window.artimus = {
             });
 
             this.historyIndex = 0;
-            this.history = [];
+            this.layerHistory = [];
             this.fileSystemHandle = null;
 
             this.sendEvent("new", { width: width, height: height });
