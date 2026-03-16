@@ -1,8 +1,8 @@
 window.editor = {
-    version: "Γ 1.5.0",
-    bannerTitle: "Help Wanted",
-    bannerAuthor: "ObviousAlexC",
-    bannerAuthorURL: "https://ObviousStudios.dev",
+    version: "Γ 1.4.2",
+    bannerTitle: "Welcome Artimus!",
+    bannerAuthor: "BitDisco",
+    bannerAuthorURL: "https://bitdisco.itch.io/",
 
     dbName: "artimusDB",
     dbVersion: 2,
