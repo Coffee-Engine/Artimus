@@ -1,5 +1,5 @@
 window.editor = {
-    version: "Γ 1.5.0",
+    version: "Γ 1.4.2",
     bannerTitle: "Welcome Artimus!",
     bannerAuthor: "BitDisco",
     bannerAuthorURL: "https://bitdisco.itch.io/",
