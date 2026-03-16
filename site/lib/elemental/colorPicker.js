@@ -5,6 +5,9 @@
     const colorPickerSatBrightPicker = document.createElement("div");
     colorPickerSatBrightPicker.className = "elemental-color-picker-satBrightPicker";
     
+    const colorPickerDragger = document.createElement("div");
+    colorPickerDragger.className = "elemental-color-picker-colorPickerDragger";
+    
     const colorPickerAdjustHolders = document.createElement("div");
     colorPickerAdjustHolders.className = "elemental-color-picker-adjustHolder";
     
@@ -25,6 +28,8 @@
     
     const thirdSlider = document.createElement("div");
     thirdSlider.className = "elemental-color-picker-slider";
+
+    colorPickerSatBrightPicker.appendChild(colorPickerDragger);
 
     firstAdjust.appendChild(firstSlider);
     secondAdjust.appendChild(secondSlider);
@@ -118,6 +123,25 @@
             background: linear-gradient(to top, #000 0%, transparent 100%), linear-gradient(to right, #fff 0%, #f00 100%);
         }
 
+        .elemental-color-picker-colorPickerDragger {
+            --color: #000000;
+            --x: 0%;
+            --y: 0%;
+
+            margin-left: var(--x);
+            margin-top: var(--y);
+
+            width: 10px;
+            height: 10px;
+
+            border: 2px #dfdfdf outset;
+            border-radius: 100%;
+
+            transform: translate(-50%, -50%);
+
+            background-color: var(--color);        
+        }
+
         .elemental-color-picker-adjustHolder {
             display: grid;
             grid-template-rows: 25% 25% 25% 25%;
@@ -149,6 +173,9 @@
 
         .elemental-color-picker-slider {
             --color: #000000;
+
+            --x: 0%;
+            margin-left: var(--x);
 
             width: 4px;
             height: calc(100% - 4px);
