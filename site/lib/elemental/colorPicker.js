@@ -168,7 +168,7 @@
         },
 
         HSVToRGB: (HSV) => {
-            const h = HSV.h;
+            const h = HSV.h % 360;
 
             //Some math to get C and X
             const C = HSV.v * HSV.s;
@@ -317,6 +317,24 @@
         }
     };
 
+    elemental.colorPickerConfig = {
+        sliderDirection: {
+            primary: "x",
+            secondary: "x",
+            tertiary: "x",
+            alpha: "x",
+            hue: "y",
+        },
+
+        sliderTarget: {
+            primary: "r",
+            secondary: "g",
+            tertiary: "b",
+            alpha: "a",
+            hue: "h",
+        }
+    };
+
     //Set up our color picker.
     const colorPickerContainer = document.createElement('div');
     colorPickerContainer.className = "elemental-color-picker-container";
@@ -327,8 +345,11 @@
     const colorPickerDragger = document.createElement("div");
     colorPickerDragger.className = "elemental-color-picker-colorPickerDragger";
 
+    const hueAdjust = document.createElement("div");
+    hueAdjust.className = "elemental-color-picker-adjust elemental-color-picker-hueAdjust";
+    
     const hueSlider = document.createElement("div");
-    hueSlider.className = "elemental-color-picker-hueSlider";
+    hueSlider.className = "elemental-color-picker-slider elemental-color-picker-hueSlider";
     
     const colorPickerAdjustHolders = document.createElement("div");
     colorPickerAdjustHolders.className = "elemental-color-picker-adjustHolder";
@@ -363,6 +384,7 @@
     secondAdjust.appendChild(secondSlider);
     thirdAdjust.appendChild(thirdSlider);
     alphaAdjust.appendChild(alphaSlider);
+    hueAdjust.appendChild(hueSlider);
 
     colorPickerAdjustHolders.appendChild(firstAdjust);
     colorPickerAdjustHolders.appendChild(secondAdjust);
@@ -370,7 +392,7 @@
     colorPickerAdjustHolders.appendChild(alphaAdjust);
 
     colorPickerContainer.appendChild(colorPickerSatBrightPicker);
-    colorPickerContainer.appendChild(hueSlider);
+    colorPickerContainer.appendChild(hueAdjust);
     colorPickerContainer.appendChild(colorPickerAdjustHolders);
 
     //For doing visual adjustments
@@ -379,7 +401,7 @@
             case "r": currentColor.r = Math.floor(value * 255); break;
             case "g": currentColor.g = Math.floor(value * 255); break;
             case "b": currentColor.b = Math.floor(value * 255); break;
-            case "h": currentColor.h = value * 360; break;
+            case "h": currentColor.h = Math.max(0, Math.min(value, 1)) * 360; break;
             case "s": currentColor.s = value; break;
             case "v": currentColor.v = value; break;
             case "a": currentColor.a = Math.floor(value * 255); break;
@@ -390,6 +412,7 @@
         secondSlider.style.setProperty("--x", `${currentColor.g / 2.55}%`);
         thirdSlider.style.setProperty("--x", `${currentColor.b / 2.55}%`);
         alphaSlider.style.setProperty("--x", `${currentColor.a / 2.55}%`);
+        hueSlider.style.setProperty("--x", `${currentColor.h / 3.6}%`);
 
         firstAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ r: 0, g: currentColor.g, b: currentColor.b }));
         firstAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ r: 255, g: currentColor.g, b: currentColor.b }));
@@ -408,6 +431,7 @@
         thirdSlider.style.setProperty("--color", alphalessHex);
         alphaSlider.style.setProperty("--color", currentColor.hex);
         colorPickerDragger.style.setProperty("--color", alphalessHex);
+        hueSlider.style.setProperty("--color", alphalessHex);
 
         colorPickerSatBrightPicker.style.setProperty("--color", elemental.colorLib.HSVToHex({ h: currentColor.h, s: 1, v: 1 }));
 
@@ -415,11 +439,11 @@
         colorPickerDragger.style.setProperty("--y", `${(1 - currentColor.v) * 100}%`);
 
         const { s, l } = currentColor.HSL;
-        hueSlider.style.setProperty("--saturation", `${s * 100}%`);
-        hueSlider.style.setProperty("--lightness", `${l * 100}%`);
+        hueAdjust.style.setProperty("--saturation", `${s * 100}%`);
+        hueAdjust.style.setProperty("--lightness", `${l * 100}%`);
     };
 
-    const sliderFunctionality = (initEvent, parent, valueName) => {
+    const sliderFunctionality = (initEvent, parent, id) => {
         initEvent.stopPropagation();
         initEvent.preventDefault();
 
@@ -428,9 +452,16 @@
             event.preventDefault();
 
             //Get bounds and calculate new value
-            const { left, width, right } = parent.getBoundingClientRect();
-            const percentage = (Math.max(left, Math.min(event.clientX, right)) - left) / width;
-            adjustSliders(valueName, percentage);
+            if (elemental.colorPickerConfig.sliderDirection[id] == "x") {
+                const { left, width, right } = parent.getBoundingClientRect();
+                const percentage = (Math.max(left, Math.min(event.clientX, right)) - left) / width;
+                adjustSliders(elemental.colorPickerConfig.sliderTarget[id], percentage);
+            }
+            else {
+                const { top, height, bottom } = parent.getBoundingClientRect();
+                const percentage = (Math.max(top, Math.min(event.clientY, bottom)) - top) / height;
+                adjustSliders(elemental.colorPickerConfig.sliderTarget[id], percentage);
+            }
         }
 
         const dropSlider = (event) => {
@@ -444,10 +475,11 @@
         document.body.addEventListener("mouseleave", dropSlider);
     };
 
-    firstSlider.onmousedown = (event) => sliderFunctionality(event, firstAdjust, "r");
-    secondSlider.onmousedown = (event) => sliderFunctionality(event, secondAdjust, "g");
-    thirdSlider.onmousedown = (event) => sliderFunctionality(event, thirdAdjust, "b");
-    alphaSlider.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "a");
+    firstSlider.onmousedown = (event) => sliderFunctionality(event, firstAdjust, "primary");
+    secondSlider.onmousedown = (event) => sliderFunctionality(event, secondAdjust, "secondary");
+    thirdSlider.onmousedown = (event) => sliderFunctionality(event, thirdAdjust, "tertiary");
+    alphaSlider.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "alpha");
+    hueAdjust.onmousedown = (event) => sliderFunctionality(event, hueAdjust, "hue");
 
     //Now for clicking off the actual prompt.
     let currentColorPicker, currentColor;
@@ -560,7 +592,7 @@
             background-color: var(--color);        
         }
         
-        .elemental-color-picker-hueSlider {
+        .elemental-color-picker-hueAdjust {
             --saturation: 100%;
             --lightness: 50%;
 
@@ -621,7 +653,10 @@
             --color: #000000;
 
             --x: 0%;
-            margin-left: var(--x);
+            
+            position: relative;
+            left: var(--x);
+            top: 0px;
 
             width: 4px;
             height: calc(100% - 4px);
@@ -634,6 +669,17 @@
 
         .elemental-color-picker-alphaSlider {
             background: linear-gradient(to top, var(--color) 0%, var(--color) 100%), linear-gradient(to bottom, #00000033 0%, transparent 100%)
+        }
+
+        .elemental-color-picker-hueSlider {
+            position: relative;
+            left: 0px;
+            top: var(--x);
+
+            width: calc(100% - 4px);
+            height: 4px;
+
+            transform: translate(0%, -50%);
         }
         `
     });
