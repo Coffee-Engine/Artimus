@@ -224,12 +224,13 @@
             set hex(value) {
                 this.#hex = value;
                 
-                const { r, g, b } = elemental.colorLib.HexToRGB(value);
+                const { r, g, b, a } = elemental.colorLib.HexToRGB(value);
                 const { h, s, v } = elemental.colorLib.HexToHSV(value);
 
                 this.#r = r;
                 this.#g = g;
                 this.#b = b;
+                this.#a = a;
 
                 this.#h = h;
                 this.#s = s;
@@ -259,6 +260,13 @@
             }
             get b() { return this.#b; }
 
+            #a = 0;
+            set a(value) {
+                this.#a = value;
+                this.updateForRGB();
+            }
+            get a() { return this.#a; }
+
             //HSV code, also simple, but repetitive.
             #h = 0
             set h(value) {
@@ -282,7 +290,7 @@
             get v() { return this.#v; }
 
             updateForRGB() {
-                this.#hex = elemental.colorLib.RGBToHex({ r: this.r, g: this.g, b: this.b });
+                this.#hex = elemental.colorLib.RGBToHex({ r: this.r, g: this.g, b: this.b, a: this.a });
                 const { h, s, v } = elemental.colorLib.RGBToHSV({ r: this.r, g: this.g, b: this.b });
                 this.#h = h;
                 this.#s = s;
@@ -290,7 +298,7 @@
             }
 
             updateForHSV() {
-                this.#hex = elemental.colorLib.HSVToHex({ h: this.h, s: this.s, v: this.v });
+                this.#hex = elemental.colorLib.HSVToHex({ h: this.h, s: this.s, v: this.v, a: this.a });
                 const { r, g, b } = elemental.colorLib.HSVToRGB({ h: this.h, s: this.s, v: this.v });
                 this.#r = r;
                 this.#g = g;
@@ -342,16 +350,24 @@
     
     const thirdSlider = document.createElement("div");
     thirdSlider.className = "elemental-color-picker-slider";
+    
+    const alphaAdjust = document.createElement("div");
+    alphaAdjust.className = "elemental-color-picker-adjust elemental-color-picker-alphaAdjust";
+    
+    const alphaSlider = document.createElement("div");
+    alphaSlider.className = "elemental-color-picker-slider elemental-color-picker-alphaSlider";
 
     colorPickerSatBrightPicker.appendChild(colorPickerDragger);
 
     firstAdjust.appendChild(firstSlider);
     secondAdjust.appendChild(secondSlider);
     thirdAdjust.appendChild(thirdSlider);
+    alphaAdjust.appendChild(alphaSlider);
 
     colorPickerAdjustHolders.appendChild(firstAdjust);
     colorPickerAdjustHolders.appendChild(secondAdjust);
     colorPickerAdjustHolders.appendChild(thirdAdjust);
+    colorPickerAdjustHolders.appendChild(alphaAdjust);
 
     colorPickerContainer.appendChild(colorPickerSatBrightPicker);
     colorPickerContainer.appendChild(hueSlider);
@@ -366,12 +382,14 @@
             case "h": currentColor.h = value * 360; break;
             case "s": currentColor.s = value; break;
             case "v": currentColor.v = value; break;
+            case "a": currentColor.a = Math.floor(value * 255); break;
             case "hex": currentColor.hex = value; break;
         }
 
         firstSlider.style.setProperty("--x", `${currentColor.r / 2.55}%`);
         secondSlider.style.setProperty("--x", `${currentColor.g / 2.55}%`);
         thirdSlider.style.setProperty("--x", `${currentColor.b / 2.55}%`);
+        alphaSlider.style.setProperty("--x", `${currentColor.a / 2.55}%`);
 
         firstAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ r: 0, g: currentColor.g, b: currentColor.b }));
         firstAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ r: 255, g: currentColor.g, b: currentColor.b }));
@@ -382,10 +400,14 @@
         thirdAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ b: 0, r: currentColor.r, g: currentColor.g }));
         thirdAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ b: 255, r: currentColor.r, g: currentColor.g }));
 
-        firstSlider.style.setProperty("--color", currentColor.hex);
-        secondSlider.style.setProperty("--color", currentColor.hex);
-        thirdSlider.style.setProperty("--color", currentColor.hex);
-        colorPickerDragger.style.setProperty("--color", currentColor.hex);
+        const alphalessHex = elemental.colorLib.RGBToHex({ r: currentColor.r, g: currentColor.g, b: currentColor.b });
+        alphaAdjust.style.setProperty("--color", alphalessHex);
+
+        firstSlider.style.setProperty("--color", alphalessHex);
+        secondSlider.style.setProperty("--color", alphalessHex);
+        thirdSlider.style.setProperty("--color", alphalessHex);
+        alphaSlider.style.setProperty("--color", currentColor.hex);
+        colorPickerDragger.style.setProperty("--color", alphalessHex);
 
         colorPickerSatBrightPicker.style.setProperty("--color", elemental.colorLib.HSVToHex({ h: currentColor.h, s: 1, v: 1 }));
 
@@ -425,6 +447,7 @@
     firstSlider.onmousedown = (event) => sliderFunctionality(event, firstAdjust, "r");
     secondSlider.onmousedown = (event) => sliderFunctionality(event, secondAdjust, "g");
     thirdSlider.onmousedown = (event) => sliderFunctionality(event, thirdAdjust, "b");
+    alphaSlider.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "a");
 
     //Now for clicking off the actual prompt.
     let currentColorPicker, currentColor;
@@ -562,13 +585,14 @@
         .elemental-color-picker-adjustHolder {
             display: grid;
             grid-template-rows: 25% 25% 25% 25%;
+            margin: 2px 0px 2px 0px;
         }
 
         .elemental-color-picker-adjust  {
             --combinedLow: #000000;
             --color: #ff0000;
 
-            margin: 4px 4px 2px 2px;
+            margin: 2px;
             border: 2px #dfdfdf inset;
 
             overflow: hidden;
@@ -588,6 +612,11 @@
             background: linear-gradient(to right, var(--combinedLow) 0%, var(--color) 100%);
         }
 
+        .elemental-color-picker-alphaAdjust {
+            --color: #ffffff;
+            background: linear-gradient(to right, transparent 0%, var(--color) 100%), linear-gradient(to bottom, transparent 50%, #00000033 50%);
+        }
+
         .elemental-color-picker-slider {
             --color: #000000;
 
@@ -601,6 +630,10 @@
             transform: translate(-50%, 0%);
 
             background-color: var(--color);
+        }
+
+        .elemental-color-picker-alphaSlider {
+            background: linear-gradient(to top, var(--color) 0%, var(--color) 100%), linear-gradient(to bottom, #00000033 0%, transparent 100%)
         }
         `
     });
