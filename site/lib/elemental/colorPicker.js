@@ -281,7 +281,6 @@
             }
             get v() { return this.#v; }
 
-            
             updateForRGB() {
                 this.#hex = elemental.colorLib.RGBToHex({ r: this.r, g: this.g, b: this.b });
                 const { h, s, v } = elemental.colorLib.RGBToHSV({ r: this.r, g: this.g, b: this.b });
@@ -297,6 +296,16 @@
                 this.#g = g;
                 this.#b = b;
             }
+
+            //For some reason css doesn't support hsv? So just add simple hsl support.
+            get HSL() {
+                const l = Math.max(0, Math.min(1, this.v * (1 - (this.s / 2))));
+                return {
+                    h: this.h,
+                    s: (l == 0 || l == 1) ? 0 : (this.v  - l)/Math.min(l, 1-l),
+                    l: l
+                }
+            }
         }
     };
 
@@ -309,6 +318,9 @@
     
     const colorPickerDragger = document.createElement("div");
     colorPickerDragger.className = "elemental-color-picker-colorPickerDragger";
+
+    const hueSlider = document.createElement("div");
+    hueSlider.className = "elemental-color-picker-hueSlider";
     
     const colorPickerAdjustHolders = document.createElement("div");
     colorPickerAdjustHolders.className = "elemental-color-picker-adjustHolder";
@@ -342,6 +354,7 @@
     colorPickerAdjustHolders.appendChild(thirdAdjust);
 
     colorPickerContainer.appendChild(colorPickerSatBrightPicker);
+    colorPickerContainer.appendChild(hueSlider);
     colorPickerContainer.appendChild(colorPickerAdjustHolders);
 
     //For doing visual adjustments
@@ -378,6 +391,10 @@
 
         colorPickerDragger.style.setProperty("--x", `${currentColor.s * 100}%`);
         colorPickerDragger.style.setProperty("--y", `${(1 - currentColor.v) * 100}%`);
+
+        const { s, l } = currentColor.HSL;
+        hueSlider.style.setProperty("--saturation", `${s * 100}%`);
+        hueSlider.style.setProperty("--lightness", `${l * 100}%`);
     };
 
     const sliderFunctionality = (initEvent, parent, valueName) => {
@@ -426,6 +443,8 @@
         currentColorPicker = colorPicker;
         currentColor = new elemental.colorLib.color();
         currentColor.hex = colorPicker.value;
+        adjustSliders("no-op", 0);
+        
         window.addEventListener("mousedown", clickOff);
     };
 
@@ -487,7 +506,7 @@
             z-index: 9999;
 
             display: grid;
-            grid-template-columns: 50% 50%;
+            grid-template-columns: 50% 10% 40%;
         }
 
         .elemental-color-picker-satBrightPicker {
@@ -516,6 +535,28 @@
             transform: translate(-50%, -50%);
 
             background-color: var(--color);        
+        }
+        
+        .elemental-color-picker-hueSlider {
+            --saturation: 100%;
+            --lightness: 50%;
+
+            margin: 4px 2px 4px 0px;
+            border: 2px #dfdfdf inset;
+
+            background: linear-gradient(to bottom, 
+                hsla(0deg, var(--saturation), var(--lightness), 100%) 0%,
+                hsla(36deg, var(--saturation), var(--lightness), 100%) 10%,
+                hsla(72deg, var(--saturation), var(--lightness), 100%) 20%,
+                hsla(108deg, var(--saturation), var(--lightness), 100%) 30%,
+                hsla(144deg, var(--saturation), var(--lightness), 100%) 40%,
+                hsla(180deg, var(--saturation), var(--lightness), 100%) 50%,
+                hsla(216deg, var(--saturation), var(--lightness), 100%) 60%,
+                hsla(252deg, var(--saturation), var(--lightness), 100%) 70%,
+                hsla(288deg, var(--saturation), var(--lightness), 100%) 80%,
+                hsla(324deg, var(--saturation), var(--lightness), 100%) 90%,
+                hsla(360deg, var(--saturation), var(--lightness), 100%) 100%
+            );
         }
 
         .elemental-color-picker-adjustHolder {
