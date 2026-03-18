@@ -545,6 +545,7 @@
         <el>:active { border-style: inset; }
 
         .elemental-color-picker-container {
+            --scale: 1;
             --x: 0px;
             --y: 0px;
 
@@ -553,22 +554,32 @@
             left: var(--x);
 
             aspect-ratio: 2/1;
-            height: 96px;
+            height: 192px;
 
             background-color: #efefef;
-            border: 2px #dfdfdf outset;
+            border: 4px #dfdfdf outset;
 
             z-index: 9999;
 
             display: grid;
             grid-template-columns: 50% 10% 40%;
+
+            transform: translate(-50%, -50%) scale(var(--scale)) translate(50%, 50%);
+        }
+
+        @media screen and (max-width: 800px), (max-height: 800px) {
+            .elemental-color-picker-container { --scale: 0.5; }
+        }
+
+        @media screen and (min-width: 2000px) and (min-height: 2000px) {
+            .elemental-color-picker-container { --scale: 1.5; }
         }
 
         .elemental-color-picker-satBrightPicker {
             --color: #f00;
 
-            margin: 4px;
-            border: 2px #dfdfdf inset;
+            margin: 8px;
+            border: 4px #dfdfdf inset;
             background: linear-gradient(to top, #000 0%, transparent 100%), linear-gradient(to right, #fff 0%, var(--color) 100%);
         }
 
@@ -581,10 +592,10 @@
             left: var(--x);
             top: var(--y);
 
-            width: 10px;
-            height: 10px;
+            width: 20px;
+            height: 20px;
 
-            border: 2px #dfdfdf outset;
+            border: 4px #dfdfdf outset;
             border-radius: 100%;
 
             transform: translate(-50%, -50%);
@@ -596,8 +607,8 @@
             --saturation: 100%;
             --lightness: 50%;
 
-            margin: 4px 2px 4px 0px;
-            border: 2px #dfdfdf inset;
+            margin: 8px 4px 8px 0px;
+            border: 4px #dfdfdf inset;
 
             background: linear-gradient(to bottom, 
                 hsla(0deg, var(--saturation), var(--lightness), 100%) 0%,
@@ -617,15 +628,15 @@
         .elemental-color-picker-adjustHolder {
             display: grid;
             grid-template-rows: 25% 25% 25% 25%;
-            margin: 2px 0px 2px 0px;
+            margin: 4px 0px 4px 0px;
         }
 
         .elemental-color-picker-adjust  {
             --combinedLow: #000000;
             --color: #ff0000;
 
-            margin: 2px;
-            border: 2px #dfdfdf inset;
+            margin: 4px;
+            border: 4px #dfdfdf inset;
 
             overflow: hidden;
             display: block;
@@ -658,9 +669,9 @@
             left: var(--x);
             top: 0px;
 
-            width: 4px;
-            height: calc(100% - 4px);
-            border: 2px #dfdfdf outset;
+            width: 8px;
+            height: calc(100% - 8px);
+            border: 4px #dfdfdf outset;
 
             transform: translate(-50%, 0%);
 
@@ -676,8 +687,8 @@
             left: 0px;
             top: var(--x);
 
-            width: calc(100% - 4px);
-            height: 4px;
+            width: calc(100% - 8px);
+            height: 8px;
 
             transform: translate(0%, -50%);
         }
