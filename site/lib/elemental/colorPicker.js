@@ -481,6 +481,33 @@
     alphaSlider.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "alpha");
     hueAdjust.onmousedown = (event) => sliderFunctionality(event, hueAdjust, "hue");
 
+    colorPickerSatBrightPicker.onmousedown = (initEvent) => {
+        initEvent.stopPropagation();
+        initEvent.preventDefault();
+
+        const moveSlider = (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            //Get bounds and calculate new value
+            const { left, width, right, top, height, bottom } = colorPickerSatBrightPicker.getBoundingClientRect();
+            const percentageX = (Math.max(left, Math.min(event.clientX, right)) - left) / width;
+            const percentageY = 1 - ((Math.max(top, Math.min(event.clientY, bottom)) - top) / height);
+            adjustSliders("s", percentageX);
+            adjustSliders("v", percentageY);
+        }
+
+        const dropSlider = (event) => {
+            document.body.removeEventListener("mousemove", moveSlider);
+            document.body.removeEventListener("mouseup", dropSlider);
+            document.body.removeEventListener("mouseleave", dropSlider);
+        }
+
+        document.body.addEventListener("mousemove", moveSlider);
+        document.body.addEventListener("mouseup", dropSlider);
+        document.body.addEventListener("mouseleave", dropSlider);
+    };
+
     //Now for clicking off the actual prompt.
     let currentColorPicker, currentColor;
     const clickOff = (event) => {
