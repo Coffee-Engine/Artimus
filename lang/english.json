@@ -29,6 +29,7 @@
     "artimus.toolProperty.pixelBrush": "Pixelated",
     "artimus.toolProperty.respectTransparency": "Do Transparency",
     "artimus.toolProperty.pierceTransparency": "Pierce Transparency",
+    "artimus.toolProperty.clampToEdge": "Clamp to Edge",
 
     "artimus.toolProperty.font": "Font",
     "artimus.toolProperty.textSize": "Text Size",
