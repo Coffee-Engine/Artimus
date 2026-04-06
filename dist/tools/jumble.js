@@ -36,9 +36,10 @@ artimus.tools.jumble = class extends artimus.tool {
                 else jumbled.splice(0, 0, [i, sx, sy]); 
             }
 
-            for (let wy = 0; wy < jumbleSize; wy++) { for (let wx = 0; wx < jumbleSize; wx++) {
+            //Run the list back to front and jumble that shiz
+            for (let wy = 0; wy < ry; wy++) { for (let wx = 0; wx < rx; wx++) {
                 const [i1, sx, sy] = jumbled.pop();
-                const i2 = ((wy * jumbleSize) + wx) * 4;
+                const i2 = ((wy * rx) + wx) * 4;
 
                 const r1 = data[i1];
                 const g1 = data[i1 + 1];
@@ -70,14 +71,13 @@ artimus.tools.jumble = class extends artimus.tool {
         //I decided to make a happy little compromise between our ideas.
         else {
             for (let i = 0; i < jumbleSize * 2; i++) {
-                const x1 = artimus.iRandRange(0, jumbleSize);
-                const x2 = artimus.iRandRange(0, jumbleSize);
-                const y1 = artimus.iRandRange(0, jumbleSize);
-                const y2 = artimus.iRandRange(0, jumbleSize);
+                const i1 = artimus.iRandRange(0, data.length / 4) * 4;
+                const i2 = artimus.iRandRange(0, data.length / 4) * 4;
 
-                const i1 = (((y1) * jumbleSize) + x1) * 4;
-                const i2 = (((y2) * jumbleSize) + x2) * 4;
-
+                const x1 = (i % rx);
+                const y1 = Math.floor(i / rx);
+                const x2 = (i % rx);
+                const y2 = Math.floor(i / rx);
 
                 const r1 = data[i1];
                 const g1 = data[i1 + 1];
