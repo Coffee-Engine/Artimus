@@ -379,19 +379,37 @@ input[type=checkbox] {
     border-color: var(--artimus-background-3);
     border-style: solid;
     border-radius: 8px;
+    border-width: 2px;
 
     transition: 300ms background-color, 300ms border-color;
-}
-
-input[type=color] {
-    aspect-ratio: 1;
-    width: auto;
-    align-self: center;
 }
 
 input[type=checkbox]:checked { background-color: var(--artimus-text); }
 input[type=checkbox]:hover { background-color: var(--artimus-button-hover); }
 input[type="checkbox"]:hover:checked { background-color: var(--artimus-button-selected); }
+
+color-picker {
+    align-self: center;
+
+    display: block;
+
+    width: auto;
+    height: 1.5em;
+    aspect-ratio: 1;
+    
+    color: var(--artimus-text);
+
+    border-color: var(--artimus-background-3);
+    border-style: solid;
+    border-radius: 8px;
+    border-width: 2px;
+
+    transition: 300ms background-color, 300ms border-color;
+}
+
+color-picker:checked { border-color: var(--artimus-text); }
+color-picker:hover { border-color: var(--artimus-button-hover); }
+color-picker:hover:checked { border-color: var(--artimus-button-selected); }
 
 .CUGI-artimus-font {
     color: var(--artimus-text);

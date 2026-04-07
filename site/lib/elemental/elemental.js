@@ -127,7 +127,7 @@ SOFTWARE.
     }
 
     elemental.styleElement = document.createElement("style");
-    document.head.appendChild(elemental.styleElement);
+    document.head.insertBefore(elemental.styleElement, document.head.children[0]);
 })();
 }
 /*  2 : dist/colorPicker.js  */
@@ -1432,14 +1432,14 @@ SOFTWARE.
     elemental.newElement("Color Picker", {
         class: class extends HTMLElement {
             // "isgradient" is moreso for css
-            static observedAttributes = ["value", "gradient", "alpha", "swatch", "isgradient"];
+            static observedAttributes = ["value", "gradient", "alpha", "swatch", "isgradient", "disabled"];
 
             #fromUpdate = false;
 
             gradientIndex = 0;
 
             set value(value) {
-                this.style.setProperty("--color", value)
+                this.style.setProperty("--color", value);
                 //Update colors if the source of the value being set is not from the update.
                 if (!this.#fromUpdate) {
                     //Make sure value is valid
@@ -1464,10 +1464,10 @@ SOFTWARE.
                 }
                 else {
                     this.setAttribute("value", value);
+
+                    //Dispatch the change event.
+                    if (!this.hasAttribute("disabled") || this.getAttribute("disabled") == "false") this.dispatchEvent(new Event("change"));
                 }
-                
-                //Dispatch the change event.
-                this.dispatchEvent(new Event("change"));
             }
             get value() {
                 if (this.hasAttribute("value")) return this.getAttribute("value");
@@ -1480,7 +1480,7 @@ SOFTWARE.
             //Attributes!!!
             //Remove or add gradient depending on fields.
             set gradient(value) {
-                if (value) this.setAttribute("gradient", "true");
+                if (value) this.setAttribute("gradient", "");
                 else if (this.hasAttribute("gradient")) this.removeAttribute("gradient");
             }
 
@@ -1488,7 +1488,7 @@ SOFTWARE.
 
             //Remove or add alpha depending on fields.
             set alpha(value) {
-                if (value) this.setAttribute("alpha", "true");
+                if (value) this.setAttribute("alpha", "");
                 else if (this.hasAttribute("alpha")) this.removeAttribute("alpha");
             }
 
@@ -1509,15 +1509,25 @@ SOFTWARE.
 
             get swatch() { return this.hasAttribute("alpha"); }
 
+            //disable depending on fields.
+            set disabled(value) {
+                if (value) this.setAttribute("disabled", "");
+                else if (this.hasAttribute("disabled")) this.removeAttribute("disabled");
+            }
+
+            get disabled() { return this.hasAttribute("disabled"); }
+
             //Now for the actual code for the element
             constructor() {
                 super();
                 
                 //On click popup
-                this.onclick = () => {
+                this.addEventListener("click", () => {
+                    if (this.hasAttribute("disabled") && this.getAttribute("disabled") != "false") return;
+
                     const clientRect = this.getBoundingClientRect();
                     this.createPopup(clientRect.left, clientRect.top);
-                }
+                });
 
                 //Now setup our listener functions for when we are popped up.
                 const self = this;
