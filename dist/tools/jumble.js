@@ -1,18 +1,27 @@
 artimus.tools.jumble = class extends artimus.tool {
     get icon() { return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="153.92384" height="153.92384" viewBox="0,0,153.92384,153.92384"><g transform="translate(-163.03808,-103.03808)"><g stroke-miterlimit="10"><path d="M294.42454,152.19081c0,0 -12.56477,0.64938 -39.90761,1.06787c-13.99108,0.21413 -15.47284,55.35862 -28.33588,55.31166c-20.49912,-0.07486 -40.60558,-0.05202 -40.60558,-0.05202" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/><path d="M285.90245,134.89291l17.04418,17.04417l-17.04418,17.04418z" fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linecap="butt"/><path d="M294.42454,207.80919c0,0 -12.56477,-0.64938 -39.90762,-1.06787c-0.75384,-0.01154 -1.47136,-0.18254 -2.1563,-0.49578" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/><path d="M228.07626,151.84432c-0.60388,-0.27388 -1.23454,-0.41707 -1.89523,-0.41466c-20.49912,0.07486 -40.60557,0.05203 -40.60557,0.05203" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/><path d="M285.90245,189.87722l17.04418,17.04417l-17.04418,17.04418z" fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linecap="butt"/><path d="M163.03808,256.96192v-153.92384h153.92384v153.92384z" fill="none" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg><!--rotationCenter:76.96192039595141:76.96192039595137-->'; }
     
-    jumblePixelsAt(gl, x, y, { jumbleSize, jumbleWholeSquare, mix }) {
+    clampXY(x, y, clampToEdge) {
+        if (clampToEdge) return [ 
+            Math.min(Math.max(0, x), this.workspace.width - 1), 
+            Math.min(Math.max(0, y), this.workspace.height - 1)
+        ];
+        else return [ x, y ];
+    }
+
+    jumblePixelsAt(gl, x, y, { jumbleSize, jumbleWholeSquare, mix, clampToEdge }) {
         //Calculations
         const halfSize = Math.floor(jumbleSize / 2);
-        const rx = x - halfSize;
-        const ry = y - halfSize;
+        const [sx, sy] = this.clampXY(x - halfSize, y - halfSize, clampToEdge);
+        const [ex, ey] = this.clampXY(x + halfSize, y + halfSize, clampToEdge);
+        const [rx, ry] = [ Math.max(1, ex - sx), Math.max(1, ey - sy) ];
 
-        const imageData = gl.getImageData(rx, ry, jumbleSize, jumbleSize);
+        const imageData = gl.getImageData(sx, sy, rx, ry);
         const data = imageData.data;
 
         //Detection for selection, since we do this a lot it's good to have this.
         const insideSelection = (this.workspace.hasSelection) ? 
-            (x, y) => this.inSelection(gl, x + rx, y + ry) :
+            (x, y) => this.inSelection(gl, x + sx, y + sy) :
             () => true;
 
         //For my jumble, whole square
@@ -27,9 +36,10 @@ artimus.tools.jumble = class extends artimus.tool {
                 else jumbled.splice(0, 0, [i, sx, sy]); 
             }
 
-            for (let wy = 0; wy < jumbleSize; wy++) { for (let wx = 0; wx < jumbleSize; wx++) {
+            //Run the list back to front and jumble that shiz
+            for (let wy = 0; wy < ry; wy++) { for (let wx = 0; wx < rx; wx++) {
                 const [i1, sx, sy] = jumbled.pop();
-                const i2 = ((wy * jumbleSize) + wx) * 4;
+                const i2 = ((wy * rx) + wx) * 4;
 
                 const r1 = data[i1];
                 const g1 = data[i1 + 1];
@@ -61,14 +71,13 @@ artimus.tools.jumble = class extends artimus.tool {
         //I decided to make a happy little compromise between our ideas.
         else {
             for (let i = 0; i < jumbleSize * 2; i++) {
-                const x1 = artimus.iRandRange(0, jumbleSize);
-                const x2 = artimus.iRandRange(0, jumbleSize);
-                const y1 = artimus.iRandRange(0, jumbleSize);
-                const y2 = artimus.iRandRange(0, jumbleSize);
+                const i1 = artimus.iRandRange(0, data.length / 4) * 4;
+                const i2 = artimus.iRandRange(0, data.length / 4) * 4;
 
-                const i1 = (((y1) * jumbleSize) + x1) * 4;
-                const i2 = (((y2) * jumbleSize) + x2) * 4;
-
+                const x1 = (i % rx);
+                const y1 = Math.floor(i / rx);
+                const x2 = (i % rx);
+                const y2 = Math.floor(i / rx);
 
                 const r1 = data[i1];
                 const g1 = data[i1 + 1];
@@ -96,7 +105,7 @@ artimus.tools.jumble = class extends artimus.tool {
             }
         }
 
-        gl.putImageData(imageData, rx, ry);
+        gl.putImageData(imageData, sx, sy);
     }
 
     mouseDown(gl, x, y, toolProperties) { this.jumblePixelsAt(gl, x, y, toolProperties); }
@@ -120,12 +129,14 @@ artimus.tools.jumble = class extends artimus.tool {
     CUGI(artEditor) { return [
         { target: artEditor.toolProperties, key: "jumbleSize", type: "int", min: 1 },
         { target: artEditor.toolProperties, key: "jumbleWholeSquare", type: "boolean" },
+        { target: artEditor.toolProperties, key: "clampToEdge", type: "boolean" },
         { target: artEditor.toolProperties, key: "mix", type: "slider", min: 0, max: 1, step: 0.05 },
     ]}
 
     properties = {
         jumbleSize: 10,
         jumbleWholeSquare: false,
+        clampToEdge: false,
         mix: 1,
     }
 }
