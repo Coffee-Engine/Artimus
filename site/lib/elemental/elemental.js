@@ -1432,7 +1432,7 @@ SOFTWARE.
     elemental.newElement("Color Picker", {
         class: class extends HTMLElement {
             // "isgradient" is moreso for css
-            static observedAttributes = ["value", "gradient", "alpha", "isgradient"];
+            static observedAttributes = ["value", "gradient", "alpha", "swatch", "isgradient"];
 
             #fromUpdate = false;
 
@@ -1473,6 +1473,39 @@ SOFTWARE.
             #mouseDownFunc;
             spawnedModules = [];
 
+            //Attributes!!!
+            //Remove or add gradient depending on fields.
+            set gradient(value) {
+                if (value) this.setAttribute("gradient", "true");
+                else if (this.hasAttribute("gradient")) this.removeAttribute("gradient");
+            }
+
+            get gradient() { return this.hasAttribute("gradient"); }
+
+            //Remove or add alpha depending on fields.
+            set alpha(value) {
+                if (value) this.setAttribute("alpha", "true");
+                else if (this.hasAttribute("alpha")) this.removeAttribute("alpha");
+            }
+
+            get alpha() { return this.hasAttribute("alpha"); }
+
+            //Customize swatch depending on field.
+            set swatch(value) {
+                if (value) {
+                    this.setAttribute("swatch", "");
+                    
+                    //Determine if we need special handling
+                    if (Array.isArray(value)) this.setAttribute("swatch", value.join(", "));
+                    //If it is a string and maybe contains a color, add it.
+                    else if (typeof value == "string" && value.includes("#")) this.setAttribute("swatch", value);
+                }
+                else if (this.hasAttribute("swatch")) this.removeAttribute("swatch");
+            }
+
+            get swatch() { return this.hasAttribute("alpha"); }
+
+            //Now for the actual code for the element
             constructor() {
                 super();
                 
