@@ -66,3 +66,74 @@
 .elemental-color-picker-satValueSlider:hover {
     border: var(--artimus-background-2) 4px solid;
 }
+
+/* Fix gradient buttons */
+.elemental-color-picker-gradient-button {
+    background: var(--artimus-button-normal);
+    border: var(--artimus-background-3) 2px solid;
+
+    border-radius: 8px;
+
+    transition: 300ms background;
+}
+
+.elemental-color-picker-gradient-button:hover {
+    background: var(--artimus-button-hover);
+}
+
+.elemental-color-picker-gradient-button:active {
+    background: var(--artimus-button-click);
+    border: var(--artimus-background-3) 2px solid;
+    transition: 0ms background;
+}
+
+.elemental-color-picker-gradient-mode {
+    --gradientColor: var(--artimus-icon);
+
+    background: var(--artimus-background-1);
+    border: var(--artimus-background-3) 2px solid;
+    border-radius: 2px;
+
+    transition: 300ms border-radius;
+}
+
+.elemental-color-picker-gradient-mode:hover {
+    border-radius: 25%;
+}
+
+.elemental-color-picker-gradient-mode:active {
+    border-radius: 0px;
+    transition: 0ms border-radius;
+}
+
+.elemental-color-picker-gradient-mode-selected {
+    background: var(--artimus-button-click);
+    --gradientColor: var(--artimus-button-click);
+}
+
+/* Angle selector, and gradient picker for the color picker */
+.elemental-color-picker-gradient-angle-selector {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+.elemental-color-picker-gradient-display {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+.elemental-color-picker-gradient-point {
+    border: var(--artimus-button-normal) 4px solid;
+    transition: 300ms border;
+}
+
+.elemental-color-picker-gradient-point-selected {
+    border: var(--artimus-button-selected) 4px solid;
+}
+
+.elemental-color-picker-gradient-point:hover {
+    border: var(--artimus-button-hover) 4px solid;
+}
+
+.elemental-color-picker-gradient-point:active {
+    border: var(--artimus-button-click) 4px solid;
+    transition: 0ms border;
+}

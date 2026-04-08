@@ -125,6 +125,7 @@
     "artimus.modal.settings.category.general": "General",
     "artimus.modal.settings.category.theme": "Theme",
     "artimus.modal.settings.category.hotkeys": "Hotkeys",
+    "artimus.modal.settings.category.palettes": "Palettes",
     "artimus.modal.settings.category.extensions": "Extensions",
 
     "artimus.modal.settings.general.maxHistory": "History Length",
@@ -195,6 +196,10 @@
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",
+
+    "artimus.modal.settings.palettes.create": "New Palette",
+    "artimus.modal.settings.palettes.import": "Load Palette",
+    "artimus.modal.settings.palettes.importLospec": "Import from Lospec",
 
     "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
     "artimus.modal.settings.extensions.add": "+",

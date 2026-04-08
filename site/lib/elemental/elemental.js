@@ -2004,15 +2004,15 @@ SOFTWARE.
         }
 
         <pr>gradient-mode-linear {
-            background: linear-gradient(to right, transparent 0%, var(--gradientColor) 100%);
+            background: linear-gradient(to right, transparent 0%, var(--gradientColor) 100%) !important;
         }
 
         <pr>gradient-mode-radial {
-            background: radial-gradient(at center, var(--gradientColor) 0%, transparent 100%);
+            background: radial-gradient(at center, var(--gradientColor) 0%, transparent 100%) !important;
         }
 
         <pr>gradient-mode-conic {
-            background: conic-gradient(at center, var(--gradientColor) 0%, transparent 100%);
+            background: conic-gradient(at center, var(--gradientColor) 0%, transparent 100%) !important;
         }
 
         <pr>gradient-display {

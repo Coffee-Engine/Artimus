@@ -25,7 +25,8 @@ editor.settings = {
     customCSSCode: "",
 
     hotkeys: {...artimus.hotkeys},
-    extensions: []
+    extensions: [],
+    palettes: [],
 };
 
 editor.fileReader = new FileReader();
@@ -181,6 +182,9 @@ editor.settingDefs = {
     //Hotkeys are complex, so we use a function instead of a cugi menu.
     hotkeys: { function: editor.hotkeyMenu, onchange: () => {
         artimus.hotkeys = editor.settings.hotkeys;
+        editor.saveSettings();
+    }},
+    palettes: { function: editor.paletteMenu, onchange: () => {
         editor.saveSettings();
     }},
     extensions: { function: editor.extensionMenu, onchange: () => {
