@@ -22,7 +22,5 @@ editor.paletteMenu = (container, translationKey, onchange) => {
 
     container.appendChild(paletteTopHolder);
 
-    lospecPalette.onclick = () => {
-        
-    }
+    lospecPalette.onclick = () => { editor.lospecMenu(); }
 }

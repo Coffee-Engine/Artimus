@@ -220,6 +220,9 @@
     ],
     "artimus.modal.settings.extensions.reload": "Reload",
 
+    "artimus.modal.lospec.title": "Import from Lospec",
+    "artimus.modal.lospec.placeholder": "Type the palette's name or ID here!",
+
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
     "artimus.modal.exportFile.formatDescription.png": "A well supported transparent image format with a small file size",
