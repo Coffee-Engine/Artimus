@@ -569,6 +569,7 @@ window.artimus = {
     workspace: class {
         events = [
             "redraw",
+            "tick",
             "import",
             "importLocal",
             "export",
@@ -1293,6 +1294,9 @@ window.artimus = {
                 
                 this.GL.drawArrays(this.GL.LINE_STRIP, 0, (this.selection.length / 2) + 1);
             }
+
+            //Send the tick event
+            this.sendEvent("tick", { delta: delta, time: this.time, bounds: this.viewBounds });
         }
 
         renderComposite(bounds) {

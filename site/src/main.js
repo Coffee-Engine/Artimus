@@ -12,9 +12,6 @@ window.editor = {
         height: 240
     },
 
-    popup: document.getElementById("popupContent"),
-    popupTitle: document.getElementById("popupTitle"),
-
     language: { "artimus.layer.layer#": "Layer #" },
     englishFallback: {},
 
@@ -206,22 +203,18 @@ window.editor = {
             editor.startExtension(editor.settings.extensions[idx]);
         }
 
-        //Debugger loop
-        const loop = () => {
+        editor.workspace.addEventListener("tick", () => {
             if (editor.settings.debug && editor.versionIdentifier) {
                 //Timing
                 editor.versionIdentifier.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
                 //Canvas
-                editor.versionIdentifier.innerText += ` ud: ${editor.workspace.layerHistory.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
+                editor.versionIdentifier.innerText += ` ud: ${editor.workspace.history.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
 
                 if (editor.workspace.tool) editor.versionIdentifier.innerText = editor.versionIdentifier.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
                 else editor.versionIdentifier.innerText += ` || t: none`;
                 editor.versionIdentifier.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
             }
-            requestAnimationFrame(loop);
-        }
-
-        loop();
+        })
     }
 };
 

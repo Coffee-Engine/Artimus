@@ -1,0 +1,68 @@
+.elemental-color-picker-container {
+    background: var(--artimus-background-1);
+    
+    border: var(--artimus-background-3) 4px solid;
+    border-radius: 8px;
+}
+
+.elemental-color-picker-confirmation-container {
+    padding: 4px
+}
+
+.elemental-color-picker-confirmation-hex {
+    background: var(--artimus-background-2);
+    border: var(--artimus-background-3) 2px solid;
+
+    margin-right: 8px;
+}
+
+/* Dumb button */
+.elemental-color-picker-confirmation-done-button {    
+    background: var(--artimus-background-2);
+    border: var(--artimus-background-3) 2px solid;
+    border-radius: 8px;
+
+    transition: 300ms background-color;
+}
+
+.elemental-color-picker-confirmation-done-button:hover {
+    background-color: var(--artimus-button-hover);
+    border: var(--artimus-background-3) 2px solid;
+}
+
+.elemental-color-picker-confirmation-done-button:active {
+    background-color: var(--artimus-button-click);
+    border: var(--artimus-background-3) 2px solid;
+    transition: 0ms background-color;
+}
+
+/* The selectors */
+.elemental-color-picker-satBrightPicker {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+/* Need to fix the two adjusts */
+.elemental-color-picker--adjust {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+.elemental-color-picker-adjust {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+.elemental-color-picker-slider {
+    border: var(--artimus-background-3) 4px solid;
+    transition: 300ms border-color;
+}
+
+.elemental-color-picker-slider:hover {
+    border: var(--artimus-background-2) 4px solid;
+}
+
+.elemental-color-picker-satValueSlider {
+    border: var(--artimus-background-3) 4px solid;
+}
+
+.elemental-color-picker-satValueSlider:hover {
+    border: var(--artimus-background-2) 4px solid;
+}
