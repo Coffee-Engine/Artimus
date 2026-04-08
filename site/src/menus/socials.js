@@ -1,4 +1,4 @@
-editor.creditsMenu = () => {
+editor.socialsMenu = () => {
     new editor.modal(artimus.translate("socials.title", "modal"), (content, modal) => {
         const addSocial = (type, url, icon) => {
             const dServer = document.createElement("a");

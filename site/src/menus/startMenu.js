@@ -93,7 +93,7 @@ editor.startMenu = {
             const socials = document.createElement('button');
             socials.className = "artimus-button";
             socials.innerText = artimus.translate("ready.socials", "modal");
-            socials.onclick = () => { editor.creditsMenu(); }
+            socials.onclick = () => { editor.socialsMenu(); }
 
             recentFiles.appendChild(recentText);
             recentFiles.appendChild(recentList);
