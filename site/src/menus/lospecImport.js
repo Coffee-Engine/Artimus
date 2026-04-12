@@ -5,16 +5,66 @@ editor.lospecMenu = () => {
         input.type = "text";
         input.placeholder = artimus.translate("lospec.title", "modal");
 
-        const debugInf = document.createElement('p');
+        //Make the display for the palette
+        const previewContainer = document.createElement("div");
+        previewContainer.className = "lospec-previewContainer";
+
+        //Preview information
+        const paletteInformation = document.createElement("div");
+        paletteInformation.className = "lospec-previewInformation";
+
+        const paletteName = document.createElement("p");
+        paletteName.className = "lospec-previewGame";
+
+        const colorCount = document.createElement("p");
+        colorCount.className = "lospec-previewCount";
+
+        const authorName = document.createElement("p");
+        authorName.className = "lospec-previewAuthor";
+
+        // Color preview
+        const paletteDisplay = document.createElement("div");
+        paletteDisplay.className = "lospec-previewDisplay"
+
+        //Add information
+        paletteInformation.appendChild(paletteName);
+        paletteInformation.appendChild(colorCount);
+        paletteInformation.appendChild(authorName);
+
+        previewContainer.appendChild(paletteInformation);
+        previewContainer.appendChild(paletteDisplay);
 
         content.appendChild(input);
-        content.appendChild(debugInf);
+        content.appendChild(previewContainer);
 
         const paletteJSONRetrieved = (text) => {
             const json = JSON.parse(text);
 
-            console.log(json);
-            debugInf.innerText = `${json.name || "palette"}\nby: ${json.author}\n with ${json.colors.length} colours\n\n${json.colors.join(", ")}`;
+            const name = json.name || "palette";
+            const author = json.author || "author";
+            const colors = (json.colors || ["#ff00ff"]).map((val) => `#${val}`);
+
+            paletteName.innerText = name;
+            colorCount.innerText = colors.length;
+            authorName.innerText = author;
+
+            //Figure out the palette display;
+            if (colors.length == 1) paletteDisplay.style.setProperty("--palette", colors[0]);
+            else {
+                let paletteGradient = "linear-gradient(90deg";
+                const paletteStep = 1 / colors.length;
+
+                //Now create the gradient
+                let step = 0;
+                for (let i=0;i<colors.length - 1;i++) {
+                    step += paletteStep;
+                    paletteGradient += `, ${colors[i]} ${step * 100}%, ${colors[i + 1]} ${step * 100}%`;
+                }
+
+                paletteGradient += ")";
+
+                paletteDisplay.style.setProperty("--palette", paletteGradient);
+            }
         }
 
         //Add functionality
