@@ -222,6 +222,10 @@
 
     "artimus.modal.lospec.title": "Import from Lospec",
     "artimus.modal.lospec.placeholder": "Type the palette's name or ID here!",
+    "artimus.modal.lospec.colors": "[count] colors",
+    "artimus.modal.lospec.by": "by : [author]",
+    "artimus.modal.lospec.placeholder.author": "Author Unknown",
+    "artimus.modal.lospec.placeholder.name": "Unknown",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",

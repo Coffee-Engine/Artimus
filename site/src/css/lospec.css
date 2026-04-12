@@ -1,14 +1,43 @@
+.lospec-paletteInput {
+    width: calc(100% - 16px);
+    text-align: center;
+}
+
 .lospec-previewContainer {
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto auto 1fr;
 }
 
 .lospec-previewInformation {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 }
 
 .lospec-previewDisplay {
-    --palette: #ff00ff;
+    --palette: linear-gradient(90deg, #ff00ff 50%, #000000 50%);
+    margin: 4px;
+
     background: var(--palette);
+    border: 2px var(--artimus-background-3) solid;
+    border-radius: 8px;
+
+    min-height: 16px;
+}
+
+.lospec-information {
+    margin: 0px;
+    padding: 4px;
+    border-top: 4px var(--artimus-background-3) solid;
+}
+
+.lospec-previewAuthor {
+    padding-bottom: 0px;
+}
+
+.lospec-previewName {
+    border-right: 2px var(--artimus-background-3) solid;
+}
+
+.lospec-previewCount {
+    border-left: 2px var(--artimus-background-3) solid;
 }
