@@ -1,6 +1,9 @@
 window.artimus = {
     //Just a small performance thing to prevent un-needed function alls while copying
     clipboardMagic: "H_ARTIMUS",
+    magic: Array.from("COFE", char => String(char).charCodeAt(0)),
+    jsonMagic: Array.from("JSON", char => String(char).charCodeAt(0)),
+
     hexArray: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ],
 
     windRule: "evenodd",
@@ -770,8 +773,6 @@ window.artimus = {
         //Objects and data needed for the artimus format
         tEncoder = new TextEncoder();
         tDecoder = new TextDecoder();
-        magic = Array.from("COFE", char => String(char).charCodeAt(0));
-        jsonMagic = Array.from("JSON", char => String(char).charCodeAt(0));
 
         webgl = { shaders: {}, positionBuffer: null, selectionBuffer: null, compositeTexture: null, previewTexture: null, hiddenTexture: null };
 
@@ -3150,10 +3151,10 @@ window.artimus = {
 
             //Make sure it is an artimus image
             if (
-                data[0] == this.magic[0] &&
-                data[1] == this.magic[1] &&
-                data[2] == this.magic[2] &&
-                data[3] == this.magic[3]
+                data[0] == artimus.magic[0] &&
+                data[1] == artimus.magic[1] &&
+                data[2] == artimus.magic[2] &&
+                data[3] == artimus.magic[3]
             ) {
                 const handleImport = () => {
                     //Calculate size based upon the Tri-fecta.
@@ -3197,10 +3198,10 @@ window.artimus = {
                     });
 
                     if (
-                        data[idx + 1] == this.jsonMagic[0] &&
-                        data[idx + 2] == this.jsonMagic[1] &&
-                        data[idx + 3] == this.jsonMagic[2] &&
-                        data[idx + 4] == this.jsonMagic[3]
+                        data[idx + 1] == artimus.jsonMagic[0] &&
+                        data[idx + 2] == artimus.jsonMagic[1] &&
+                        data[idx + 3] == artimus.jsonMagic[2] &&
+                        data[idx + 4] == artimus.jsonMagic[3]
                     ) {
                         idx += 4;
                         
@@ -3240,7 +3241,7 @@ window.artimus = {
                 //Height : 3 bytes
                 //Layers : 2 bytes
                 let data = new Array(
-                    ...this.magic,
+                    ...artimus.magic,
                     4,
                     
                     //Conver both width and height into their 3 byte components
@@ -3305,7 +3306,7 @@ window.artimus = {
                 }
 
                 data.push(
-                    ...this.jsonMagic,
+                    ...artimus.jsonMagic,
 
                     ...this.tEncoder.encode(JSON.stringify(this.projectStorage))
                 )
