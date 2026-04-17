@@ -25,7 +25,12 @@ editor.lospecMenu = () => {
 
         // Color preview
         const paletteDisplay = document.createElement("div");
-        paletteDisplay.className = "lospec-previewDisplay"
+        paletteDisplay.className = "lospec-previewDisplay";
+
+        //Finally the final button
+        const addPalette = document.createElement("button");
+        addPalette.className = "artimus-button settings-paletteAdd";
+        addPalette.innerText = artimus.translate("lospec.add", "modal");
 
         //Add information
         paletteInformation.appendChild(paletteName);
@@ -37,6 +42,7 @@ editor.lospecMenu = () => {
 
         content.appendChild(input);
         content.appendChild(previewContainer);
+        content.appendChild(addPalette);
 
         const paletteJSONRetrieved = (text) => {
             const json = JSON.parse(text);
@@ -86,5 +92,5 @@ editor.lospecMenu = () => {
                 paletteJSONRetrieved("{}");
             });
         }
-    }, { height: 30 });
+    }, { height: 16  });
 }

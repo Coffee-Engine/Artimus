@@ -224,6 +224,7 @@
     "artimus.modal.lospec.placeholder": "Type the palette's name or ID here!",
     "artimus.modal.lospec.colors": "[count] colors",
     "artimus.modal.lospec.by": "by : [author]",
+    "artimus.modal.lospec.add": "Add Palette",
     "artimus.modal.lospec.placeholder.author": "Author Unknown",
     "artimus.modal.lospec.placeholder.name": "Unknown",
 
