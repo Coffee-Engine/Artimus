@@ -1,4 +1,15 @@
 editor.paletteMenu = (container, translationKey, onchange) => {
+    //For inputting files
+    const fileReader = new FileReader();
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    
+    fileReader.onload = () => {
+        fileReader.result();
+    }
+    fileInput.onchange = () => fileReader.readAsText(fileInput.files[0]);
+
+    //The actual UI element.
     container.className = "settings-paletteMenu";
 
     //Create the initial buttons to create and import palettes
@@ -22,5 +33,6 @@ editor.paletteMenu = (container, translationKey, onchange) => {
 
     container.appendChild(paletteTopHolder);
 
+    importPalette.onclick = () => fileInput.click();
     lospecPalette.onclick = () => { editor.lospecMenu(); }
 }
