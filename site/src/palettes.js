@@ -1,4 +1,14 @@
 editor.palettes = {
+    palette: class {
+        name = "???";
+        author = "???";
+        originalFormat = "";
+        
+        colors = [];
+
+        toString() { return this.colors.join(","); }
+    },
+
     formats: [
         //Paint.NET Palette.
         {
@@ -6,7 +16,7 @@ editor.palettes = {
             identifier: "Paint.NET",
             
             //The code portion
-            condition: (text, file) => text.startsWith(";paint.net Palette File"),
+            condition: (text) => text.startsWith(";paint.net Palette File"),
             import: (text, paletteObject) => {
                 //Split the file by lines and ready the colors array
                 const split = text.split("\n");
@@ -37,7 +47,7 @@ editor.palettes = {
             identifier: "JASC Pal",
             
             //The code portion
-            condition: (text, file) => text.startsWith("JASC-PAL\n0100\n"),
+            condition: (text) => text.startsWith("JASC-PAL\n0100\n"),
             import: (text, paletteObject) => {
                 //Split the file by lines and ready the colors array
                 const split = text.split("\n");
@@ -75,7 +85,7 @@ editor.palettes = {
             identifier: "GIMP",
             
             //The code portion
-            condition: (text, file) => text.startsWith("GIMP Palette"),
+            condition: (text) => text.startsWith("GIMP Palette"),
             import: (text, paletteObject) => {
                 //Split the file by lines and ready the colors array
                 const split = text.split("\n");
@@ -84,7 +94,16 @@ editor.palettes = {
                 for (let i=1;i<split.length;i++) {
                     const line = split[i];
 
-                    if (line.startsWith("#")) continue;
+                    //Support for GIMP 2.0 naming format
+                    if (i == 1 && line.startsWith("Name:")) {
+                        paletteObject.name = line.replace("#Palette Name:", "").trim();
+                        continue;
+                    }
+
+                    //Filter out comments and find important ones from Lo-Spec
+                    if (line.startsWith("#")) {
+                        if (line.startsWith("#Palette Name:")) paletteObject.name = line.replace("#Palette Name:", "").trim();
+                    }
                     else {
                         //Fetch the colors;
                         let color = line.toLowerCase().trim();
@@ -114,5 +133,46 @@ editor.palettes = {
                 return paletteObject;
             }
         },
-    ]
+        //hex file
+        {
+            fileFormat: "text",
+            identifier: "HEX",
+            
+            //The code portion
+            condition: (text) => !isNaN(Number(`0x${text.replaceAll(/\s/g, "")}`)),
+            import: (text, paletteObject) => {
+                //Split the file by lines and ready the colors array
+                const split = text.trim("\n").toLowerCase().split("\n");
+
+                //Return the final product
+                paletteObject.colors = split.reduce((acc, val) => {
+                    val = val.trim();
+                    //Filter out small possibilities.
+                    if (val && (val.length == 6 || val.length == 8)) {
+                        //Filter out oddities.
+                        if (val.replaceAll(/[^\dabcdef]/g, "").length == val.length) acc.push(`#${val}`);
+                    }
+
+                    return acc;
+                }, []);
+
+                return paletteObject;
+            }
+        },
+    ],
+
+    fromText: (data) => {
+        const palette = new editor.palettes.palette();
+        const formats = editor.palettes.formats;
+
+        for (let i=0; i<formats.length; i++) {
+            if (formats[i].condition(data)) {
+                formats[i].import(data, palette);
+                palette.originalFormat = formats[i].identifier;
+                break;
+            }
+        }
+
+        console.log(palette);
+    }
 }
