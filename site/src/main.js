@@ -319,4 +319,7 @@ editor.storageReady = async () => {
             editor.languageMenu(true);
         })
     }
+
+    //Get the default palettes.
+    editor.palettes.getDefaultPalettes();
 }

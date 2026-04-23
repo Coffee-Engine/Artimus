@@ -6,7 +6,7 @@ editor.paletteMenu = (container, translationKey, onchange) => {
     
     fileReader.onload = () => {
         const palette = editor.palettes.fromText(fileReader.result);
-        console.log(palette);
+        editor.palettes.savePalette(palette);
     }
     fileInput.onchange = () => fileReader.readAsText(fileInput.files[0]);
 

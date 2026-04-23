@@ -9,6 +9,15 @@ editor.palettes = {
         colors = [];
 
         toString() { return this.colors.join(","); }
+        toJSON() {
+            return {
+                name: this.name,
+                author: this.author,
+                source: this.source,
+                url: this.url,
+                colors: this.colors,
+            }
+        }
     },
 
     formats: [
@@ -197,5 +206,62 @@ editor.palettes = {
         })
 
         return palette;
+    },
+
+    savePalette: (palette) => {
+        //Make sure we have a palette
+        if (!palette instanceof editor.palettes.palette) return;
+        editor.paletteStorage.setKey(`palette ${palette.name}`, palette.toJSON());
+    },
+
+    getPalette: (palette) => {
+        //Get the palette object back.
+        return new Promise(async (resolve) => {
+            resolve(editor.palettes.fromJSON(await editor.paletteStorage.getKey(`palette ${palette}`)));
+        })
+    },
+
+    getPalettes: () => {
+        return new Promise(async (resolve) => resolve((await editor.paletteStorage.getKeys()).reduce((acc, key) => {
+            if (key.startsWith("palette ")) acc.push(key.replace("palette ", ""));
+            return acc;
+        }, [])));
+    },
+
+    getDefaultPalettes: () => {
+        //Check to see if we have a palettes list, if not fetch the default palettes
+        editor.paletteStorage.getKey("default palettes").then(async (res) => {
+            //If we fail the check fetch the palettes.json
+            if (!res) {
+                const listText = await fetch("site/paletteList.json").then(result => result.text());
+                let parsedJSON;
+
+                //Try to parse the json we get
+                try { parsedJSON = JSON.parse(listText); } 
+                catch (error) {}
+
+                //If we fail pray and silently return;
+                if ((!parsedJSON) || (!Array.isArray(parsedJSON))) return;
+
+                editor.paletteStorage.setKey("default palettes", parsedJSON);
+
+                //Import.
+                for (let i=0; i<parsedJSON.length; i++) {
+                    const id = parsedJSON[i];
+                    const url = `site/defaultPalettes/${id}.json`;
+
+                    //Fetch the palette and try to parse it.
+                    const paletteText = await fetch(url).then(result => result.text());
+                    let parsedPalette;
+
+                    try { parsedPalette = JSON.parse(paletteText); }
+                    catch (error) {}
+
+                    //If we fail, silently return.
+                    if (!parsedPalette) continue;
+                    editor.palettes.savePalette(editor.palettes.fromJSON(parsedPalette));
+                }
+            }
+        });
     }
 }
