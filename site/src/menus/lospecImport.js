@@ -1,3 +1,4 @@
+//Hope and pray this updates.
 editor.lospecMenu = () => {
     new editor.modal(artimus.translate("lospec.title", "modal"), (content, modal) => {
         //Create the search box.
