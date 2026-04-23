@@ -5,7 +5,7 @@ window.editor = {
     bannerAuthorURL: "https://bitdisco.itch.io/",
 
     dbName: "artimusDB",
-    dbVersion: 2,
+    dbVersion: 3,
 
     docEdit: {
         width: 256,

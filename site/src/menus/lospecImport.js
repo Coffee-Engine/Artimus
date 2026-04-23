@@ -45,8 +45,10 @@ editor.lospecMenu = () => {
         content.appendChild(previewContainer);
         content.appendChild(addPalette);
 
-        const paletteJSONRetrieved = (text) => {
+        const paletteJSONRetrieved = (text, url) => {
             const json = JSON.parse(text);
+            json.source = "Lospec";
+            if (url) json.url = url.replace(".json", "");
 
             //Parse the text and make sure to add placeholders if the need is there.
             const name = json.name || artimus.translate("lospec.placeholder.name", "modal");
@@ -75,6 +77,13 @@ editor.lospecMenu = () => {
 
                 paletteDisplay.style.setProperty("--palette", paletteGradient);
             }
+
+            addPalette.onclick = () => {
+                if (url) {
+                    const palette = editor.palettes.fromJSON(json);
+                    console.log(palette);
+                }
+            }
         }
 
         //Just init.
@@ -85,12 +94,14 @@ editor.lospecMenu = () => {
             let paletteID = input.value.toLowerCase().trim().replaceAll(/\s/g, "-");
             if (paletteID.endsWith("palette")) paletteID = paletteID.replace(/-?palette/, "");
 
+            const url = `https://Lospec.com/palette-list/${paletteID}.json`;
+
             //Fetch the palette from the lospec api, both before and api palette
-            fetch(`https://Lospec.com/palette-list/${paletteID}.json`).then(res=>res.text())
-            .then(paletteJSONRetrieved)
+            fetch(url).then(res=>res.text())
+            .then((text) => { paletteJSONRetrieved(text, url) })
             .catch(() => {
                 console.warn(`Palette "${paletteID}" can't be found!`);
-                paletteJSONRetrieved("{}");
+                paletteJSONRetrieved("{}", "");
             });
         }
     }, { height: 16  });

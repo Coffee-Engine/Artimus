@@ -2,7 +2,9 @@ editor.palettes = {
     palette: class {
         name = "???";
         author = "???";
-        originalFormat = "";
+
+        source = "";
+        url = "";
         
         colors = [];
 
@@ -47,7 +49,7 @@ editor.palettes = {
             identifier: "JASC Pal",
             
             //The code portion
-            condition: (text) => text.startsWith("JASC-PAL\n0100\n"),
+            condition: (text) => text.startsWith("JASC-PAL"),
             import: (text, paletteObject) => {
                 //Split the file by lines and ready the colors array
                 const split = text.split("\n");
@@ -168,11 +170,32 @@ editor.palettes = {
         for (let i=0; i<formats.length; i++) {
             if (formats[i].condition(data)) {
                 formats[i].import(data, palette);
-                palette.originalFormat = formats[i].identifier;
+                palette.source = formats[i].identifier;
                 break;
             }
         }
 
-        console.log(palette);
+        return palette;
+    },
+
+    fromJSON: (data) => {
+        const palette = new editor.palettes.palette();
+
+        //Move data
+        palette.name = data.name || "???";
+        palette.author = data.author || "???";
+
+        palette.source = data.source || "???";
+        palette.url = data.url || "???";
+
+        palette.colors = data.colors || [ "#ff00ff" ];
+
+        //Then make sure it starts with a #
+        palette.colors = palette.colors.map((val) => {
+            if (!val.startsWith("#")) return `#${val}`;
+            return val;
+        })
+
+        return palette;
     }
 }

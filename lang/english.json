@@ -201,6 +201,10 @@
     "artimus.modal.settings.palettes.import": "Load Palette",
     "artimus.modal.settings.palettes.importLospec": "Import from Lospec",
 
+    "artimus.modal.settings.palettes.placeholder.name": "Unknown Palette",
+    "artimus.modal.settings.palettes.placeholder.author": "Unknown Author",
+    "artimus.modal.settings.palettes.colors": "[count] colors",
+
     "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
     "artimus.modal.settings.extensions.add": "+",
     "artimus.modal.settings.extensions.remove": "-",
