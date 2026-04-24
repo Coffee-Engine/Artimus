@@ -18,6 +18,23 @@ editor.palettes = {
                 colors: this.colors,
             }
         }
+
+        toGradient(angle) {
+            let gradient = `linear-gradient(${(angle === undefined) ? 90 : angle}deg`;
+
+            //Relatively easy.
+            const step = 100 / this.colors.length;
+            let position = 0;
+            for (let i=0; i<this.colors.length; i++) {
+                gradient += `, ${this.colors[i]} ${position}%`;
+                position += step;
+                gradient += `, ${this.colors[i]} ${position}%`;
+            }
+
+            gradient += ")";
+
+            return gradient;
+        }
     },
 
     formats: [
@@ -209,9 +226,11 @@ editor.palettes = {
     },
 
     savePalette: (palette) => {
-        //Make sure we have a palette
-        if (!palette instanceof editor.palettes.palette) return;
-        editor.paletteStorage.setKey(`palette ${palette.name}`, palette.toJSON());
+        return new Promise((resolve, reject) => {
+            //Make sure we have a palette
+            if (!palette instanceof editor.palettes.palette) return;
+            editor.paletteStorage.setKey(`palette ${palette.name}`, palette.toJSON()).then(() => resolve()).catch(() => reject());
+        });
     },
 
     getPalette: (palette) => {

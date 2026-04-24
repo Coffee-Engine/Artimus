@@ -79,10 +79,10 @@ editor.lospecMenu = () => {
             }
 
             addPalette.onclick = () => {
-                if (url) {
-                    const palette = editor.palettes.fromJSON(json);
-                    console.log(palette);
-                }
+                if (url) 
+                    editor.palettes.savePalette(editor.palettes.fromJSON(json)).then(() => {
+                        modal.close();
+                    });
             }
         }
 

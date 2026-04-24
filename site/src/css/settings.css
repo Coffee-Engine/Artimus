@@ -179,6 +179,70 @@
     align-items: center;
 }
 
+/* Palette menu */
+.settings-paletteMenu {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    overflow-y: hidden;
+}
+
+.settings-paletteManagementButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin: 4px 0px 2px 0px;
+}
+
+.settings-paletteManagementPager {
+    display: grid;
+    grid-template-columns: auto 0.8fr auto;
+
+    margin: 2px 0px 4px 0px;
+}
+
+.settings-palettePageDescription {
+    margin: 2px;
+}
+
+.settings-paletteList {
+    border: 2px var(--artimus-background-2) solid;
+    overflow-y: scroll;
+}
+
+/* palette container */
+.settings-paletteContainer {
+    display: grid;
+    grid-template-rows: auto auto auto;
+
+    border: 2px var(--artimus-background-2) solid;
+    border-radius: 8px;
+    margin: 2px 0px 2px 0px;
+}
+
+.settings-paletteName {
+    margin: 0px;
+    font-size: x-large;
+    text-align: left;
+    margin-left: 8px;
+}
+
+.settings-paletteDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.settings-paletteDetail { margin: 3px 0px 3px 0px; }
+
+.settings-paletteDisplay {
+    --palette: linear-gradient(90deg, #ff00ff 50%, #000000 50%);
+    background: var(--palette);
+
+    border: 2px var(--artimus-background-3) solid;
+    border-radius: 8px;
+
+    min-height: 16px;
+    margin: 4px;
+}
+
 
 @keyframes settings-pop-in {
     0% {
