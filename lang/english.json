@@ -201,14 +201,16 @@
     "artimus.modal.settings.palettes.import": "Load Palette",
     "artimus.modal.settings.palettes.importLospec": "Import from Lospec",
 
-    "artimus.modal.settings.palettes.lastPage": "last",
-    "artimus.modal.settings.palettes.nextPage": "next",
+    "artimus.modal.settings.palettes.lastPage": "Last",
+    "artimus.modal.settings.palettes.nextPage": "Next",
     "artimus.modal.settings.palettes.palettesOnPage": "Palettes [first]-[last]/[total]",
 
     "artimus.modal.settings.palettes.palette.by": "By: [author]",
     "artimus.modal.settings.palettes.palette.origin": "Origin: [source]",
     "artimus.modal.settings.palettes.palette.colors": "[count] colors",
-    "artimus.modal.settings.palettes.palette.link": "Link ([protocol])",
+    "artimus.modal.settings.palettes.palette.link": "[site] ([protocol])",
+    "artimus.modal.settings.palettes.palette.delete": "Delete",
+    "artimus.modal.settings.palettes.palette.export": "Export",
     "artimus.modal.settings.palettes.palette.linkUnknown": "Unknown Link",
 
     "artimus.modal.settings.palettes.placeholder.name": "Unknown Palette",

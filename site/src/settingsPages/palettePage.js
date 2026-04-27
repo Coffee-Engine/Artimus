@@ -98,18 +98,36 @@ editor.paletteMenu = (container, translationKey, onchange) => {
         const protocolMatches = palette.url.match(/\w*\:\/\//);
         if (protocolMatches && palette.url.startsWith(protocolMatches[0])) {
             paletteLink.href = palette.url;
-            paletteLink.innerText = paletteLink.innerText.replace("[protocol]", protocolMatches[0].replace("://", ""))
+            paletteLink.innerText = paletteLink.innerText
+                .replace("[protocol]", protocolMatches[0].replace("://", ""))
+                .replace("[site]", palette.url.replace(protocolMatches[0], "").split("/")[0]);
         }
         else paletteLink.innerText = artimus.translate("palette.linkUnknown", translationKey);
 
+        //Strange buttons
+        const paletteExport = document.createElement("button");
+        paletteExport.className = "artimus-button settings-paletteDetail settings-paletteExport";
+        paletteExport.innerText = artimus.translate("palette.export", translationKey).replace("[source]", palette.source);
+        
+        const paletteDelete = document.createElement("button");
+        paletteDelete.className = "artimus-button settings-paletteDetail settings-paletteDelete";
+        paletteDelete.innerText = artimus.translate("palette.delete", translationKey).replace("[count]", palette.colors.length);
+
+        //Now the actual palette display gradient.
         const paletteDisplay = document.createElement("div");
         paletteDisplay.className = "settings-paletteDisplay";
         paletteDisplay.style.setProperty("--palette", palette.toGradient());
 
+        //Functionality
+        paletteExport.onclick = () => 
+            editor.downloadText(`${palette.name}.json`, JSON.stringify(palette.toJSON()));
+
         paletteDetails.appendChild(paletteAuthor);
         paletteDetails.appendChild(paletteOrigin);
+        paletteDetails.appendChild(paletteExport);
         paletteDetails.appendChild(paletteColors);
         paletteDetails.appendChild(paletteLink);
+        paletteDetails.appendChild(paletteDelete);
         
         paletteContainer.appendChild(paletteName);
         paletteContainer.appendChild(paletteDetails);
@@ -139,7 +157,10 @@ editor.paletteMenu = (container, translationKey, onchange) => {
                 const palette = await editor.palettes.getPalette(palettes[i]);
                 const paletteElement = createPaletteElement(palette);
 
-                paletteList.appendChild(paletteElement);
+                if (paletteElement) {
+                    paletteElement.style.setProperty("--index", i - from);
+                    paletteList.appendChild(paletteElement);
+                }
             }
         }
     }

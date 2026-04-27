@@ -215,6 +215,17 @@ window.editor = {
                 editor.versionIdentifier.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
             }
         })
+    },
+
+    downloader: document.createElement("a"),
+    downloadText: (name, content) => {
+        editor.downloader.download = name;
+        editor.downloader.href = `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`;
+        
+        //Download
+        document.body.appendChild(editor.downloader);
+        editor.downloader.click();
+        editor.downloader.parentElement.removeChild(editor.downloader);
     }
 };
 

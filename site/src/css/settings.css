@@ -188,7 +188,7 @@
 
 .settings-paletteManagementButtons {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr auto;
     margin: 4px 0px 2px 0px;
 }
 
@@ -210,12 +210,17 @@
 
 /* palette container */
 .settings-paletteContainer {
+    --index: 0;
     display: grid;
     grid-template-rows: auto auto auto;
 
     border: 2px var(--artimus-background-2) solid;
     border-radius: 8px;
     margin: 2px 0px 2px 0px;
+
+    animation: 300ms settings-pop-in;
+    animation-fill-mode: backwards;
+    animation-delay: calc(100ms * var(--index));
 }
 
 .settings-paletteName {
@@ -227,7 +232,7 @@
 
 .settings-paletteDetails {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.5fr 1fr;
 }
 
 .settings-paletteDetail { margin: 3px 0px 3px 0px; }
