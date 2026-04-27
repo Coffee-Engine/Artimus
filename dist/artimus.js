@@ -28,11 +28,54 @@ window.artimus = {
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
 
+    //DOM sanitizer
+    DOMParser: new DOMParser(),
+    //Just in case.
+    badElements: [
+        "script",
+        "foreignobject",
+        "style",
+        "link",
+        "iframe",
+        "embed",
+        "title"
+    ],
+
+    sanitizeDOM: (svg) => {
+        //Make sure the DOM is valid;
+        let DOM = artimus.DOMParser.parseFromString(`<elementalSanitizer>${svg}</elementalSanitizer>`, "application/xml");
+        if (DOM.documentElement.tagName == "parsererror") return "<p>Invalid DOM</p>";
+
+        //Search through children, and give the final result
+        const children = [...DOM.querySelectorAll("*")];
+        for (let childID = 0; childID < children.length; childID++) {
+            const child = children[childID];
+            if (artimus.badElements.includes(child.tagName.toLowerCase())) child.parentElement.removeChild(child);
+
+            //Search through attributes
+            const names = child.getAttributeNames();
+            for (let attributeID = 0; attributeID < names.length; attributeID++) {
+                const attribute = names[attributeID];
+
+                //If possibly an event
+                if (attribute.startsWith("on")) child.removeAttribute(attribute);
+                //If we have any odd values, like a "javascript:" uri
+                else {
+                    const data = child.getAttribute(attribute);
+                    if (data.startsWith("javascript:")) child.removeAttribute(attribute);
+                }
+            }
+        }
+
+        //Return the final sanitized HTML
+        return DOM.documentElement.innerHTML;
+    },
+
     //Host/Parasite relationship
     host: document.createElement("div"),
 
     elementFromString: (element) => {
-        artimus.host.innerHTML = element;
+        artimus.host.innerHTML = artimus.sanitizeDOM(element);
 
         //Remove the parasite
         const parasite = artimus.host.children[0];
