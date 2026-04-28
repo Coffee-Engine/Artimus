@@ -1,0 +1,107 @@
+body {
+    --artimus-eraser-outline: #438eff;
+    --artimus-eraser-inline: #d0d0ff;
+
+    --artimus-grid-1: #bbbbff;
+    --artimus-grid-2: #7878a4;
+
+    --artimus-selection-outline: #438eff;
+
+    --artimus-background-1: #e2e2ff;
+    --artimus-background-2: #d0d0ff;
+    --artimus-background-3: #bbbbff;
+
+    --artimus-button-normal: #e2e2ff;
+    --artimus-button-hover: #c2c2ff;
+    --artimus-button-click: #438eff;
+    --artimus-button-selected: #aaaaff;
+
+    --artimus-text: #29053a;
+    --artimus-icon: #29053a;
+    
+    background: linear-gradient(to right, var(--artimus-background-2) 5%, var(--artimus-button-click) 50%, var(--artimus-background-2) 95%);
+    font-family: monospace;
+}
+
+p {
+    font-size: 1.25vmin;
+    text-align: center;
+}
+
+h1 {
+    font-size: 5vmin;
+    text-align: center;
+}
+
+h2 {
+    font-size: 3vmin;
+    text-align: center;
+}
+
+h3 {
+    font-size: 2vmin;
+    text-align: center;
+}
+
+h4 {
+    font-size: 1.75vmin;
+    text-align: center;
+}
+
+h5 {
+    font-size: 1.5vmin;
+    text-align: center;
+}
+
+
+.topBG > h1 {
+    backdrop-filter: brightness(50%) blur(1vmax);
+    color: var(--artimus-background-3);
+    
+    width: fit-content;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    padding: 8px;
+    border-radius: 16px;
+}
+
+.container {
+    background-color: var(--artimus-background-1);
+    min-height: 100%;
+
+    position: absolute;
+    left: 50%;
+    top: 0%;
+    transform: translate(-50%, 0%);
+    width: min(100vh, 100%);
+}
+
+.topBG {
+    background:
+        linear-gradient(to right, var(--artimus-background-1) 0%, #00000000 10%), 
+        linear-gradient(to left, var(--artimus-background-1) 0%, #00000000 10%), 
+        linear-gradient(to top, var(--artimus-background-1) 0%, #00000000 50%), 
+        linear-gradient(to bottom, var(--artimus-background-3) 0%, #00000000 50%),
+        url("DemoImage.png");
+
+    background-size: 100% auto;
+    width: 100%;
+    aspect-ratio: 100/40;
+
+    align-content: center;
+}
+
+.devCustomizer {
+    width: 50%;
+    margin-left: 50%;
+    transform: translate(-50%, 0%);
+
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: var(--artimus-background-2);
+    border-radius: 16px;
+}

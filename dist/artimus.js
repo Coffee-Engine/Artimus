@@ -3576,9 +3576,6 @@
     artimus.exportCanvas.height = 1;
     artimus.exportGL = artimus.exportCanvas.getContext("2d");
 
-    console.log(typeof module !== "undefined" && typeof module.exports !== "undefined");
-    if (typeof module !== "undefined" && typeof module.exports !== "undefined") module.exports = {
-        default: artimus
-    }
-    else window.artimus = artimus;
+    //This here can be replaced easily.
+    window.artimus = artimus;
 }
