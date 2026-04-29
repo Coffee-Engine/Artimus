@@ -1,6 +1,29 @@
 const devSelector = document.getElementById("devSelector");
 const tools = {};
 
+async function downloadDevFile(settings) {
+    let script = await (await fetch(`../dist/artimus.js`)).text();
+    for (let key in settings) {
+        if (settings[key].file && settings[key].checked) {
+            script += `\n//--\\\\    /dist/tools/${key}.js    //--\\\\\n`;
+            script += await (await fetch(`../dist/tools/${key}.js`)).text();
+        }
+    }
+
+    if (settings["styling"].checked) {
+        const css = await (await fetch("../dist/default.css")).text();
+        console.log(css);
+        script += `
+\n//--\\\\    /dist/default.css //--\\\\\n
+artimus.defaultStyleElement = document.createElement("style");
+artimus.defaultStyleElement.innerHTML = "${css.replaceAll("\n", "\\n").replaceAll("\"","\\\"")}";
+document.head.appendChild(artimus.defaultStyleElement);
+`
+    }
+
+    console.log(script);
+}
+
 fetch("form.json").then(result => result.text()).then((text) => {
     const toolList = JSON.parse(text);
     const items = document.createElement("div");
@@ -22,6 +45,7 @@ fetch("form.json").then(result => result.text()).then((text) => {
             checkbox.type = "checkbox";
             checkbox.checked = true;
             tools[tool] = checkbox;
+            checkbox.file = (item[2] != false) && (item[2] != undefined);
 
             div.appendChild(checkbox);
             div.appendChild(label);
@@ -37,4 +61,13 @@ fetch("form.json").then(result => result.text()).then((text) => {
     }
 
     devSelector.appendChild(items);
+
+    const submitButton = document.createElement("button");
+    submitButton.innerText = "Download";
+
+    submitButton.onclick = () => {
+        downloadDevFile(tools);
+    }
+
+    devSelector.appendChild(submitButton);
 });
