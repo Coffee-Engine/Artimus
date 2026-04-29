@@ -1,0 +1,15 @@
+[
+    "Tools",
+    ["paintBrush", "Paint Brush"],
+    ["sprayPaint", "Spray Paint"],
+    ["eraser", "Eraser"],
+    ["paintBucket", "Paint Bucket"],
+    ["line", "Line"],
+    ["curve", "Curve"],
+    ["text", "Text"],
+    ["jumble", "Jumble"],
+    ["selectionRectangle", "Selection Rectangle"],
+    ["selectionCircle", "Selection Circle"],
+    ["selectionLasso", "Selection Lasso"],
+    ["move", "Move"]
+]
