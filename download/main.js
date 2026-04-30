@@ -1,5 +1,6 @@
 const devSelector = document.getElementById("devSelector");
 const tools = {};
+const downloadLink = document.createElement("a");
 
 async function downloadDevFile(settings) {
     let script = await (await fetch(`../dist/artimus.js`)).text();
@@ -12,16 +13,18 @@ async function downloadDevFile(settings) {
 
     if (settings["styling"].checked) {
         const css = await (await fetch("../dist/default.css")).text();
-        console.log(css);
+        console.log(css.replaceAll("\n", "\\n"));
         script += `
 \n//--\\\\    /dist/default.css //--\\\\\n
 artimus.defaultStyleElement = document.createElement("style");
-artimus.defaultStyleElement.innerHTML = "${css.replaceAll("\n", "\\n").replaceAll("\"","\\\"")}";
+artimus.defaultStyleElement.innerHTML = \`${css.replaceAll("`","\\`")}\`;
 document.head.appendChild(artimus.defaultStyleElement);
 `
     }
 
-    console.log(script);
+    downloadLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(script.trim())}`;
+    downloadLink.download = `Artimus_${Date.now()}.js`;
+    downloadLink.click();
 }
 
 fetch("form.json").then(result => result.text()).then((text) => {
