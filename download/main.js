@@ -13,7 +13,7 @@ async function downloadDevFile(settings) {
 
     if (settings["styling"].checked) {
         const css = await (await fetch("../dist/default.css")).text();
-        console.log(css.replaceAll("\n", "\\n"));
+        //I'm going to scream at this stupid language.
         script += `
 \n//--\\\\    /dist/default.css //--\\\\\n
 artimus.defaultStyleElement = document.createElement("style");
