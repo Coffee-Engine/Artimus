@@ -1,4 +1,5 @@
 const devSelector = document.getElementById("devSelector");
+const devFileType = document.getElementById("fileType");
 const tools = {};
 const downloadLink = document.createElement("a");
 
@@ -10,7 +11,16 @@ async function downloadDevFile(settings) {
             script += await (await fetch(`../dist/tools/${key}.js`)).text();
         }
     }
-
+    
+    //If we are a module transform the file into a module.
+    let fileType = "js";
+    if (devFileType.value == "module") {
+        script.replace("window.artimus", "const artimus");
+        script += "\n//Export artimus.\nexport default artimus;\n";
+        fileType = "mjs";
+    }
+    
+    //Make sure external values are included if the user wants them to be.
     if (settings["styling"].checked) {
         const css = await (await fetch("../dist/default.css")).text();
         //I'm going to scream at this stupid language.
@@ -22,8 +32,18 @@ document.head.appendChild(artimus.defaultStyleElement);
 `
     }
 
+    if (settings["cugi"].checked) {
+        script = `
+\n//--\\\\    /site/lib/CUGI/CUGI.js   //--\\\\\n
+${await (await fetch("../site/lib/CUGI/CUGI.js")).text()}
+\n//--\\\\    Artimus   //--\\\\\n
+${script}
+`
+    }
+
+    //Then download.
     downloadLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(script.trim())}`;
-    downloadLink.download = `Artimus_${Date.now()}.js`;
+    downloadLink.download = `Artimus_${Date.now()}.${fileType}`;
     downloadLink.click();
 }
 

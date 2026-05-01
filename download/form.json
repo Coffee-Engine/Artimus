@@ -1,4 +1,6 @@
 [
+    "Requirements",
+    ["cugi", "Include CUGI"],
     "Tools",
     ["paintBrush", "Paint Brush", true],
     ["sprayPaint", "Spray Paint", true],
