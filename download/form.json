@@ -1,5 +1,5 @@
 [
-    "Requirements",
+    "Libraries",
     ["cugi", "Include CUGI"],
     "Tools",
     ["paintBrush", "Paint Brush", true],

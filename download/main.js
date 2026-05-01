@@ -3,6 +3,10 @@ const devFileType = document.getElementById("fileType");
 const tools = {};
 const downloadLink = document.createElement("a");
 
+const shrinkables = [
+    ";", ",", "{", "(", ":"
+];
+
 async function downloadDevFile(settings) {
     let script = await (await fetch(`../dist/artimus.js`)).text();
     for (let key in settings) {
