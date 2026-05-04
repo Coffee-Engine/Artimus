@@ -121,6 +121,9 @@ editor.paletteMenu = (container, translationKey, onchange) => {
         //Functionality
         paletteExport.onclick = () => 
             editor.downloadText(`${palette.name}.json`, JSON.stringify(palette.toJSON()));
+        
+        paletteDelete.onclick = () => 
+            editor.palettes.deletePalette(palette.name);
 
         paletteDetails.appendChild(paletteAuthor);
         paletteDetails.appendChild(paletteOrigin);

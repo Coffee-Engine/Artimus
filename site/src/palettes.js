@@ -247,6 +247,21 @@ editor.palettes = {
         }, [])));
     },
 
+    //Palette deletion
+    deletePalette: (palette) => {
+        return new Promise(async (resolve) => {
+            //Make sure the palette we want to remove exists.
+            const palettes = await editor.palettes.getPalettes();
+            if (palettes.includes(palette)) {
+                await editor.paletteStorage.deleteKey(`palette ${palette}`);
+                resolve(true);
+            }
+            else {
+                resolve(false);
+            }
+        });
+    },
+
     getDefaultPalettes: () => {
         //Check to see if we have a palettes list, if not fetch the default palettes
         editor.paletteStorage.getKey("default palettes").then(async (res) => {
