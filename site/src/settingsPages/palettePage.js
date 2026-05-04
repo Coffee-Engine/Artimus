@@ -80,7 +80,7 @@ editor.paletteMenu = class extends editor.settingsPage {
         this.paletteList.innerHTML = "";
 
         from = Math.floor(Math.max(0, Math.min(this.palettes.length - 1, from)) / count) * count;
-        this.pageStart = from;
+        this.pageStart = from || 0;
 
         count = Math.min(this.palettes.length, from + count) - from;
         
@@ -102,7 +102,16 @@ editor.paletteMenu = class extends editor.settingsPage {
         }
     }
 
+    refreshAndUpdate() {
+        editor.palettes.getPalettes().then((keys) => {
+            this.palettes = keys;
+            this.displayPalettes(this.pageStart, 10);
+        });
+    }
+
     init(container, translationKey, onchange) {
+        const self = this;
+
         //For inputting files
         const fileReader = new FileReader();
         const fileInput = document.createElement("input");
@@ -170,10 +179,7 @@ editor.paletteMenu = class extends editor.settingsPage {
 
         //Reset the palette list and get the palettes of the first page.
         this.displayPalettes(0, 0);
-        editor.palettes.getPalettes().then((keys) => {
-            this.palettes = keys;
-            this.displayPalettes(0, 10);
-        });
+        this.refreshAndUpdate();
 
         importPalette.onclick = () => fileInput.click();
         lospecPalette.onclick = () => { editor.lospecMenu(); }
@@ -188,12 +194,13 @@ editor.paletteMenu = class extends editor.settingsPage {
             this.displayPalettes(this.pageStart, 10);
         }
 
-        editor.addEventListener("paletteAdded", () => { this.displayPalettes(this.pageStart, 10); });
-        editor.addEventListener("paletteRemoved", () => { this.displayPalettes(this.pageStart, 10); });
+        this.selfRefresh = () => { this.refreshAndUpdate.call(self); };
+        editor.addEventListener("paletteAdded", this.selfRefresh);
+        editor.addEventListener("paletteRemoved", this.selfRefresh);
     }
 
     destroy() {
-        editor.removeEventListener("paletteAdded", () => { this.displayPalettes(this.pageStart, 10); });
-        editor.removeEventListener("paletteRemoved", () => { this.displayPalettes(this.pageStart, 10); });
+        editor.removeEventListener("paletteAdded", this.selfRefresh);
+        editor.removeEventListener("paletteRemoved", this.selfRefresh);
     }
 }
