@@ -229,7 +229,10 @@ editor.palettes = {
         return new Promise((resolve, reject) => {
             //Make sure we have a palette
             if (!palette instanceof editor.palettes.palette) return;
-            editor.paletteStorage.setKey(`palette ${palette.name}`, palette.toJSON()).then(() => resolve()).catch(() => reject());
+            editor.paletteStorage.setKey(`palette ${palette.name}`, palette.toJSON()).then(() => {
+                editor.sendEvent("paletteAdded", { name: palette, data: palette});
+                resolve();
+            }).catch(() => reject());
         });
     },
 
@@ -254,6 +257,7 @@ editor.palettes = {
             const palettes = await editor.palettes.getPalettes();
             if (palettes.includes(palette)) {
                 await editor.paletteStorage.deleteKey(`palette ${palette}`);
+                editor.sendEvent("paletteRemoved", { name: palette });
                 resolve(true);
             }
             else {

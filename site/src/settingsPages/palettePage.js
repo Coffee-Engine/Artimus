@@ -1,4 +1,107 @@
 editor.paletteMenu = class extends editor.settingsPage {
+    createPaletteElement(palette) {
+        if (!palette instanceof editor.palettes.palette) return;
+
+        //Create the container for the palette
+        const paletteContainer = document.createElement("div");
+        paletteContainer.className = "settings-paletteContainer";
+
+        const paletteName = document.createElement("p");
+        paletteName.className = "settings-paletteName";
+        paletteName.innerText = palette.name;
+
+        //Details for the palette, like origin, color count, and other stuff.
+        const paletteDetails = document.createElement("div");
+        paletteDetails.className = "settings-paletteDetails";
+
+        const paletteAuthor = document.createElement("p");
+        paletteAuthor.className = "settings-paletteDetail settings-paletteAuthor";
+        paletteAuthor.innerText = artimus.translate("palette.by", this.translationKey).replace("[author]", palette.author);
+
+        const paletteOrigin = document.createElement("p");
+        paletteOrigin.className = "settings-paletteDetail settings-paletteOrigin";
+        paletteOrigin.innerText = artimus.translate("palette.origin", this.translationKey).replace("[source]", palette.source);
+
+        const paletteColors = document.createElement("p");
+        paletteColors.className = "settings-paletteDetail settings-paletteColors";
+        paletteColors.innerText = artimus.translate("palette.colors", this.translationKey).replace("[count]", palette.colors.length);
+
+        //Links are strange as they can't / can exist, so make sure to check for reality.
+        const paletteLink = document.createElement("a");
+        paletteLink.className = "settings-paletteDetail settings-paletteLink";
+        paletteLink.innerText = artimus.translate("palette.link", this.translationKey);
+
+        //Protocol;
+        const protocolMatches = palette.url.match(/\w*\:\/\//);
+        if (protocolMatches && palette.url.startsWith(protocolMatches[0])) {
+            paletteLink.href = palette.url;
+            paletteLink.innerText = paletteLink.innerText
+                .replace("[protocol]", protocolMatches[0].replace("://", ""))
+                .replace("[site]", palette.url.replace(protocolMatches[0], "").split("/")[0]);
+        }
+        else paletteLink.innerText = artimus.translate("palette.linkUnknown", this.translationKey);
+
+        //Strange buttons
+        const paletteExport = document.createElement("button");
+        paletteExport.className = "artimus-button settings-paletteDetail settings-paletteExport";
+        paletteExport.innerText = artimus.translate("palette.export", this.translationKey).replace("[source]", palette.source);
+        
+        const paletteDelete = document.createElement("button");
+        paletteDelete.className = "artimus-button settings-paletteDetail settings-paletteDelete";
+        paletteDelete.innerText = artimus.translate("palette.delete", this.translationKey).replace("[count]", palette.colors.length);
+
+        //Now the actual palette display gradient.
+        const paletteDisplay = document.createElement("div");
+        paletteDisplay.className = "settings-paletteDisplay";
+        paletteDisplay.style.setProperty("--palette", palette.toGradient());
+
+        //Functionality
+        paletteExport.onclick = () => 
+            editor.downloadText(`${palette.name}.json`, JSON.stringify(palette.toJSON()));
+        
+        paletteDelete.onclick = () => 
+            editor.palettes.deletePalette(palette.name);
+
+        paletteDetails.appendChild(paletteAuthor);
+        paletteDetails.appendChild(paletteOrigin);
+        paletteDetails.appendChild(paletteExport);
+        paletteDetails.appendChild(paletteColors);
+        paletteDetails.appendChild(paletteLink);
+        paletteDetails.appendChild(paletteDelete);
+        
+        paletteContainer.appendChild(paletteName);
+        paletteContainer.appendChild(paletteDetails);
+        paletteContainer.appendChild(paletteDisplay);
+
+        return paletteContainer;
+    }
+
+    async displayPalettes(from, count) {
+        this.paletteList.innerHTML = "";
+
+        from = Math.floor(Math.max(0, Math.min(this.palettes.length - 1, from)) / count) * count;
+        this.pageStart = from;
+
+        count = Math.min(this.palettes.length, from + count) - from;
+        
+        this.pageDescription.innerText = artimus.translate("palettesOnPage", this.translationKey)
+        .replace("[first]", from + 1)
+        .replace("[last]", Math.min(this.palettes.length, from + count))
+        .replace("[total]", this.palettes.length);
+
+        if (count > 0) {
+            for (let i=from; i<from+count; i++) {
+                const palette = await editor.palettes.getPalette(this.palettes[i]);
+                const paletteElement = this.createPaletteElement(palette);
+
+                if (paletteElement) {
+                    paletteElement.style.setProperty("--index", i - from);
+                    this.paletteList.appendChild(paletteElement);
+                }
+            }
+        }
+    }
+
     init(container, translationKey, onchange) {
         //For inputting files
         const fileReader = new FileReader();
@@ -42,151 +145,55 @@ editor.paletteMenu = class extends editor.settingsPage {
         nextPage.className = "artimus-button settings-palettePageButton settings-paletteNextPage";
         nextPage.innerText = artimus.translate("nextPage", translationKey);
 
-        const pageDescription = document.createElement("p");
-        pageDescription.className = "settings-palettePageDescription";
-        pageDescription.innerText = artimus.translate("palettesOnPage", translationKey);
+        this.pageDescription = document.createElement("p");
+        this.pageDescription.className = "settings-palettePageDescription";
+        this.pageDescription.innerText = artimus.translate("palettesOnPage", translationKey);
 
         //Then the actual palette list
-        const paletteList = document.createElement("div");
-        paletteList.className = "settings-paletteList";
+        this.paletteList = document.createElement("div");
+        this.paletteList.className = "settings-paletteList";
 
         paletteTopHolder.appendChild(createPalette);
         paletteTopHolder.appendChild(importPalette);
         paletteTopHolder.appendChild(lospecPalette);
 
         palettePager.appendChild(previousPage);
-        palettePager.appendChild(pageDescription);
+        palettePager.appendChild(this.pageDescription);
         palettePager.appendChild(nextPage);
 
         container.appendChild(paletteTopHolder);
         container.appendChild(palettePager);
-        container.appendChild(paletteList);
+        container.appendChild(this.paletteList);
 
-        //Now we can create the palette button
-        const createPaletteElement = (palette) => {
-            if (!palette instanceof editor.palettes.palette) return;
-
-            //Create the container for the palette
-            const paletteContainer = document.createElement("div");
-            paletteContainer.className = "settings-paletteContainer";
-
-            const paletteName = document.createElement("p");
-            paletteName.className = "settings-paletteName";
-            paletteName.innerText = palette.name;
-
-            //Details for the palette, like origin, color count, and other stuff.
-            const paletteDetails = document.createElement("div");
-            paletteDetails.className = "settings-paletteDetails";
-
-            const paletteAuthor = document.createElement("p");
-            paletteAuthor.className = "settings-paletteDetail settings-paletteAuthor";
-            paletteAuthor.innerText = artimus.translate("palette.by", translationKey).replace("[author]", palette.author);
-
-            const paletteOrigin = document.createElement("p");
-            paletteOrigin.className = "settings-paletteDetail settings-paletteOrigin";
-            paletteOrigin.innerText = artimus.translate("palette.origin", translationKey).replace("[source]", palette.source);
-
-            const paletteColors = document.createElement("p");
-            paletteColors.className = "settings-paletteDetail settings-paletteColors";
-            paletteColors.innerText = artimus.translate("palette.colors", translationKey).replace("[count]", palette.colors.length);
-
-            //Links are strange as they can't / can exist, so make sure to check for reality.
-            const paletteLink = document.createElement("a");
-            paletteLink.className = "settings-paletteDetail settings-paletteLink";
-            paletteLink.innerText = artimus.translate("palette.link", translationKey);
-
-            //Protocol;
-            const protocolMatches = palette.url.match(/\w*\:\/\//);
-            if (protocolMatches && palette.url.startsWith(protocolMatches[0])) {
-                paletteLink.href = palette.url;
-                paletteLink.innerText = paletteLink.innerText
-                    .replace("[protocol]", protocolMatches[0].replace("://", ""))
-                    .replace("[site]", palette.url.replace(protocolMatches[0], "").split("/")[0]);
-            }
-            else paletteLink.innerText = artimus.translate("palette.linkUnknown", translationKey);
-
-            //Strange buttons
-            const paletteExport = document.createElement("button");
-            paletteExport.className = "artimus-button settings-paletteDetail settings-paletteExport";
-            paletteExport.innerText = artimus.translate("palette.export", translationKey).replace("[source]", palette.source);
-            
-            const paletteDelete = document.createElement("button");
-            paletteDelete.className = "artimus-button settings-paletteDetail settings-paletteDelete";
-            paletteDelete.innerText = artimus.translate("palette.delete", translationKey).replace("[count]", palette.colors.length);
-
-            //Now the actual palette display gradient.
-            const paletteDisplay = document.createElement("div");
-            paletteDisplay.className = "settings-paletteDisplay";
-            paletteDisplay.style.setProperty("--palette", palette.toGradient());
-
-            //Functionality
-            paletteExport.onclick = () => 
-                editor.downloadText(`${palette.name}.json`, JSON.stringify(palette.toJSON()));
-            
-            paletteDelete.onclick = () => 
-                editor.palettes.deletePalette(palette.name);
-
-            paletteDetails.appendChild(paletteAuthor);
-            paletteDetails.appendChild(paletteOrigin);
-            paletteDetails.appendChild(paletteExport);
-            paletteDetails.appendChild(paletteColors);
-            paletteDetails.appendChild(paletteLink);
-            paletteDetails.appendChild(paletteDelete);
-            
-            paletteContainer.appendChild(paletteName);
-            paletteContainer.appendChild(paletteDetails);
-            paletteContainer.appendChild(paletteDisplay);
-
-            return paletteContainer;
-        }
-
-        //Display the available palettes
-        let palettes = [];
-        let pageStart = 0;
-        const displayPalettes = async (from, count) => {
-            paletteList.innerHTML = "";
-
-            from = Math.floor(Math.max(0, Math.min(palettes.length - 1, from)) / count) * count;
-            pageStart = from;
-
-            count = Math.min(palettes.length, from + count) - from;
-            
-            pageDescription.innerText = artimus.translate("palettesOnPage", translationKey)
-            .replace("[first]", from + 1)
-            .replace("[last]", Math.min(palettes.length, from + count))
-            .replace("[total]", palettes.length);
-
-            if (count > 0) {
-                for (let i=from; i<from+count; i++) {
-                    const palette = await editor.palettes.getPalette(palettes[i]);
-                    const paletteElement = createPaletteElement(palette);
-
-                    if (paletteElement) {
-                        paletteElement.style.setProperty("--index", i - from);
-                        paletteList.appendChild(paletteElement);
-                    }
-                }
-            }
-        }
+        this.palettes = [];
+        this.pageStart = 0;
 
         //Reset the palette list and get the palettes of the first page.
-        displayPalettes(0, 0);
+        this.displayPalettes(0, 0);
         editor.palettes.getPalettes().then((keys) => {
-            palettes = keys;
-            displayPalettes(0, 10);
+            this.palettes = keys;
+            this.displayPalettes(0, 10);
         });
 
         importPalette.onclick = () => fileInput.click();
         lospecPalette.onclick = () => { editor.lospecMenu(); }
 
         previousPage.onclick = () => {
-            pageStart -= 10;
-            displayPalettes(pageStart, 10);
+            this.pageStart -= 10;
+            this.displayPalettes(this.pageStart, 10);
         }
 
         nextPage.onclick = () => {
-            pageStart += 10;
-            displayPalettes(pageStart, 10);        
+            this.pageStart += 10;
+            this.displayPalettes(this.pageStart, 10);
         }
+
+        editor.addEventListener("paletteAdded", () => { this.displayPalettes(this.pageStart, 10); });
+        editor.addEventListener("paletteRemoved", () => { this.displayPalettes(this.pageStart, 10); });
+    }
+
+    destroy() {
+        editor.removeEventListener("paletteAdded", () => { this.displayPalettes(this.pageStart, 10); });
+        editor.removeEventListener("paletteRemoved", () => { this.displayPalettes(this.pageStart, 10); });
     }
 }

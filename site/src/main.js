@@ -21,8 +21,7 @@ window.editor = {
     events: [
         "extensionAdded",
         "paletteAdded",
-        "paletteRemoved",
-        "paletteListModified",
+        "paletteRemoved"
     ],
 
     listeners: {},
@@ -383,7 +382,3 @@ editor.storageReady = async () => {
     //Get the default palettes.
     editor.palettes.getDefaultPalettes();
 }
-
-//Link functions needed for paletteListModified
-editor.addEventListener("paletteAdded", (data) => editor.sendEvent("paletteListModified", { removed: false, ...data }))
-editor.addEventListener("paletteRemoved", (data) => editor.sendEvent("paletteListModified", { removed: true, ...data }))
