@@ -180,16 +180,9 @@ editor.settingDefs = {
         onchange: () => { editor.useCustomTheme(); }},
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
-    hotkeys: { function: editor.hotkeyMenu, onchange: () => {
-        artimus.hotkeys = editor.settings.hotkeys;
-        editor.saveSettings();
-    }},
-    palettes: { function: editor.paletteMenu, onchange: () => {
-        editor.saveSettings();
-    }},
-    extensions: { function: editor.extensionMenu, onchange: () => {
-        editor.saveSettings();
-    }}
+    hotkeys: editor.hotkeyMenu,
+    palettes: editor.paletteMenu,
+    extensions: editor.extensionMenu
 };
 
 

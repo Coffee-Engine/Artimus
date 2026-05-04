@@ -40,7 +40,11 @@ editor.settingsPage = () => {
                             break;
 
                         case "function":
-                            pageSwitch = categoryInfo(settings, `modal.settings.${category}`);
+                            if (categoryInfo.constructor) {
+                                const constructed = new categoryInfo(settings, `modal.settings.${category}`, () => editor.saveSettings());
+                                pageSwitch = () => { constructed.destroy.call(constructed); };
+                            }
+                            else pageSwitch = categoryInfo(settings, `modal.settings.${category}`, () => editor.saveSettings());
                             break
                     
                         default:

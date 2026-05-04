@@ -17,6 +17,41 @@ window.editor = {
 
     resolutionPresets: {},
 
+    //Events
+    events: [
+        "extensionAdded",
+        "paletteAdded",
+        "paletteRemoved",
+        "paletteListModified",
+    ],
+
+    listeners: {},
+    addEventListener: (event, callback) => {
+        if (editor.events.includes(event)) {
+            if (!editor.listeners[event]) editor.listeners[event] = [];
+            editor.listeners[event].push(callback);
+        }
+    },
+    sendEvent: (event, data) => {
+        //Make sure the event list exists
+        if (Array.isArray(editor.listeners[event])) {
+            //Run the callbacks
+            const callbacks = editor.listeners[event];
+            for (let i = 0; i<callbacks.length; i++) {
+                callbacks[i](data);
+            }
+        }
+    },
+    removeEventListener: (event, callback) => {
+        if (editor.events.includes(event)) {
+            if (!editor.listeners[event]) return;
+            const index = editor.listeners[event].indexOf(callback);
+            if (index < 0) return;
+            editor.listeners[event].splice(index, 1);
+        }
+    },
+
+    //Modals
     modals: [],
     modal: class {
         constructor(name, contents, options) {
@@ -124,6 +159,20 @@ window.editor = {
 
             delete this;
         }
+    },
+
+    settingsPage: class {
+        constructor(container, translationKey, onchange) {
+            //Just so we can call from both functions
+            this.container = container;
+            this.translationKey = translationKey;
+            this.onchange = onchange;
+
+            this.init(container, translationKey, onchange);
+        }
+        
+        init(container, translationKey, onchange) {}
+        destroy() {}
     },
 
     quickP: (text, cls) => {
@@ -334,3 +383,7 @@ editor.storageReady = async () => {
     //Get the default palettes.
     editor.palettes.getDefaultPalettes();
 }
+
+//Link functions needed for paletteListModified
+editor.addEventListener("paletteAdded", (data) => editor.sendEvent("paletteListModified", { removed: false, ...data }))
+editor.addEventListener("paletteRemoved", (data) => editor.sendEvent("paletteListModified", { removed: true, ...data }))
