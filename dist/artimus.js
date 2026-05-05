@@ -436,24 +436,22 @@ window.artimus = {
     },
 
     //History is important, and it's finally getting some TLC
-    maxHistory: 10,
-    historicalEventTypes: {
-        "imageChange": (workspace, data) => {
-            console.log(data);
-        }
-    },
-
+    maxHistory: 20,
+    
     historicalEvent: class {
-        constructor(type, data, workspace) {
-            this.type = type;
-            this.data = data;
+        type = "default";
+        constructor(workspace) {
             this.workspace = workspace;
+            this.capture(workspace);
         }
 
-        restoreTo() {
-            artimus.historicalEventTypes[this.type](this.workspace, this.data);
-        }
+        capture(workspace) { console.warn("Historical event invalid!"); }
+        restore(workspace) { console.warn("Historical event invalid!"); }
+        //Not required but helpful
+        destroy(workspace) {}
     },
+
+    historicalEventTypes: {},
     
     layer: class {
         blendMode = "source-over";
@@ -2532,6 +2530,7 @@ window.artimus = {
             this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
         }
 
+        //These use the new historical event system, which should be more modular and open to updates.
         undo() {
             if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
@@ -2556,15 +2555,21 @@ window.artimus = {
             this.sendEvent("redo", { historyIndex: this.historyIndex });
         }
 
-        addHistoricalEvent(type, data) {
+        addHistoricalEvent(type) {
             if (this.historyIndex > 0) {
                 this.history.splice(0, this.historyIndex);
             }
 
             this.historyIndex = 0;
-            this.history.splice(0, 0, new artimus.historicalEvent(type, data, this));
-            if (this.history.length > artimus.maxHistory) {
-                this.history.pop();
+
+            //Make sure the type is valid
+            if (artimus.historicalEventTypes[type]) {
+                //Create and capture the data
+                this.history.splice(0, 0, new artimus.historicalEventTypes[type](this));
+                if (this.history.length > artimus.maxHistory) {
+                    const popped = this.history.pop();
+                    if (popped instanceof artimus.historicalEvent) popped.destroy();
+                }
             }
         }
 
@@ -3571,6 +3576,16 @@ window.artimus = {
     }
 }
 
+//Get the canvas for export ready.
 artimus.exportCanvas.width = 1;
 artimus.exportCanvas.height = 1;
 artimus.exportGL = artimus.exportCanvas.getContext("2d");
+
+//Now for the events automatically defined within artimus.
+artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEvent {
+    type = "imageChange";
+    capture(workspace) {
+        this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height);
+    }
+    restore(workspace) {}
+}
