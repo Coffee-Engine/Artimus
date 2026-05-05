@@ -439,7 +439,8 @@ window.artimus = {
     maxHistory: 20,
     
     historicalEvent: class {
-        type = "default";
+        passThrough = false;
+
         constructor(workspace, extraInfo) {
             this.workspace = workspace;
             this.capture(workspace, extraInfo);
@@ -509,7 +510,9 @@ window.artimus = {
         }
 
         updateBitmap() {
-            if (this.bitmap) this.bitmap.close();
+            const bm = this.bitmap;
+            this.bitmap = null;
+            if (bm) bm.close();
 
             return new Promise((resolve, reject) => createImageBitmap(this.dataRaw).then(bitmap => {
                 this.bitmap = bitmap;
@@ -539,75 +542,79 @@ window.artimus = {
         }
 
         resizeByRect(active, rx, ry, width, height, editingData) {
-            const layer = (active) ? editingData : this;
-            if (width == layer.width && height == layer.height) return;
+            return new Promise((resolve) => {
+                const layer = (active) ? editingData : this;
+                if (width == layer.width && height == layer.height) return;
 
-            //Get needed attributes for the transfer
-            const output = new ImageData(width, height);
+                //Get needed attributes for the transfer
+                const output = new ImageData(width, height);
 
-            //Transfer data
-            for (let y = 0; y < layer.height; y++) {
-                for (let x = 0; x < layer.width; x++) {
-                    //Then get the position
-                    if (x < 0 || y < 0 || x >= width || y >= height) continue;
+                //Transfer data
+                for (let y = 0; y < layer.height; y++) {
+                    for (let x = 0; x < layer.width; x++) {
+                        //Then get the position
+                        if (x < 0 || y < 0 || x >= width || y >= height) continue;
 
-                    //Now we do the stuff we need to
-                    const lID = (((ry + y) * layer.width) + (rx + x)) * 4;
-                    const oID = ((y * output.width) + x) * 4;
+                        //Now we do the stuff we need to
+                        const lID = (((ry + y) * layer.width) + (rx + x)) * 4;
+                        const oID = ((y * output.width) + x) * 4;
 
-                    output.data[oID] = layer.data[lID];
-                    output.data[oID + 1] = layer.data[lID + 1];
-                    output.data[oID + 2] = layer.data[lID + 2];
-                    output.data[oID + 3] = layer.data[lID + 3];
+                        output.data[oID] = layer.data[lID];
+                        output.data[oID + 1] = layer.data[lID + 1];
+                        output.data[oID + 2] = layer.data[lID + 2];
+                        output.data[oID + 3] = layer.data[lID + 3];
+                    }
                 }
-            }
-            
-            //Blit image data to editing canvas if needed
-            if (active) {
-                this.workspace.editGL.putImageData(output, 0, 0);
-            }
+                
+                //Blit image data to editing canvas if needed
+                if (active) {
+                    this.workspace.editGL.putImageData(output, 0, 0);
+                }
 
-            this.dataRaw = output;
-            this.updateBitmap();
+                this.dataRaw = output;
+                this.updateBitmap().then(resolve);
+            });
         }
 
         resizeByAnchor(active, anchor, width, height, editingData) {
-            const layer = (active) ? editingData : this;
-            if (width == layer.width && height == layer.height) return;
+            return new Promise((resolve) => {
+                const layer = (active) ? editingData : this;
+                if (width == layer.width && height == layer.height) return;
 
-            //Get needed attributes for the transfer
-            const output = new ImageData(width, height);
+                //Get needed attributes for the transfer
+                const output = new ImageData(width, height);
 
-            const writeOffsetX = Math.floor((anchor[0] * width) - (anchor[0] * layer.width));
-            const writeOffsetY = Math.floor((anchor[1] * height) - (anchor[1] * layer.height));
+                const writeOffsetX = Math.floor((anchor[0] * width) - (anchor[0] * layer.width));
+                const writeOffsetY = Math.floor((anchor[1] * height) - (anchor[1] * layer.height));
 
-            //Transfer data
-            for (let y = 0; y < layer.height; y++) {
-                for (let x = 0; x < layer.width; x++) {
-                    //Pointer stuffs
-                    const pointerX = writeOffsetX + x;
-                    const pointerY = writeOffsetY + y;
+                //Transfer data
+                for (let y = 0; y < layer.height; y++) {
+                    for (let x = 0; x < layer.width; x++) {
+                        //Pointer stuffs
+                        const pointerX = writeOffsetX + x;
+                        const pointerY = writeOffsetY + y;
 
-                    //Then get the position
-                    if (pointerX < 0 || pointerY < 0 || pointerX >= width || pointerY >= height) continue;
+                        //Then get the position
+                        if (pointerX < 0 || pointerY < 0 || pointerX >= width || pointerY >= height) continue;
 
-                    //Now we do the stuff we need to
-                    const lID = ((y * layer.width) + x) * 4;
-                    const oID = ((pointerY * output.width) + pointerX) * 4;
-                    output.data[oID] = layer.data[lID];
-                    output.data[oID + 1] = layer.data[lID + 1];
-                    output.data[oID + 2] = layer.data[lID + 2];
-                    output.data[oID + 3] = layer.data[lID + 3];
+                        //Now we do the stuff we need to
+                        const lID = ((y * layer.width) + x) * 4;
+                        const oID = ((pointerY * output.width) + pointerX) * 4;
+                        output.data[oID] = layer.data[lID];
+                        output.data[oID + 1] = layer.data[lID + 1];
+                        output.data[oID + 2] = layer.data[lID + 2];
+                        output.data[oID + 3] = layer.data[lID + 3];
+                    }
                 }
-            }
-            
-            //Blit image data to editing canvas if needed
-            if (active) {
-                this.workspace.editGL.putImageData(output, 0, 0);
-            }
+                
+                //Blit image data to editing canvas if needed
+                if (active) {
+                    this.workspace.editGL.putImageData(output, 0, 0);
+                }
 
-            this.dataRaw = output;
-            this.updateBitmap();
+                this.dataRaw = output;
+                this.updateBitmap().then(resolve);
+            });
         }
     },
 
@@ -2381,8 +2388,10 @@ window.artimus = {
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resizeByRect(ID == this.currentLayer, x, y, width, height, editingData);
+                return this.layers[ID].resizeByRect(ID == this.currentLayer, x, y, width, height, editingData);
             }
+
+            return new Promise((resolve) => { resolve() });
         }
 
         resizeLayerByAnchor(ID, anchor, width, height, editingData) {
@@ -2392,8 +2401,10 @@ window.artimus = {
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
+                return this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
             }
+
+            return new Promise((resolve) => { resolve() });
         }
 
         removeLayer(ID) {
@@ -2432,9 +2443,9 @@ window.artimus = {
         }
 
         //Resizing in style
-        resize(width, height, anchor) { 
-            if (anchor) this.resizeByAnchor(width, height, anchor);
-            else this.resizeByRect(0, 0, width, height);
+        resize(width, height, anchor, historical) { 
+            if (anchor) return this.resizeByAnchor(width, height, anchor, historical);
+            else return this.resizeByRect(0, 0, width, height, historical);
         }
 
         _resizeCanvases(width, height) {
@@ -2479,61 +2490,69 @@ window.artimus = {
         }
 
         resizeByRect(x, y, width, height, historical) {
-            if (x < 0 || typeof x != "number") x = 0;
-            else if (x >= this.width) x = this.width - 1;
+            return new Promise(async (resolve) => {
+                if (x < 0 || typeof x != "number") x = 0;
+                else if (x >= this.width) x = this.width - 1;
 
-            if (y < 0 || typeof y != "number") x = 0;
-            else if (y >= this.height) y = this.height - 1;
+                if (y < 0 || typeof y != "number") x = 0;
+                else if (y >= this.height) y = this.height - 1;
 
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
+                if (width < 1 || typeof width != "number") width = 1;
+                if (height < 1 || typeof height != "number") height = 1;
 
-            //Add the historical event;
-            if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                //Add the historical event;
+                if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
-            const editingData = this._resizeCanvases(width, height);
-            for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
-            }
+                const editingData = this._resizeCanvases(width, height);
+                for (let index = 0; index < this.layers.length; index++) {
+                    await this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
+                }
 
-            //Update textures
-            this._updateTextures();
-            this.dirty = true;
-            this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
+                //Update textures
+                this._updateTextures();
+                this.dirty = true;
+                this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
+                resolve();
+            });
         }
 
         resizeByAnchor(width, height, anchor, historical) {
-            //Get anchor data
-            anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
-            if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
+            return new Promise(async (resolve) => {
+                //Get anchor data
+                anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
+                if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
 
-            //Copy the data
-            anchor = [...(anchor)];
+                //Copy the data
+                anchor = [...(anchor)];
 
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
+                if (width < 1 || typeof width != "number") width = 1;
+                if (height < 1 || typeof height != "number") height = 1;
 
-            //Add the historical event;
-            if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                //Add the historical event;
+                if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
-            const editingData = this._resizeCanvases(width, height);
-            for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
-            }
+                const editingData = this._resizeCanvases(width, height);
+                for (let index = 0; index < this.layers.length; index++) {
+                    await this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
+                }
 
-            this.scrollX = this.scrollX;
-            this.scrollY = this.scrollY;
-            this.updatePosition();
+                this.scrollX = this.scrollX;
+                this.scrollY = this.scrollY;
+                this.updatePosition();
 
-            //Update textures
-            this._updateTextures();
-            this.dirty = true;
-            this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
+                //Update textures
+                this._updateTextures();
+                this.dirty = true;
+                this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
+                resolve();
+            });
         }
 
         //These use the new historical event system, which should be more modular and open to updates.
         undo() {
             if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
+
+            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, false);
 
             if (this.historyIndex >= this.history.length - 1) return;
             this.historyIndex++;
@@ -2546,6 +2565,8 @@ window.artimus = {
 
         redo() {
             if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
+
+            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, true);
 
             if (this.historyIndex <= 0) return;
             this.historyIndex--;
@@ -2783,6 +2804,7 @@ window.artimus = {
 
                 this.fileSystemHandle = null;
 
+                this.addHistoricalEvent("imageChange");
                 this.sendEvent("new", { width: width, height: height });
                 resolve();
 
@@ -3591,16 +3613,19 @@ artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEv
     capture(workspace, extraInfo) { this.data = this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height); }
 
     restore(workspace, redo) {
-        this.workspace.editGL.putImageData(this.data, 0, 0);
+        workspace.editGL.putImageData(this.data, 0, 0);
     }
 }
 
 //This one is slightly tricky
 artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent {
+    passThrough = true;
+
     captureLayerData(size) {
         //Capture all layers
         const layers = [];
         for (let i = 0; i < this.workspace.layers.length; i++) {
+            //Copy bytes into a new area.
             if (i == this.workspace.currentLayer) layers.push(this.workspace.editGL.getImageData(0, 0, ...size).data);
             else layers.push(this.workspace.layers[i].data);
         }
@@ -3611,17 +3636,30 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
     resizeFinalized() {
         //Remove resize listener and capture new data;
         this.workspace.removeEventListener("resized", this.resizeFinalized);
-        this.postData = this.captureLayerData(this.newSize);
-        console.log(this);
+        this.newData = this.captureLayerData(this.newSize);
     }
     
     capture(workspace, extraInfo) {
         this.previousSize = extraInfo.previous;
         this.newSize = extraInfo.new;
 
-        this.preData = this.captureLayerData(this.previousSize);
+        this.previousData = this.captureLayerData(this.previousSize);
 
         workspace.addEventListener("resized", () => this.resizeFinalized.call(this));
     }
-    restore(workspace, redo) { this.workspace.editGL.putImageData(this.data, 0, 0); }
+    restore(workspace, redo) { 
+        const prefix = (redo) ? "new" : "previous";
+        const size = this[`${prefix}Size`];
+
+        workspace.resize(...size, null, true).then(async () => {
+            const dataPath = `${prefix}Data`;
+            for (let i = 0; i < this[dataPath].length; i++) {
+                workspace.layers[i].dataRaw = new ImageData(this[dataPath][i], ...size);
+                if (i == workspace.currentLayer) workspace.editGL.putImageData(workspace.layers[i].dataRaw, 0, 0)
+                else await workspace.layers[i].updateBitmap();
+            }
+
+            workspace.dirty = true;
+        });
+    }
 }
