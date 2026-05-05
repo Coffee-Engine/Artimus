@@ -19,7 +19,6 @@ window.editor = {
 
     //Events
     events: [
-        "extensionAdded",
         "paletteAdded",
         "paletteRemoved"
     ],
