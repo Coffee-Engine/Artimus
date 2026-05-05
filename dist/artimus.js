@@ -2078,7 +2078,7 @@ window.artimus = {
         }
 
         //Layer manipulation, for use inside of the library itself but exposed for people to use for their own purposes
-        setLayer(ID, then) {
+        setLayer(ID) {
             return new Promise((resolve, reject) => {
                 ID = this.getLayerIndex(ID);
 
@@ -2091,7 +2091,7 @@ window.artimus = {
                     this.layers[this.#currentLayer].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
                     this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
 
-                    this.updateLayer(this.#currentLayer, () => {
+                    this.updateLayer(this.#currentLayer).then(() => {
                         this.#currentLayer = ID;
 
                         //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
@@ -2101,7 +2101,6 @@ window.artimus = {
                         label.className = this.layerClass;
                         current.label.className = this.layerClass + this.layerClassSelected;
 
-                        if (then) then();
                         resolve();
 
                         this.sendEvent("layerSwitched", { layer: this.layers[ID], id: ID });
@@ -2293,13 +2292,12 @@ window.artimus = {
             }
         }
 
-        updateLayer(ID, then) {
+        updateLayer(ID) {
             return new Promise((resolve, reject) => {
                 ID = this.getLayerIndex(ID);
 
                 if (typeof ID == "number") {
                     this.layers[ID].updateBitmap().then(newBitmap => {
-                        if (then) then(newBitmap);
                         resolve(newBitmap);
                         this.dirty = true;
                     });
@@ -2537,7 +2535,7 @@ window.artimus = {
             if (this.historyIndex >= this.history.length - 1) return;
             this.historyIndex++;
 
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
+            this.history[this.historyIndex].restore();
             this.dirty = true;
 
             this.sendEvent("undo", { historyIndex: this.historyIndex });
@@ -2549,7 +2547,7 @@ window.artimus = {
             if (this.historyIndex <= 0) return;
             this.historyIndex--;
 
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
+            this.history[this.historyIndex].restore();
             this.dirty = true;
 
             this.sendEvent("redo", { historyIndex: this.historyIndex });
@@ -2756,30 +2754,32 @@ window.artimus = {
             else textPaste();
         }
 
-        new(width, height, then) {
-            this.scrollX = 0;
-            this.scrollY = 0;
+        new(width, height) {
+            return new Promise((resolve) => {
+                this.scrollX = 0;
+                this.scrollY = 0;
 
-            //Remove layers
-            this.#currentLayer = 0;
-            for (let ID = this.layers.length - 1; ID > 0; ID--) {
-                this.removeLayer(Number(ID));
-            }
+                //Remove layers
+                this.#currentLayer = 0;
+                for (let ID = this.layers.length - 1; ID > 0; ID--) {
+                    this.removeLayer(Number(ID));
+                }
 
-            //Then clear our current layer
-            this.editGL.clearRect(0, 0, this.width, this.height);
-            this.updateLayer(this.#currentLayer, () => {
-                this.resize(width, height);
-                this.currentLayer = 0;
+                //Then clear our current layer
+                this.editGL.clearRect(0, 0, this.width, this.height);
+                this.updateLayer(this.#currentLayer).then(() => {
+                    this.resize(width, height);
+                    this.currentLayer = 0;
 
-                if (then) then();
-            });
+                    resolve();
+                });
 
-            this.historyIndex = 0;
-            this.history = [];
-            this.fileSystemHandle = null;
+                this.historyIndex = 0;
+                this.history = [];
+                this.fileSystemHandle = null;
 
-            this.sendEvent("new", { width: width, height: height });
+                this.sendEvent("new", { width: width, height: height });
+            })
         }
         
         //Artimus Files
@@ -3268,8 +3268,7 @@ window.artimus = {
                 if (replaceFile) this.new(
                 (data[5] << 16) + (data[6] << 8) + (data[7]),
                 (data[8] << 16) + (data[9] << 8) + (data[10]),
-                handleImport
-                );
+                ).then(handleImport);
                 else handleImport();
 
                 this.sendEvent("import", { file: input });
@@ -3433,17 +3432,15 @@ window.artimus = {
                 default:
                     const image = new Image();
                     image.onload = () => {
-                        if (replaceFile) this.new(image.width, image.height, () => {
-                            this.setLayer(0, () => {
-                                this.editGL.drawImage(image, 0, 0);
-                            });
+                        if (replaceFile) this.new(image.width, image.height).then(() => {
+                            this.setLayer(0).then(() => this.editGL.drawImage(image, 0, 0));
                         });
 
                         else {
                             this.createLayer(`Layer ${this.layers.length+1}`, false);
-                            this.setLayer(this.layers.length-1, () => {
-                                this.editGL.drawImage(image, 0, 0, image.width, image.height); // Todo: Maybe prompt about resizing the canvas?
-                            });
+                            // Todo: Maybe prompt about resizing the canvas?
+                            // * Maybe DG, though I think that would be through some editor interface due to the nature of the library - David.
+                            this.setLayer(this.layers.length-1).then(() => this.editGL.drawImage(image, 0, 0, image.width, image.height));
                         }
                     }
 
@@ -3585,7 +3582,9 @@ artimus.exportGL = artimus.exportCanvas.getContext("2d");
 artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEvent {
     type = "imageChange";
     capture(workspace) {
-        this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height);
+        this.data = this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height);
     }
-    restore(workspace) {}
+    restore(workspace) {
+        this.workspace.editGL.putImageData(this.data, 0, 0);
+    }
 }
