@@ -444,7 +444,6 @@ window.artimus = {
     
     historicalEvent: class {
         passThrough = false;
-        onlyPassthrough = false;
 
         constructor(workspace, extraInfo) {
             this.workspace = workspace;
@@ -2119,14 +2118,15 @@ window.artimus = {
 
                 if (typeof ID == "number") {
                     //Save current data to the layer position
-                    const oldLayer = this.layers[this.#currentLayer];
+                    const oldID = this.#currentLayer;
+                    const oldLayer = this.layers[oldID];
                     const label = oldLayer.label;
 
                     //Clean up data and save layer data to previous layer.
-                    this.layers[this.#currentLayer].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
-                    this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
+                    this.layers[oldID].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
+                    this.transferLayerData(oldLayer, this.layers[oldID]);
 
-                    this.updateLayer(this.#currentLayer).then(() => {
+                    this.updateLayer(oldID).then(() => {
                         this.#currentLayer = ID;
 
                         //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
@@ -2139,6 +2139,7 @@ window.artimus = {
                         resolve();
 
                         this.sendEvent("layerSwitched", { layer: this.layers[ID], id: ID });
+                        this.addHistoricalEvent("layerChanged", { from: oldID, to: ID });
                     });
                 }
                 else {
@@ -2322,7 +2323,7 @@ window.artimus = {
                 }
 
                 //Add the historical event, and shift elements;
-                if (!this.tracingHistory) this.addHistoricalEvent("layerShift", { from: ID, to: target, by: by });
+                this.addHistoricalEvent("layerMoved", { from: ID, to: target, by: by });
                 this.dirty = true;
             }
         }
@@ -2525,7 +2526,7 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                if (!this.tracingHistory) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
@@ -2553,7 +2554,7 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                if (!this.tracingHistory) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
@@ -2574,35 +2575,39 @@ window.artimus = {
 
         //These use the new historical event system, which should be more modular and open to updates.
         undo() {
-            if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
+            return new Promise(async () => {
+                if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
-            if (this.historyIndex >= this.history.length - 1) return;
-            this.tracingHistory = true;
-            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, false, true);
+                if (this.historyIndex >= this.history.length - 1) return;
+                this.tracingHistory = true;
+                if (this.history[this.historyIndex].passThrough) await this.history[this.historyIndex].restore(this, false, true);
 
-            this.historyIndex++;
+                this.historyIndex++;
 
-            this.history[this.historyIndex].restore(this, false, false);
-            this.dirty = true;
+                await this.history[this.historyIndex].restore(this, false, false);
+                this.dirty = true;
 
-            this.tracingHistory = false;
-            this.sendEvent("undo", { historyIndex: this.historyIndex });
+                this.tracingHistory = false;
+                this.sendEvent("undo", { historyIndex: this.historyIndex });
+            });
         }
 
         redo() {
-            if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
-            
-            if (this.historyIndex <= 0) return;
-            this.tracingHistory = true;
-            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, true, true);
+            return new Promise(async () => {
+                if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
+                
+                if (this.historyIndex <= 0) return;
+                this.tracingHistory = true;
+                if (this.history[this.historyIndex].passThrough) await this.history[this.historyIndex].restore(this, true, true);
 
-            this.historyIndex--;
+                this.historyIndex--;
 
-            this.history[this.historyIndex].restore(this, true, false);
-            this.dirty = true;
+                await this.history[this.historyIndex].restore(this, true, false);
+                this.dirty = true;
 
-            this.tracingHistory = false;
-            this.sendEvent("redo", { historyIndex: this.historyIndex });
+                this.tracingHistory = false;
+                this.sendEvent("redo", { historyIndex: this.historyIndex });
+            });
         }
 
         clearHistory() {
@@ -2614,6 +2619,8 @@ window.artimus = {
         }
 
         addHistoricalEvent(type, additionalInfo) {
+            if (this.tracingHistory) return;
+
             if (this.historyIndex > 0) {
                 this.history.splice(0, this.historyIndex);
             }
@@ -3659,7 +3666,6 @@ artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEv
 //This one is slightly tricky
 artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent {
     passThrough = true;
-    onlyPassthrough = true;
 
     captureLayerData(size) {
         //Capture all layers
@@ -3697,7 +3703,8 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
         const size = this[`${prefix}Size`];
 
         //Resize the image, then put all of the (un)resized data back.
-        workspace.resize(...size, null, true).then(async () => {
+        const promise = workspace.resize(...size, null, true)
+        promise.then(async () => {
             const dataPath = `${prefix}Data`;
             for (let i = 0; i < this[dataPath].length; i++) {
                 workspace.layers[i].dataRaw = new ImageData(this[dataPath][i], ...size);
@@ -3707,13 +3714,14 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
 
             workspace.dirty = true;
         });
+
+        return promise;
     }
 }
 
 //This one is a bit strange but it works.
-artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEvent {
+artimus.historicalEventTypes["layerMoved"] = class extends artimus.historicalEvent {
     passThrough = true;
-    onlyPassthrough = true;
 
     capture(workspace, extraInfo) {
         this.from = extraInfo.from;
@@ -3726,5 +3734,22 @@ artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEve
         //Restoring this should be pretty easy.
         if (redo) workspace.moveLayer(this.from, this.by);
         else workspace.moveLayer(this.to, -this.by);
+    }
+}
+
+//This one is a bit strange but it works.
+artimus.historicalEventTypes["layerChanged"] = class extends artimus.historicalEvent {
+    passThrough = true;
+
+    capture(workspace, extraInfo) {
+        this.from = extraInfo.from;
+        this.to = extraInfo.to;
+    }
+
+    restore(workspace, redo, passThrough) {
+        if (!passThrough) return;
+        //Restoring this should be pretty easy.
+        const promise = (redo) ? workspace.setLayer(this.to) : workspace.setLayer(this.from);
+        return promise;
     }
 }
