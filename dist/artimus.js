@@ -2307,8 +2307,8 @@ window.artimus = {
 
                 if (typeof ID == "number") {
                     this.layers[ID].updateBitmap().then(newBitmap => {
-                        resolve(newBitmap);
                         this.dirty = true;
+                        resolve(newBitmap);
                     });
                 }
                 else {
