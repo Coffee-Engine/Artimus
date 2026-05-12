@@ -452,7 +452,7 @@ window.artimus = {
         }
 
         capture(workspace, extraInfo) { console.warn("Historical event invalid!"); }
-        restore(workspace, redo) { console.warn("Historical event invalid!"); }
+        restore(workspace, redo, passThrough) { console.warn("Historical event invalid!"); }
         //Not required but helpful
         destroy(workspace) {}
     },
@@ -1588,7 +1588,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolDown && this.tool && this.toolFunction.constructive) {
-                                this.updateLayerHistory();
+                                this.addHistoricalEvent("imageChange");
                                 this.dirty = true;
                             }
                             this.toolDown = false; 
@@ -1829,7 +1829,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolFunction.constructive) this.dirty = true;
-                            if (this.tool) this.updateLayerHistory();
+                            if (this.tool) this.addHistoricalEvent("imageChange");
 
                             this.toolDown = false; 
                         }
@@ -2294,9 +2294,6 @@ window.artimus = {
                 this.layers[ID] = layerTo;
                 this.layers[target] = layerFrom;
 
-                //Add the historical event, and shift elements;
-                if (!this.tracingHistory) this.addHistoricalEvent("layerShift", { from: ID, to: target });
-
                 elFrom.positionID = target;
                 elTo.positionID = ID;
 
@@ -2323,6 +2320,10 @@ window.artimus = {
                     if (ID + 1 >= this.layers.length) parent.appendChild(elTo);
                     else parent.insertBefore(elTo, this.layers[ID + 1].element);
                 }
+
+                //Add the historical event, and shift elements;
+                if (!this.tracingHistory) this.addHistoricalEvent("layerShift", { from: ID, to: target, by: by });
+                this.dirty = true;
             }
         }
 
@@ -2385,11 +2386,7 @@ window.artimus = {
             return [];
         }
 
-        //Legacy history function
-        updateLayerHistory() {
-            this.addHistoricalEvent("imageChange");
-        }
-
+        //Layer data
         transferLayerData(from, to) {
             to.name = from.name;
             to.element = from.element;
@@ -2581,11 +2578,11 @@ window.artimus = {
 
             if (this.historyIndex >= this.history.length - 1) return;
             this.tracingHistory = true;
-            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, false);
+            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, false, true);
 
             this.historyIndex++;
 
-            if (!this.history[this.historyIndex].onlyPassthrough) this.history[this.historyIndex].restore(this, false);
+            this.history[this.historyIndex].restore(this, false, false);
             this.dirty = true;
 
             this.tracingHistory = false;
@@ -2597,15 +2594,23 @@ window.artimus = {
             
             if (this.historyIndex <= 0) return;
             this.tracingHistory = true;
-            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, true);
+            if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, true, true);
 
             this.historyIndex--;
 
-            this.history[this.historyIndex].restore(this, true);
+            this.history[this.historyIndex].restore(this, true, false);
             this.dirty = true;
 
             this.tracingHistory = false;
             this.sendEvent("redo", { historyIndex: this.historyIndex });
+        }
+
+        clearHistory() {
+            this.currentLayer = 0;
+            this.historyIndex = 0;
+            this.history = [];
+
+            this.addHistoricalEvent("imageChange");
         }
 
         addHistoricalEvent(type, additionalInfo) {
@@ -2827,17 +2832,11 @@ window.artimus = {
                 //Then clear our current layer
                 this.editGL.clearRect(0, 0, this.width, this.height);
                 await this.updateLayer(this.#currentLayer);
-                console.log("update done");
                 await this.resize(width, height);
-                console.log("resize done");
-                
-                this.currentLayer = 0;
-                this.historyIndex = 0;
-                this.history = [];
 
                 this.fileSystemHandle = null;
+                this.clearHistory();
 
-                this.addHistoricalEvent("imageChange");
                 this.sendEvent("new", { width: width, height: height });
                 resolve();
 
@@ -3259,84 +3258,91 @@ window.artimus = {
         ];
         
         importArtimus(input, replaceFile) {
-            const data = new Uint8Array(input);
+            return new Promise((resolve, reject) => {
+                const data = new Uint8Array(input);
 
-            //Make sure it is an artimus image
-            if (
-                data[0] == artimus.magic[0] &&
-                data[1] == artimus.magic[1] &&
-                data[2] == artimus.magic[2] &&
-                data[3] == artimus.magic[3]
-            ) {
-                const handleImport = () => {
-                    //Calculate size based upon the Tri-fecta.
-                    const width = (data[5] << 16) + (data[6] << 8) + (data[7]);
-                    const height = (data[8] << 16) + (data[9] << 8) + (data[10]);
+                //Make sure it is an artimus image
+                if (
+                    data[0] == artimus.magic[0] &&
+                    data[1] == artimus.magic[1] &&
+                    data[2] == artimus.magic[2] &&
+                    data[3] == artimus.magic[3]
+                ) {
+                    const handleImport = async () => {
+                        //Calculate size based upon the Tri-fecta.
+                        const width = (data[5] << 16) + (data[6] << 8) + (data[7]);
+                        const height = (data[8] << 16) + (data[9] << 8) + (data[10]);
 
-                    //If we are replacing the file resize.
-                    if (replaceFile) this.resize(width, height);
+                        //If we are replacing the file resize.
+                        if (replaceFile) await this.resize(width, height);
 
-                    //Count bytes
-                    const bytesPerLayer = width * height * 4;
-                    const layerCount = (data[11] << 8) + data[12];
-                    const format = (data[4]);
+                        //Count bytes
+                        const bytesPerLayer = width * height * 4;
+                        const layerCount = (data[11] << 8) + data[12];
+                        const format = (data[4]);
 
-                    console.log(`Artimus format is ${format}!`);
+                        console.log(`Artimus format is ${format}!`);
 
-                    let idx = 12;
+                        let idx = 12;
 
-                    //layer 1 is set to NaN as to not confuse it with an actual layer
-                    if (replaceFile) this.layers[0].name = NaN;
-                    
-                    //Loop through layers, and read them with whatever format of reader is needed;
-                    let layerReader = this.layerReaders[format];
-                    if (typeof layerReader == "number") this.layerReaders[layerReader];
-                    if (typeof layerReader != "function") {
-                        console.log(`Invalid layer reader ${layerReader} with origin of ${this.layerReaders[format]} on format ${format}`);
-                        return;
-                    }
-
-                    const fileLayers = this.layers.length;
-                    
-                    //Prevent recalculation of for loop ending.
-                    const forEnd = (replaceFile ? layerCount : layerCount+fileLayers-1);
-                    for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < forEnd; layer++) {
-                        idx = layerReader(data, layer, width, height, bytesPerLayer, idx);
-                    }
-
-                    if (replaceFile) this.setLayer(1).then(() => {
-                        this.removeLayer(0)
-                        this.setLayer(0);
-                    });
-
-                    if (
-                        data[idx + 1] == artimus.jsonMagic[0] &&
-                        data[idx + 2] == artimus.jsonMagic[1] &&
-                        data[idx + 3] == artimus.jsonMagic[2] &&
-                        data[idx + 4] == artimus.jsonMagic[3]
-                    ) {
-                        idx += 4;
+                        //layer 1 is set to NaN as to not confuse it with an actual layer
+                        if (replaceFile) this.layers[0].name = NaN;
                         
-                        try {
-                            const parsed = JSON.parse(this.tDecoder.decode(data.slice(idx + 1, data.length)));
-                            this.projectStorage = parsed;
-                        } catch (error) {
-                            console.error("Json header could possibly be corrupted :(");
+                        //Loop through layers, and read them with whatever format of reader is needed;
+                        let layerReader = this.layerReaders[format];
+                        if (typeof layerReader == "number") this.layerReaders[layerReader];
+                        if (typeof layerReader != "function") {
+                            console.log(`Invalid layer reader ${layerReader} with origin of ${this.layerReaders[format]} on format ${format}`);
+                            return;
                         }
+
+                        const fileLayers = this.layers.length;
+                        
+                        //Prevent recalculation of for loop ending.
+                        const forEnd = (replaceFile ? layerCount : layerCount+fileLayers-1);
+                        for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < forEnd; layer++) {
+                            idx = layerReader(data, layer, width, height, bytesPerLayer, idx);
+                        }
+
+                        if (replaceFile) await this.setLayer(1).then(() => {
+                            this.removeLayer(0)
+                            this.setLayer(0);
+                        });
+
+                        //Make sure the json footer is good.
+                        if (
+                            data[idx + 1] == artimus.jsonMagic[0] &&
+                            data[idx + 2] == artimus.jsonMagic[1] &&
+                            data[idx + 3] == artimus.jsonMagic[2] &&
+                            data[idx + 4] == artimus.jsonMagic[3]
+                        ) {
+                            idx += 4;
+                            
+                            try {
+                                const parsed = JSON.parse(this.tDecoder.decode(data.slice(idx + 1, data.length)));
+                                this.projectStorage = parsed;
+                            } catch (error) {
+                                console.error("Json header could possibly be corrupted :(");
+                            }
+                        }
+
+                        //Update the layer and clear the history again to get a fresh start.
+                        this.setLayer(0).then(() => {
+                            this.clearHistory();
+                        })
                     }
 
+                    if (replaceFile) this.new(
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]),
+                    ).then(handleImport);
+                    else handleImport();
 
+                    this.sendEvent("import", { file: input });
+                    resolve();
                 }
-
-                if (replaceFile) this.new(
-                (data[5] << 16) + (data[6] << 8) + (data[7]),
-                (data[8] << 16) + (data[9] << 8) + (data[10]),
-                ).then(handleImport);
-                else handleImport();
-
-                this.sendEvent("import", { file: input });
-            }
-            else console.error("Artimus File invalid!");
+                else reject("Artimus File invalid!");
+            })
         }
 
         exportArtimus() {
@@ -3645,7 +3651,7 @@ artimus.exportGL = artimus.exportCanvas.getContext("2d");
 artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEvent {
     capture(workspace, extraInfo) { this.data = this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height); }
 
-    restore(workspace, redo) {
+    restore(workspace, redo, passThrough) {
         workspace.editGL.putImageData(this.data, 0, 0);
     }
 }
@@ -3653,6 +3659,7 @@ artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEv
 //This one is slightly tricky
 artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent {
     passThrough = true;
+    onlyPassthrough = true;
 
     captureLayerData(size) {
         //Capture all layers
@@ -3683,10 +3690,13 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
 
         workspace.addEventListener("resized", this._selfCall);
     }
-    restore(workspace, redo) { 
+    restore(workspace, redo, passThrough) {
+        if (!passThrough) return;
+
         const prefix = (redo) ? "new" : "previous";
         const size = this[`${prefix}Size`];
 
+        //Resize the image, then put all of the (un)resized data back.
         workspace.resize(...size, null, true).then(async () => {
             const dataPath = `${prefix}Data`;
             for (let i = 0; i < this[dataPath].length; i++) {
@@ -3708,11 +3718,13 @@ artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEve
     capture(workspace, extraInfo) {
         this.from = extraInfo.from;
         this.to = extraInfo.to;
+        this.by = extraInfo.by;
     }
 
-    restore(workspace, redo) {
+    restore(workspace, redo, passThrough) {
+        if (redo == passThrough) return;
         //Restoring this should be pretty easy.
-        if (redo) workspace.moveLayer(this.from, this.from - this.to);
-        else workspace.moveLayer(this.from, this.to - this.from);
+        if (redo) workspace.moveLayer(this.from, this.by);
+        else workspace.moveLayer(this.to, -this.by);
     }
 }
