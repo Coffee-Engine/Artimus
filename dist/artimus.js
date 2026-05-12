@@ -549,7 +549,10 @@ window.artimus = {
         resizeByRect(active, rx, ry, width, height, editingData) {
             return new Promise((resolve) => {
                 const layer = (active) ? editingData : this;
-                if (width == layer.width && height == layer.height) return;
+                if (width == layer.width && height == layer.height) {
+                    resolve();
+                    return;
+                }
 
                 //Get needed attributes for the transfer
                 const output = new ImageData(width, height);
@@ -584,7 +587,10 @@ window.artimus = {
         resizeByAnchor(active, anchor, width, height, editingData) {
             return new Promise((resolve) => {
                 const layer = (active) ? editingData : this;
-                if (width == layer.width && height == layer.height) return;
+                if (width == layer.width && height == layer.height) {
+                    resolve();
+                    return;
+                }
 
                 //Get needed attributes for the transfer
                 const output = new ImageData(width, height);
@@ -2821,7 +2827,9 @@ window.artimus = {
                 //Then clear our current layer
                 this.editGL.clearRect(0, 0, this.width, this.height);
                 await this.updateLayer(this.#currentLayer);
+                console.log("update done");
                 await this.resize(width, height);
+                console.log("resize done");
                 
                 this.currentLayer = 0;
                 this.historyIndex = 0;
@@ -3319,7 +3327,7 @@ window.artimus = {
 
 
                 }
-                
+
                 if (replaceFile) this.new(
                 (data[5] << 16) + (data[6] << 8) + (data[7]),
                 (data[8] << 16) + (data[9] << 8) + (data[10]),
