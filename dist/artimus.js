@@ -88,10 +88,12 @@ window.artimus = {
         return getComputedStyle(document.body).getPropertyValue(`--artimus-${variable}`);
     },
 
+    //Basic number and buffer functions
     iRandRange: (min, max) => {
         return Math.floor(Math.random() * (max - min)) + min;
     },
 
+    //Color math
     BrightestChannel: (Color) => {
         if (typeof Color == "string") {
             const split = artimus.HexToRGB(Color);
@@ -2323,8 +2325,8 @@ window.artimus = {
 
                 if (typeof ID == "number") {
                     this.layers[ID].updateBitmap().then(newBitmap => {
-                        resolve(newBitmap);
                         this.dirty = true;
+                        resolve(newBitmap);
                     });
                 }
                 else {
@@ -3648,8 +3650,9 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
         const layers = [];
         for (let i = 0; i < this.workspace.layers.length; i++) {
             //Copy bytes into a new area.
-            if (i == this.workspace.currentLayer) layers.push(this.workspace.editGL.getImageData(0, 0, ...size).data);
-            else layers.push(this.workspace.layers[i].data);
+            if (i == this.workspace.currentLayer) 
+                layers.push(this.workspace.editGL.getImageData(0, 0, ...size).data);
+            else layers.push(this.workspace.layers[i].data, ...size);
         }
 
         return layers;
@@ -3657,7 +3660,7 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
     
     resizeFinalized() {
         //Remove resize listener and capture new data;
-        this.workspace.removeEventListener("resized", this.resizeFinalized);
+        this.workspace.removeEventListener("resized", this._selfCall);
         this.newData = this.captureLayerData(this.newSize);
     }
     
@@ -3665,9 +3668,11 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
         this.previousSize = extraInfo.previous;
         this.newSize = extraInfo.new;
 
+        //Note to contributors, without self call this will explode /srs
         this.previousData = this.captureLayerData(this.previousSize);
+        this._selfCall = () => this.resizeFinalized.call(this);
 
-        workspace.addEventListener("resized", () => this.resizeFinalized.call(this));
+        workspace.addEventListener("resized", this._selfCall);
     }
     restore(workspace, redo) { 
         const prefix = (redo) ? "new" : "previous";
