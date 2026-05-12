@@ -444,6 +444,7 @@ window.artimus = {
     
     historicalEvent: class {
         passThrough = false;
+        onlyPassthrough = false;
 
         constructor(workspace, extraInfo) {
             this.workspace = workspace;
@@ -2578,7 +2579,7 @@ window.artimus = {
 
             this.historyIndex++;
 
-            this.history[this.historyIndex].restore(this, false);
+            if (!this.history[this.historyIndex].onlyPassthrough) this.history[this.historyIndex].restore(this, false);
             this.dirty = true;
 
             this.tracingHistory = false;
@@ -3318,7 +3319,7 @@ window.artimus = {
 
 
                 }
-
+                
                 if (replaceFile) this.new(
                 (data[5] << 16) + (data[6] << 8) + (data[7]),
                 (data[8] << 16) + (data[9] << 8) + (data[10]),
@@ -3693,6 +3694,9 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
 
 //This one is a bit strange but it works.
 artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEvent {
+    passThrough = true;
+    onlyPassthrough = true;
+
     capture(workspace, extraInfo) {
         this.from = extraInfo.from;
         this.to = extraInfo.to;
