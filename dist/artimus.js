@@ -2286,7 +2286,7 @@ window.artimus = {
                 this.layers[target] = layerFrom;
 
                 //Add the historical event, and shift elements;
-                this.addHistoricalEvent("layerShift", { from: ID, to: target });
+                if (!this.tracingHistory) this.addHistoricalEvent("layerShift", { from: ID, to: target });
 
                 elFrom.positionID = target;
                 elTo.positionID = ID;
