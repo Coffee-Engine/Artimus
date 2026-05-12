@@ -386,6 +386,8 @@ window.artimus = {
         "ctrl+c": "copy",
         "ctrl+v": "paste",
         "c": "clearSelection",
+        "ctrl+=": (workspace) => { workspace.zoom *= 1.1 },
+        "ctrl+-": (workspace) => { workspace.zoom /= 1.1 },
     },
 
     modifierKeys: [
