@@ -195,7 +195,9 @@
     "artimus.modal.settings.hotkeys.functions.cropToSelection": "Crop",
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Load",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Save",
-    "artimus.modal.settings.hotkeys.functions.createLayer": "Add layer",
+    "artimus.modal.settings.hotkeys.functions.createLayer": "Add Layer",
+    "artimus.modal.settings.hotkeys.functions.zoomIn": "Zoom In",
+    "artimus.modal.settings.hotkeys.functions.zoomOut": "Zoom Out",
 
     "artimus.modal.settings.palettes.create": "New Palette",
     "artimus.modal.settings.palettes.import": "Load Palette",

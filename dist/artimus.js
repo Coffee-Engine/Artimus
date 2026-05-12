@@ -386,8 +386,8 @@ window.artimus = {
         "ctrl+c": "copy",
         "ctrl+v": "paste",
         "c": "clearSelection",
-        "ctrl+=": (workspace) => { workspace.zoom *= 1.1 },
-        "ctrl+-": (workspace) => { workspace.zoom /= 1.1 },
+        "ctrl+=": "zoomIn",
+        "ctrl+-": "zoomOut",
     },
 
     modifierKeys: [
@@ -837,6 +837,22 @@ window.artimus = {
             color1: [ 0.9, 0.9, 0.9 ],
             color2: [ 0.8, 0.8, 0.8 ],
             size: 8
+        }
+
+        zoomIn(percentage) {
+            if (percentage === 0) percentage = 1;
+            if (typeof percentage != "number") percentage = 2;
+
+            this.zoom *= percentage;
+            return this.zoom;
+        }
+
+        zoomOut(percentage) {
+            if (percentage === 0) percentage = 1;
+            if (typeof percentage != "number") percentage = 2;
+
+            this.zoom /= percentage;
+            return this.zoom;
         }
 
         updatePosition() {

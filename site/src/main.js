@@ -190,6 +190,8 @@ window.editor = {
         "createLayer",
         "clearSelection",
         "cropToSelection",
+        "zoomIn",
+        "zoomOut"
     ],
 
     refreshLanguage: () => {
