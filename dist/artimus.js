@@ -2177,6 +2177,7 @@ window.artimus = {
         createLayer(name, noSwitch) {
             const layer = new artimus.layer(this.width, this.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
             this.sendEvent("layerCreated", { layer: layer, duplicate: false });
+            this.addHistoricalEvent("layerAdded", layer);
             return layer;
         }
 
@@ -2448,6 +2449,7 @@ window.artimus = {
                     this.#currentLayer -= 1;
                 }
 
+                this.addHistoricalEvent("layerRemoved", this.layers[ID]);
                 this.layers[ID].dispose(ID);
                 this.sendEvent("layerRemoved", { layerID: ID });
             }
@@ -2611,11 +2613,12 @@ window.artimus = {
         }
 
         clearHistory() {
-            this.currentLayer = 0;
-            this.historyIndex = 0;
-            this.history = [];
+            this.setLayer(0).then(() => {
+                this.historyIndex = 0;
+                this.history = [];
 
-            this.addHistoricalEvent("imageChange");
+                this.addHistoricalEvent("imageChange");
+            });
         }
 
         addHistoricalEvent(type, additionalInfo) {
@@ -3721,6 +3724,45 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
     }
 }
 
+//Layer events
+
+//Addition and removal are a pain in the A$#!
+artimus.historicalEventTypes["layerAdded"] = class extends artimus.historicalEvent {
+    passThrough = true;
+
+    capture(workspace, extraInfo) {
+        this.name = extraInfo.name;
+    }
+    
+    restore(workspace, redo, passThrough) {
+        if (!passThrough) return;
+
+        if (redo) workspace.createLayer(this.name);
+        else workspace.removeLayer(this.name);
+    }
+}
+
+artimus.historicalEventTypes["layerRemoved"] = class extends artimus.historicalEvent {
+    passThrough = true;
+
+    capture(workspace, extraInfo) {
+        this.name = extraInfo.name;
+        this.data = extraInfo.dataRaw.data;
+        this.index = workspace.getLayerIndex(this.name) + 1;
+    }
+    
+    restore(workspace, redo, passThrough) {
+        if (!passThrough) return;
+
+        if (!redo) {
+            const layer = workspace.createLayer(this.name, true)
+            layer.dataRaw = new ImageData(this.data, workspace.width, workspace.height);
+            layer.updateBitmap();
+        }
+        else workspace.removeLayer(this.name);
+    }
+}
+
 //This one is a bit strange but it works.
 artimus.historicalEventTypes["layerMoved"] = class extends artimus.historicalEvent {
     passThrough = true;
@@ -3739,7 +3781,6 @@ artimus.historicalEventTypes["layerMoved"] = class extends artimus.historicalEve
     }
 }
 
-//This one is a bit strange but it works.
 artimus.historicalEventTypes["layerChanged"] = class extends artimus.historicalEvent {
     passThrough = true;
 
@@ -3749,7 +3790,7 @@ artimus.historicalEventTypes["layerChanged"] = class extends artimus.historicalE
     }
 
     restore(workspace, redo, passThrough) {
-        if (!passThrough) return;
+        if (redo == passThrough) return;
         //Restoring this should be pretty easy.
         const promise = (redo) ? workspace.setLayer(this.to) : workspace.setLayer(this.from);
         return promise;
