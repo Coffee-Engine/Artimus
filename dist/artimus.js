@@ -2619,6 +2619,8 @@ window.artimus = {
         }
 
         addHistoricalEvent(type, additionalInfo) {
+            type = type || "imageChange";
+            
             if (this.tracingHistory) return;
 
             if (this.historyIndex > 0) {
