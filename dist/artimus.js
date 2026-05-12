@@ -752,6 +752,7 @@ window.artimus = {
         get height() { return this.#height; }
         
         dirty = true;
+        tracingHistory = false;
 
         //Layers
         layerHiddenAnimation = 0;
@@ -2460,9 +2461,9 @@ window.artimus = {
         }
 
         //Resizing in style
-        resize(width, height, anchor, historical) { 
-            if (anchor) return this.resizeByAnchor(width, height, anchor, historical);
-            else return this.resizeByRect(0, 0, width, height, historical);
+        resize(width, height, anchor) { 
+            if (anchor) return this.resizeByAnchor(width, height, anchor);
+            else return this.resizeByRect(0, 0, width, height);
         }
 
         _resizeCanvases(width, height) {
@@ -2506,7 +2507,7 @@ window.artimus = {
             this.GL.texImage2D(this.GL.TEXTURE_2D, 0, this.GL.RGBA, this.GL.RGBA, this.GL.UNSIGNED_BYTE, this.editingCanvas);
         }
 
-        resizeByRect(x, y, width, height, historical) {
+        resizeByRect(x, y, width, height) {
             return new Promise(async (resolve) => {
                 if (x < 0 || typeof x != "number") x = 0;
                 else if (x >= this.width) x = this.width - 1;
@@ -2518,7 +2519,7 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                if (!this.tracingHistory) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
@@ -2533,7 +2534,7 @@ window.artimus = {
             });
         }
 
-        resizeByAnchor(width, height, anchor, historical) {
+        resizeByAnchor(width, height, anchor) {
             return new Promise(async (resolve) => {
                 //Get anchor data
                 anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
@@ -2546,7 +2547,7 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                if (!historical) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
+                if (!this.tracingHistory) this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
 
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
@@ -2569,28 +2570,32 @@ window.artimus = {
         undo() {
             if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
+            if (this.historyIndex >= this.history.length - 1) return;
+            this.tracingHistory = true;
             if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, false);
 
-            if (this.historyIndex >= this.history.length - 1) return;
             this.historyIndex++;
 
             this.history[this.historyIndex].restore(this, false);
             this.dirty = true;
 
+            this.tracingHistory = false;
             this.sendEvent("undo", { historyIndex: this.historyIndex });
         }
 
         redo() {
             if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
-
+            
+            if (this.historyIndex <= 0) return;
+            this.tracingHistory = true;
             if (this.history[this.historyIndex].passThrough) this.history[this.historyIndex].restore(this, true);
 
-            if (this.historyIndex <= 0) return;
             this.historyIndex--;
 
             this.history[this.historyIndex].restore(this, true);
             this.dirty = true;
 
+            this.tracingHistory = false;
             this.sendEvent("redo", { historyIndex: this.historyIndex });
         }
 
@@ -3683,10 +3688,14 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
 
 //This one is a bit strange but it works.
 artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEvent {
-    capture(workspace, extraInfo) { console.log(workspace, extraInfo); }
+    capture(workspace, extraInfo) {
+        this.from = extraInfo.from;
+        this.to = extraInfo.to;
+    }
 
     restore(workspace, redo) {
-        if (redo) console.log("redo");
-        else console.log("undo");
+        //Restoring this should be pretty easy.
+        if (redo) workspace.moveLayer(this.from, this.from - this.to);
+        else workspace.moveLayer(this.from, this.to - this.from);
     }
 }
