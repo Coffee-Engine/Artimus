@@ -2284,15 +2284,14 @@ window.artimus = {
                 this.layers[ID] = layerTo;
                 this.layers[target] = layerFrom;
 
+                //Add the historical event, and shift elements;
+                this.addHistoricalEvent("layerShift", { from: ID, to: target });
+
                 elFrom.positionID = target;
                 elTo.positionID = ID;
 
-                if (ID == this.currentLayer) {
-                    this.#currentLayer = target;
-                }
-                else if (target == this.currentLayer) {
-                    this.#currentLayer = ID;
-                }
+                if (ID == this.currentLayer) this.#currentLayer = target;
+                else if (target == this.currentLayer) this.#currentLayer = ID;
 
                 const parent = elFrom.parentElement;
 
@@ -3679,5 +3678,15 @@ artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent 
 
             workspace.dirty = true;
         });
+    }
+}
+
+//This one is a bit strange but it works.
+artimus.historicalEventTypes["layerShift"] = class extends artimus.historicalEvent {
+    capture(workspace, extraInfo) { console.log(workspace, extraInfo); }
+
+    restore(workspace, redo) {
+        if (redo) console.log("redo");
+        else console.log("undo");
     }
 }
