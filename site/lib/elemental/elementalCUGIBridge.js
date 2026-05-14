@@ -10,6 +10,7 @@ if (window.CUGI) {
         input.alpha = (typeof data.alpha == "function") ? data.alpha() : data.alpha;
         input.gradient = (typeof data.gradient == "function") ? data.gradient() : data.gradient;
         input.disabled = (typeof data.disabled == "function") ? data.disabled() : data.disabled;
+        input.forCanvas = (typeof data.disabled == "function") ? data.forCanvas() : data.forCanvas;
 
         input.onchange = CUGI.macros.onchange(data, input);
 
