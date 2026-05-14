@@ -51,7 +51,7 @@ artimus.tools.line = class extends artimus.tool {
     }
 
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
+        { target: artEditor.toolProperties, key: "strokeColor", type: "color", alpha: true },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 1 },
         { target: artEditor.toolProperties, key: "pixelBrush", type: "boolean" },
     ]}

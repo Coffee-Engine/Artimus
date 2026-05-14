@@ -45,8 +45,8 @@ artimus.tools.circle = class extends artimus.tool {
     }
 
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "fillColor", type: "color" },
-        { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
+        { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true, gradient: true },
+        { target: artEditor.toolProperties, key: "strokeColor", type: "color", alpha: true, gradient: true },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 0 },
     ]}
 

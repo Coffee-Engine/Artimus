@@ -128,7 +128,7 @@ artimus.tools.paintBucket = class extends artimus.tool {
     }
 
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "fillColor", type: "color", gradient: true },
+        { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true, gradient: true },
         { target: artEditor.toolProperties, key: "pierceTransparency", type: "boolean" },
     ]}
 
