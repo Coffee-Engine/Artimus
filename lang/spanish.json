@@ -189,6 +189,8 @@
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Cargar",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Guardar",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Nueva capa",
+    "artimus.modal.settings.hotkeys.functions.zoomIn": "Hacer zoom",
+    "artimus.modal.settings.hotkeys.functions.zoomOut": "Quitar Zoom",
 
     "artimus.modal.settings.palettes.create": "Nuevo Paleta",
     "artimus.modal.settings.palettes.import": "Cargar Paleta",
