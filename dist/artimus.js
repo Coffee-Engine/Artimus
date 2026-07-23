@@ -3336,7 +3336,7 @@ window.artimus = {
                         }
 
                         //Update the layer and clear the history again to get a fresh start.
-                        this.setLayer(0).then(() => {
+                        if (replaceFile) this.setLayer(0).then(() => {
                             this.clearHistory();
                         })
                     }
@@ -3486,6 +3486,7 @@ window.artimus = {
                 fileInput.type = "file";
                 fileInput.accept = "image/*, .artimus";
 
+                //Wrap into a promise to later return when the file is selected.
                 const filePromise = new Promise((resolve) => {
                     fileInput.onchange = () => {
                         this.importFromImage(fileInput.files[0], replaceFile);
@@ -3510,8 +3511,12 @@ window.artimus = {
                 default:
                     const image = new Image();
                     image.onload = () => {
+                        //If we want to fully replace the file, create the new file, draw the image and clear the history
                         if (replaceFile) this.new(image.width, image.height).then(() => {
-                            this.setLayer(0).then(() => this.editGL.drawImage(image, 0, 0));
+                            this.setLayer(0).then(() => {
+                                this.editGL.drawImage(image, 0, 0);
+                                this.clearHistory();
+                            });
                         });
 
                         else {
