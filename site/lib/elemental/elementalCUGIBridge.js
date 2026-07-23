@@ -7,6 +7,7 @@ if (window.CUGI) {
         input.value = String(target[key]);
         input.className = "CUGI-Color";
 
+        //Just parse options into the input.
         input.alpha = (typeof data.alpha == "function") ? data.alpha() : data.alpha;
         input.gradient = (typeof data.gradient == "function") ? data.gradient() : data.gradient;
         input.disabled = (typeof data.disabled == "function") ? data.disabled() : data.disabled;

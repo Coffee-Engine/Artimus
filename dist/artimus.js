@@ -450,7 +450,7 @@ window.artimus = {
 
         #history = []
         #historyIndex = 0
-        
+
         get historyLength() { return this.#history.length; }
         get historyIndex() { return this.#historyIndex; }
 
@@ -654,9 +654,10 @@ window.artimus = {
             //Funny JS array hack
             this.#history = this.#history.slice(this.#historyIndex, this.#history.length);
 
-            //Get current state
+            //Get current state, and reset the index to 0
             if (this.isCurrentlayer()) this.#history.splice(0, 0, this.workspace.editGL.getImageData(0, 0, this.width, this.height).data);
             else this.#history.splice(0, 0, this.data);
+            this.#historyIndex = 0;
             
             if (this.#history.length > artimus.maxHistory) this.#history = this.#history.slice(0, artimus.maxHistory);
         }
