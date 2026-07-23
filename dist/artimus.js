@@ -439,30 +439,20 @@ window.artimus = {
         constructive = true;
     },
 
-    //History is important, and it's finally getting some TLC
-    maxHistory: 20,
-    
-    historicalEvent: class {
-        passThrough = false;
-
-        constructor(workspace, extraInfo) {
-            this.workspace = workspace;
-            this.capture(workspace, extraInfo);
-        }
-
-        capture(workspace, extraInfo) { console.warn("Historical event invalid!"); }
-        restore(workspace, redo, passThrough) { console.warn("Historical event invalid!"); }
-        //Not required but helpful
-        destroy(workspace) {}
-    },
-
-    historicalEventTypes: {},
+    //History is important, now it is associated with the layer
+    maxHistory: 10,
     
     layer: class {
         blendMode = "source-over";
         alpha = 1;
         bitmap = null;
         visibility = true;
+
+        #history = []
+        #historyIndex = 0
+        
+        get historyLength() { return this.#history.length; }
+        get historyIndex() { return this.#historyIndex; }
 
         get data() {
             if (this.dataRaw) return this.dataRaw.data;
@@ -511,6 +501,9 @@ window.artimus = {
 
             //Finally use the new layer
             if (!noSwitch) this.workspace.setLayer(name);
+
+            //Capture initial history
+            this.captureHistory();
         }
 
         updateBitmap() {
@@ -579,6 +572,7 @@ window.artimus = {
                 }
 
                 this.dataRaw = output;
+                this.clearHistory();
                 this.updateBitmap().then(resolve);
             });
         }
@@ -623,8 +617,54 @@ window.artimus = {
                 }
 
                 this.dataRaw = output;
+                this.clearHistory();
                 this.updateBitmap().then(resolve);
             });
+        }
+
+        isCurrentlayer() {
+            return this.workspace.currentLayer == this.workspace.getLayerIndex(this.name);
+        }
+
+        //Undoing and redoing is relatively simple
+        undo() {
+            if (this.#historyIndex + 1 >= this.#history.length) return;
+            
+            this.#historyIndex++;
+            this.dataRaw = new ImageData(this.#history[this.#historyIndex], this.width, this.height);
+            
+            //Get if we are the current layer
+            if (this.isCurrentlayer()) this.workspace.editGL.putImageData(this.dataRaw, 0, 0);
+            else this.updateBitmap();
+            this.workspace.dirty = true;
+        }
+
+        redo() {
+            if (this.#historyIndex <= 0) return;
+
+            this.#historyIndex--;
+            this.dataRaw = new ImageData(this.#history[this.#historyIndex], this.width, this.height);
+
+            if (this.isCurrentlayer()) this.workspace.editGL.putImageData(this.dataRaw, 0, 0);
+            else this.updateBitmap();
+            this.workspace.dirty = true;
+        }
+
+        captureHistory() {
+            //Funny JS array hack
+            this.#history = this.#history.slice(this.#historyIndex, this.#history.length);
+
+            //Get current state
+            if (this.isCurrentlayer()) this.#history.splice(0, 0, this.workspace.editGL.getImageData(0, 0, this.width, this.height).data);
+            else this.#history.splice(0, 0, this.data);
+            
+            if (this.#history.length > artimus.maxHistory) this.#history = this.#history.slice(0, artimus.maxHistory);
+        }
+
+        clearHistory() {
+            this.#history = [];
+            this.#historyIndex = 0;
+            this.captureHistory();
         }
     },
 
@@ -760,7 +800,6 @@ window.artimus = {
         get height() { return this.#height; }
         
         dirty = true;
-        tracingHistory = false;
 
         //Layers
         layerHiddenAnimation = 0;
@@ -790,8 +829,14 @@ window.artimus = {
         }
 
         //History
-        history = [];
-        historyIndex = 0;
+        get historyLength() {
+            if (this.layers[this.currentLayer]) return this.layers[this.currentLayer].historyLength;
+            return 0;
+        }
+        get historyIndex() {
+            if (this.layers[this.currentLayer]) return this.layers[this.currentLayer].historyIndex;
+            return 0;
+        }
 
         //CSS classes
         toolClass = "artimus-button artimus-sideBarButton artimus-tool ";
@@ -1587,7 +1632,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolDown && this.tool && this.toolFunction.constructive) {
-                                this.addHistoricalEvent("imageChange");
+                                this.layers[this.currentLayer].captureHistory();
                                 this.dirty = true;
                             }
                             this.toolDown = false; 
@@ -1828,7 +1873,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolFunction.constructive) this.dirty = true;
-                            if (this.tool) this.addHistoricalEvent("imageChange");
+                            if (this.tool) this.layers[this.currentLayer].captureHistory();
 
                             this.toolDown = false; 
                         }
@@ -2139,7 +2184,6 @@ window.artimus = {
                         resolve();
 
                         this.sendEvent("layerSwitched", { layer: this.layers[ID], id: ID });
-                        this.addHistoricalEvent("layerChanged", { from: oldID, to: ID });
                     });
                 }
                 else {
@@ -2177,7 +2221,6 @@ window.artimus = {
         createLayer(name, noSwitch) {
             const layer = new artimus.layer(this.width, this.height, name || (`${artimus.translate("layer#", "layer").replace("#", this.layers.length + 1)}`), this, noSwitch);
             this.sendEvent("layerCreated", { layer: layer, duplicate: false });
-            this.addHistoricalEvent("layerAdded", layer);
             return layer;
         }
 
@@ -2324,7 +2367,6 @@ window.artimus = {
                 }
 
                 //Add the historical event, and shift elements;
-                this.addHistoricalEvent("layerMoved", { from: ID, to: target, by: by });
                 this.dirty = true;
             }
         }
@@ -2430,7 +2472,7 @@ window.artimus = {
                 return this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
             }
 
-            return new Promise((resolve) => { resolve() });
+            return new Promise((resolve) => { resolve(); });
         }
 
         removeLayer(ID) {
@@ -2449,7 +2491,6 @@ window.artimus = {
                     this.#currentLayer -= 1;
                 }
 
-                this.addHistoricalEvent("layerRemoved", this.layers[ID]);
                 this.layers[ID].dispose(ID);
                 this.sendEvent("layerRemoved", { layerID: ID });
             }
@@ -2528,8 +2569,6 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
-
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
                     await this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
@@ -2538,6 +2577,8 @@ window.artimus = {
                 //Update textures
                 this._updateTextures();
                 this.dirty = true;
+
+                //Clear the history and send the event
                 this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
                 resolve();
             });
@@ -2556,8 +2597,6 @@ window.artimus = {
                 if (height < 1 || typeof height != "number") height = 1;
 
                 //Add the historical event;
-                this.addHistoricalEvent("resized", { previous: [this.width, this.height], new: [width, height] });
-
                 const editingData = this._resizeCanvases(width, height);
                 for (let index = 0; index < this.layers.length; index++) {
                     await this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
@@ -2570,6 +2609,8 @@ window.artimus = {
                 //Update textures
                 this._updateTextures();
                 this.dirty = true;
+
+                //Clear the history and send the event
                 this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
                 resolve();
             });
@@ -2580,16 +2621,7 @@ window.artimus = {
             return new Promise(async () => {
                 if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
-                if (this.historyIndex >= this.history.length - 1) return;
-                this.tracingHistory = true;
-                if (this.history[this.historyIndex].passThrough) await this.history[this.historyIndex].restore(this, false, true);
-
-                this.historyIndex++;
-
-                await this.history[this.historyIndex].restore(this, false, false);
-                this.dirty = true;
-
-                this.tracingHistory = false;
+                this.layers[this.currentLayer].undo();
                 this.sendEvent("undo", { historyIndex: this.historyIndex });
             });
         }
@@ -2598,51 +2630,14 @@ window.artimus = {
             return new Promise(async () => {
                 if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
                 
-                if (this.historyIndex <= 0) return;
-                this.tracingHistory = true;
-                if (this.history[this.historyIndex].passThrough) await this.history[this.historyIndex].restore(this, true, true);
-
-                this.historyIndex--;
-
-                await this.history[this.historyIndex].restore(this, true, false);
-                this.dirty = true;
-
-                this.tracingHistory = false;
+                this.layers[this.currentLayer].redo();
                 this.sendEvent("redo", { historyIndex: this.historyIndex });
             });
         }
 
         clearHistory() {
-            this.setLayer(0).then(() => {
-                this.historyIndex = 0;
-                this.history = [];
-
-                this.addHistoricalEvent("imageChange");
-            });
-        }
-
-        addHistoricalEvent(type, additionalInfo) {
-            type = type || "imageChange";
-            
-            if (this.tracingHistory) return;
-
-            if (this.historyIndex > 0) {
-                this.history.splice(0, this.historyIndex);
-            }
-
-            this.historyIndex = 0;
-
-            //Make sure the type is valid
-            if (artimus.historicalEventTypes[type]) {
-                const event = new artimus.historicalEventTypes[type](this, additionalInfo || {});
-                event.type = type;
-
-                //Create and capture the data
-                this.history.splice(0, 0, event);
-                if (this.history.length > artimus.maxHistory) {
-                    const popped = this.history.pop();
-                    if (popped instanceof artimus.historicalEvent) popped.destroy();
-                }
+            for (let layerID = 0; layerID < this.layers; layerID++) {
+                this.layers[layerID].clearHistory();
             }
         }
 
@@ -2846,6 +2841,7 @@ window.artimus = {
                 await this.updateLayer(this.#currentLayer);
                 await this.resize(width, height);
 
+                //Clear the FS handle and reset the history
                 this.fileSystemHandle = null;
                 this.clearHistory();
 
@@ -3658,141 +3654,3 @@ window.artimus = {
 artimus.exportCanvas.width = 1;
 artimus.exportCanvas.height = 1;
 artimus.exportGL = artimus.exportCanvas.getContext("2d");
-
-//Now for the events automatically defined within artimus.
-artimus.historicalEventTypes["imageChange"] = class extends artimus.historicalEvent {
-    capture(workspace, extraInfo) { this.data = this.workspace.editGL.getImageData(0, 0, workspace.width, workspace.height); }
-
-    restore(workspace, redo, passThrough) {
-        workspace.editGL.putImageData(this.data, 0, 0);
-    }
-}
-
-//This one is slightly tricky
-artimus.historicalEventTypes["resized"] = class extends artimus.historicalEvent {
-    passThrough = true;
-
-    captureLayerData(size) {
-        //Capture all layers
-        const layers = [];
-        for (let i = 0; i < this.workspace.layers.length; i++) {
-            //Copy bytes into a new area.
-            if (i == this.workspace.currentLayer) 
-                layers.push(this.workspace.editGL.getImageData(0, 0, ...size).data);
-            else layers.push(this.workspace.layers[i].data, ...size);
-        }
-
-        return layers;
-    }
-    
-    resizeFinalized() {
-        //Remove resize listener and capture new data;
-        this.workspace.removeEventListener("resized", this._selfCall);
-        this.newData = this.captureLayerData(this.newSize);
-    }
-    
-    capture(workspace, extraInfo) {
-        this.previousSize = extraInfo.previous;
-        this.newSize = extraInfo.new;
-
-        //Note to contributors, without self call this will explode /srs
-        this.previousData = this.captureLayerData(this.previousSize);
-        this._selfCall = () => this.resizeFinalized.call(this);
-
-        workspace.addEventListener("resized", this._selfCall);
-    }
-    restore(workspace, redo, passThrough) {
-        if (!passThrough) return;
-
-        const prefix = (redo) ? "new" : "previous";
-        const size = this[`${prefix}Size`];
-
-        //Resize the image, then put all of the (un)resized data back.
-        const promise = workspace.resize(...size, null, true)
-        promise.then(async () => {
-            const dataPath = `${prefix}Data`;
-            for (let i = 0; i < this[dataPath].length; i++) {
-                workspace.layers[i].dataRaw = new ImageData(this[dataPath][i], ...size);
-                if (i == workspace.currentLayer) workspace.editGL.putImageData(workspace.layers[i].dataRaw, 0, 0)
-                else await workspace.layers[i].updateBitmap();
-            }
-
-            workspace.dirty = true;
-        });
-
-        return promise;
-    }
-}
-
-//Layer events
-
-//Addition and removal are a pain in the A$#!
-artimus.historicalEventTypes["layerAdded"] = class extends artimus.historicalEvent {
-    passThrough = true;
-
-    capture(workspace, extraInfo) {
-        this.name = extraInfo.name;
-    }
-    
-    restore(workspace, redo, passThrough) {
-        if (!passThrough) return;
-
-        if (redo) workspace.createLayer(this.name);
-        else workspace.removeLayer(this.name);
-    }
-}
-
-artimus.historicalEventTypes["layerRemoved"] = class extends artimus.historicalEvent {
-    passThrough = true;
-
-    capture(workspace, extraInfo) {
-        this.name = extraInfo.name;
-        this.data = extraInfo.dataRaw.data;
-        this.index = workspace.getLayerIndex(this.name) + 1;
-    }
-    
-    restore(workspace, redo, passThrough) {
-        if (!passThrough) return;
-
-        if (!redo) {
-            const layer = workspace.createLayer(this.name, true)
-            layer.dataRaw = new ImageData(this.data, workspace.width, workspace.height);
-            layer.updateBitmap();
-        }
-        else workspace.removeLayer(this.name);
-    }
-}
-
-//This one is a bit strange but it works.
-artimus.historicalEventTypes["layerMoved"] = class extends artimus.historicalEvent {
-    passThrough = true;
-
-    capture(workspace, extraInfo) {
-        this.from = extraInfo.from;
-        this.to = extraInfo.to;
-        this.by = extraInfo.by;
-    }
-
-    restore(workspace, redo, passThrough) {
-        if (redo == passThrough) return;
-        //Restoring this should be pretty easy.
-        if (redo) workspace.moveLayer(this.from, this.by);
-        else workspace.moveLayer(this.to, -this.by);
-    }
-}
-
-artimus.historicalEventTypes["layerChanged"] = class extends artimus.historicalEvent {
-    passThrough = true;
-
-    capture(workspace, extraInfo) {
-        this.from = extraInfo.from;
-        this.to = extraInfo.to;
-    }
-
-    restore(workspace, redo, passThrough) {
-        if (redo == passThrough) return;
-        //Restoring this should be pretty easy.
-        const promise = (redo) ? workspace.setLayer(this.to) : workspace.setLayer(this.from);
-        return promise;
-    }
-}
