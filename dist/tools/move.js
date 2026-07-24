@@ -102,7 +102,7 @@ artimus.tools.move = class extends artimus.tool {
     deselected(gl, previewGL, toolProperties) {
         this.drawImage(gl);
         this.workspace.dirty = true;
-        this.workspace.addHistoricalEvent();
+        this.workspace.captureHistory();
     }
 
     isInCircle(x, y, cx, cy, radius) { return Math.sqrt(Math.pow(cx - x, 2) + Math.pow(cy - y, 2)) <= radius; }
@@ -330,7 +330,7 @@ artimus.tools.move = class extends artimus.tool {
         }
 
         if (this.flailedCards) {
-            this.workspace.addHistoricalEvent();
+            this.workspace.captureHistory();
             this.flailedCards = false;
         }
     }

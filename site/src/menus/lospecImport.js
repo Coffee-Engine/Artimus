@@ -104,5 +104,5 @@ editor.lospecMenu = () => {
                 paletteJSONRetrieved("{}", "");
             });
         }
-    }, { height: 16  });
+    }, { height: 20 });
 }

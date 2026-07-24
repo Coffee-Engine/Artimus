@@ -101,7 +101,7 @@ artimus.tools.text = class extends artimus.tool {
         if (toolProperties.pixelBrush) gl.filter = "none";
 
         if (!preview) {
-            this.workspace.addHistoricalEvent();
+            this.workspace.captureHistory();
             this.workspace.dirty = true;
         }
     }

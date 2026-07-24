@@ -1633,7 +1633,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolDown && this.tool && this.toolFunction.constructive) {
-                                this.layers[this.currentLayer].captureHistory();
+                                this.captureHistory();
                                 this.dirty = true;
                             }
                             this.toolDown = false; 
@@ -1874,7 +1874,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolFunction.constructive) this.dirty = true;
-                            if (this.tool) this.layers[this.currentLayer].captureHistory();
+                            if (this.tool) this.captureHistory();
 
                             this.toolDown = false; 
                         }
@@ -2618,6 +2618,10 @@ window.artimus = {
         }
 
         //These use the new historical event system, which should be more modular and open to updates.
+        captureHistory() {
+            if (this.layers[this.currentLayer]) this.layers[this.currentLayer].captureHistory();
+        }
+        
         undo() {
             return new Promise(async () => {
                 if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
