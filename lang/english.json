@@ -247,6 +247,14 @@
     "artimus.modal.lospec.placeholder.name": "Unknown",
 
     "artimus.modal.createPalette.title": "Create a Palette",
+    "artimus.modal.createPalette.addColor": "+",
+    "artimus.modal.createPalette.name": "Name",
+    "artimus.modal.createPalette.author": "Author",
+    "artimus.modal.createPalette.url": "Link",
+    "artimus.modal.createPalette.placeholder.name": "Palette",
+    "artimus.modal.createPalette.placeholder.author": "Your Name!",
+    "artimus.modal.createPalette.placeholder.url": "https://my.website.com/",
+    "artimus.modal.createPalette.done": "Done",
 
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
