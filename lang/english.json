@@ -276,7 +276,7 @@
     "artimus.toolbar.file.load": "Load",
 
     "artimus.toolbar.edit": "Edit",
-    "artimus.toolbar.edit.sprite": "Sprite",
+    "artimus.toolbar.edit.sprite": "Image",
     "artimus.toolbar.edit.resize": "Resize",
     "artimus.toolbar.edit.crop": "Crop",
     "artimus.toolbar.edit.undo": "Undo",

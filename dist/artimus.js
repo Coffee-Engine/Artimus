@@ -310,6 +310,8 @@ window.artimus = {
         return artimus.RGBToHSV(artimus.HexToRGB(Hex));
     },
 
+    toolCUGIPreprocess: (tool) => { return tool; },
+
     translate: (item, context) => {
         return item;
     },
@@ -1972,6 +1974,7 @@ window.artimus = {
             this.toolPropertyHolder.appendChild(CUGI.createList(this.toolFunction.CUGI(this), {
                 preprocess: (item) => {
                     item.text = artimus.translate(item.translationKey || item.key || item.text, "toolProperty") || item.text || item.key;
+                    item = artimus.toolCUGIPreprocess(item);
                     return item;
                 }
             }));

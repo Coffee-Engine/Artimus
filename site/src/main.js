@@ -381,5 +381,12 @@ editor.storageReady = async () => {
     }
 
     //Get the default palettes.
+    elemental.colorPickerConfig.globalSwatch = [];
     editor.palettes.getDefaultPalettes();
+
+    //Global preprocessor for modifying to CUGI to add elemental swatches
+    artimus.toolCUGIPreprocess = (item) => {
+        item.swatch = true;
+        return item;
+    }
 }
