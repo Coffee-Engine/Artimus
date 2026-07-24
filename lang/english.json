@@ -246,6 +246,8 @@
     "artimus.modal.lospec.placeholder.author": "Author Unknown",
     "artimus.modal.lospec.placeholder.name": "Unknown",
 
+    "artimus.modal.createPalette.title": "Create a Palette",
+
     "artimus.modal.exportFile.defaultName": "Picture",
     "artimus.modal.exportFile.formatText": "Format",
     "artimus.modal.exportFile.formatDescription.png": "A well supported transparent image format with a small file size",
