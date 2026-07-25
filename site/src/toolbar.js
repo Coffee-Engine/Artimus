@@ -2,7 +2,7 @@ editor.toolbar = {
     items: {
         "file": [
             { type: "button", text: "new", onclick: () => {
-                editor.newFile();
+                editor.spawnModal("newFile");
             }},
             { type: "button", text: "save", onclick: () => {
                 artimus.activeWorkspaces[0].exportToPC();
@@ -11,7 +11,7 @@ editor.toolbar = {
                 artimus.activeWorkspaces[0].exportToPC("artimus", { forceDialogue: true });
             }},
             { type: "button", text: "export", onclick: () => {
-                editor.exportMenu();
+                editor.spawnModal("exportFile", { workspace: editor.workspace });
             }},
             { type: "button", text: "load", onclick: () => {
                 editor.loadFile(false);
@@ -20,7 +20,7 @@ editor.toolbar = {
         "edit": [
             { type: "label", text:"sprite" },
             { type: "button", text: "resize", onclick: () => {
-                editor.fileResize(false);
+                editor.spawnModal("resizeCanvas");
             }},
             { type: "button", text: "crop", onclick: () => {
                 artimus.activeWorkspaces[0].cropToSelection();
@@ -33,7 +33,7 @@ editor.toolbar = {
             }},
             { type: "label", text:"editor" },
             { type: "button", text: "settings", onclick: () => {
-                editor.settingsPage();
+                editor.spawnModal("settings");
             }}
         ],
     },

@@ -1,6 +1,8 @@
-//Hope and pray this updates.
-editor.paletteCreationMenu = () => {
-    new editor.modal(artimus.translate("createPalette.title", "modal"), (content, modal) => {
+editor.registerModal("creditsMenu", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("createPalette.title", "modal");
+        this.width = 50;
+        this.height = 40;
         content.className += " popup-createPalette";
 
         //Define elements
@@ -83,5 +85,5 @@ editor.paletteCreationMenu = () => {
                 modal.close();
             }
         }
-    }, { width: 50, height: 40 });
-}
+    }
+});

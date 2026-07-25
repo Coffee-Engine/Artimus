@@ -1,7 +1,13 @@
-editor.exportMenu = () => {
-    const workspace = editor.workspace;
-    new editor.modal(artimus.translate("title", "modal.exportFile"), (contents, modal) => {
-        contents.className += " popup-exportFile";
+editor.registerModal("exportFile", class extends editor.modal {
+    init(content, self, { workspace }) {
+        //Just make sure we have a workspace.
+        workspace = workspace || editor.workspace;
+
+        this.title = artimus.translate("title", "modal.exportFile")
+        this.width = 21;
+        this.height = 50;
+
+        content.className += " popup-exportFile";
 
         //Html elements
         const name = document.createElement("input");
@@ -63,18 +69,18 @@ editor.exportMenu = () => {
 
         finalDiv.appendChild(finalButton);
 
-        contents.appendChild(name);
-        contents.appendChild(editor.quickP(artimus.translate("formatText", "modal.exportFile"), "exportFile-labelText exportFile-formatText"));
-        contents.appendChild(formatMenu);
-        contents.appendChild(formatDescription);
-        contents.appendChild(editor.quickP(artimus.translate("qualityText", "modal.exportFile"), "exportFile-labelText exportFile-qualityText"));
-        contents.appendChild(formatQuality);
-        contents.appendChild(editor.quickP(artimus.translate("size", "modal.exportFile"), "exportFile-labelText exportFile-sizeText"));
-        contents.appendChild(size);
-        contents.appendChild(finalSize);
-        contents.appendChild(editor.quickP(artimus.translate("background", "modal.exportFile"), "exportFile-labelText exportFile-backgroundText"));
-        contents.appendChild(backgroundDiv);
-        contents.appendChild(finalDiv);
+        content.appendChild(name);
+        content.appendChild(editor.quickP(artimus.translate("formatText", "modal.exportFile"), "exportFile-labelText exportFile-formatText"));
+        content.appendChild(formatMenu);
+        content.appendChild(formatDescription);
+        content.appendChild(editor.quickP(artimus.translate("qualityText", "modal.exportFile"), "exportFile-labelText exportFile-qualityText"));
+        content.appendChild(formatQuality);
+        content.appendChild(editor.quickP(artimus.translate("size", "modal.exportFile"), "exportFile-labelText exportFile-sizeText"));
+        content.appendChild(size);
+        content.appendChild(finalSize);
+        content.appendChild(editor.quickP(artimus.translate("background", "modal.exportFile"), "exportFile-labelText exportFile-backgroundText"));
+        content.appendChild(backgroundDiv);
+        content.appendChild(finalDiv);
 
         //Add file extensions to file dropdown
         for (let format in artimus.extensionToMIME) {
@@ -123,5 +129,5 @@ editor.exportMenu = () => {
                 name: name.value,
             });
         }
-    }, { width: 21, height: 50 })
-}
+    }
+});

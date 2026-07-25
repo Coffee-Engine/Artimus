@@ -6,8 +6,12 @@ editor.credits = {
     "Myrixx": { icon: "https://myrixx.neocities.org/favicon.ico", role: "translator", website: "https://myrixx.neocities.org", special: "Deutsch" }
 };
 
-editor.creditsMenu = () => {
-    new editor.modal(artimus.translate("credits.title", "modal"), (content, modal) => {
+editor.registerModal("creditsMenu", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("credits.title", "modal");
+        this.width = 50;
+        this.height = 30;
+
         content.className += " credits-menu";
 
         const fullContainer = document.createElement("div");
@@ -48,5 +52,5 @@ editor.creditsMenu = () => {
         }
 
         content.appendChild(fullContainer);
-    }, { width: 50, height: 30 })
-}
+    }
+});

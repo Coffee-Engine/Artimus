@@ -183,7 +183,7 @@ editor.paletteMenu = class extends editor.settingsPage {
 
         createPalette.onclick = () => { editor.paletteCreationMenu(); }
         importPalette.onclick = () => fileInput.click();
-        lospecPalette.onclick = () => { editor.lospecMenu(); }
+        lospecPalette.onclick = () => { editor.spawnModal("importLospec"); }
 
         previousPage.onclick = () => {
             this.pageStart -= 10;

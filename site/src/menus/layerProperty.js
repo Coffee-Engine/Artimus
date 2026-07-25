@@ -1,7 +1,10 @@
-artimus.layerPropertyMenu = (workspace, layer) => {
-    new editor.modal(artimus.translate("title", "modal.layerProperty").replace("[LAYER]", layer.name), 
-    (contents, modal) => {
-        contents.className += " popup-layerProperties";
+editor.registerModal("layerProperty", class extends editor.modal {
+    init(content, self, { workspace, layer }) {
+        this.title = artimus.translate("title", "modal.layerProperty").replace("[LAYER]", layer.name);
+        this.height = 30;
+
+        //Add the stuff
+        content.className += " popup-layerProperties";
         
         const nameHolder = document.createElement("div");
         nameHolder.className = "layerProperties-CenterHolder layerProperties-NameHolder";
@@ -48,11 +51,11 @@ artimus.layerPropertyMenu = (workspace, layer) => {
 
         finalDiv.appendChild(doneButton);
 
-        contents.appendChild(nameHolder);
-        contents.appendChild(text);
-        contents.appendChild(blendModeHolder);
-        contents.appendChild(BMTHolder);
-        contents.appendChild(finalDiv);
+        content.appendChild(nameHolder);
+        content.appendChild(text);
+        content.appendChild(blendModeHolder);
+        content.appendChild(BMTHolder);
+        content.appendChild(finalDiv);
 
         //Setup transparency
         transparencyInput.type = "number";
@@ -103,5 +106,13 @@ artimus.layerPropertyMenu = (workspace, layer) => {
             workspace.dirty = true;
             modal.close();
         }
-    }, { height: 30 });
-}
+    }
+});
+
+//Now replace the artimus call
+artimus.layerPropertyMenu = (workspace, layer) => editor.spawnModal("layerProperty", 
+    {
+        workspace: workspace,
+        layer: layer
+    }
+);

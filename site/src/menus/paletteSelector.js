@@ -1,6 +1,6 @@
 //Hope and pray this updates.
-editor.paletteSelectionModal = class extends editor.modal {
-    construct(content, self) {
+editor.paletteSelectionMenu = () => {
+    new editor.modal(artimus.translate("paletteSelector.title", "modal"), (content, modal) => {
         content.className += " popup-paletteSelector";
 
         //Create navigation buttons
@@ -16,11 +16,7 @@ editor.paletteSelectionModal = class extends editor.modal {
         nextPage.innerText = artimus.translate("nextPage", translationKey);
 
         const pageDescription = document.createElement("p");
-        this.pageDescription.className = "settings-palettePageDescription";
-        this.pageDescription.innerText = artimus.translate("palettesOnPage", translationKey);
-    }
-}
-
-editor.paletteSelectionMenu = () => {
-    new editor.paletteSelectionModal(null, { width: 50, height: 40 });
+        pageDescription.className = "settings-palettePageDescription";
+        pageDescription.innerText = artimus.translate("palettesOnPage", translationKey);
+    }, { width: 50, height: 40 });
 }

@@ -1,6 +1,8 @@
-//Hope and pray this updates.
-editor.lospecMenu = () => {
-    new editor.modal(artimus.translate("lospec.title", "modal"), (content, modal) => {
+editor.registerModal("importLospec", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("lospec.title", "modal");
+        this.height = 20;
+
         //Create the search box.
         const input = document.createElement("input");
         input.type = "text";
@@ -104,5 +106,5 @@ editor.lospecMenu = () => {
                 paletteJSONRetrieved("{}", "");
             });
         }
-    }, { height: 20 });
-}
+    }
+});

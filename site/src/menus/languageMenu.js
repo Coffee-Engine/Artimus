@@ -1,5 +1,9 @@
-editor.languageMenu = (forced, noStartMenu) => {
-    new editor.modal("Artimus!", (content, modal) => {
+editor.registerModal("languageMenu", class extends editor.modal {
+    init(content, self, { forced, noStartMenu }) {
+        this.canClose = !forced;
+        this.height = 45;
+
+        //Add the language list
         content.className += " language-modal";
 
         fetch("lang/list.json").then(res => res.text()).then(text => {            
@@ -39,8 +43,11 @@ editor.languageMenu = (forced, noStartMenu) => {
                                 editor.refreshLanguage();
 
                                 //Finally ready the editor
-                                if (!noStartMenu) editor.startMenu.open();
-                                modal.close();
+                                if (!noStartMenu) {
+                                    editor.closeAllModals();
+                                    editor.spawnModal("startMenu");
+                                }
+                                modal._close();
                             } catch (error) { console.error(`Language ${language.id} isn't valid!\n===---===\n${error}\n===---===`) }
                         })
                     }
@@ -49,5 +56,5 @@ editor.languageMenu = (forced, noStartMenu) => {
                 }
             } catch (error) { console.error(`No valid language list found!\n===---===\n${error}\n===---===`) }
         });
-    }, { height: 45, hasClose: !forced });
-}
+    }
+});
