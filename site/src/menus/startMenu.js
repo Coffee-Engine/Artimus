@@ -61,7 +61,7 @@ editor.registerModal("startMenu", class extends editor.modal {
                             fileHandle.getFile().then((file) => {
                                 editor.workspace.fileSystemHandle = fileHandle;
                                 editor.workspace.importFromImage(file, true);
-                                modal.close();
+                                this._close();
                             })
                         })
                     }

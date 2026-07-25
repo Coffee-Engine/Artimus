@@ -83,7 +83,7 @@ editor.registerModal("importLospec", class extends editor.modal {
             addPalette.onclick = () => {
                 if (url) 
                     editor.palettes.savePalette(editor.palettes.fromJSON(json)).then(() => {
-                        modal.close();
+                        this._close();
                     });
             }
         }

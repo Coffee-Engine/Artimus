@@ -1,4 +1,4 @@
-editor.registerModal("creditsMenu", class extends editor.modal {
+editor.registerModal("createPalette", class extends editor.modal {
     init(content, self) {
         this.title = artimus.translate("createPalette.title", "modal");
         this.width = 50;
@@ -82,7 +82,7 @@ editor.registerModal("creditsMenu", class extends editor.modal {
             if (compiledPalette.colors.length > 0) {
                 //Add it to the palette list and close.
                 editor.palettes.savePalette(compiledPalette);
-                modal.close();
+                this._close();
             }
         }
     }

@@ -135,7 +135,7 @@ editor.registerModal("resizeCanvas", class extends editor.modal {
 
         createButton.onclick = () => {
             editor.workspace.resize(width, height, anchor);
-            modal.close();
+            this._close();
             document.removeEventListener("mousemove", anchorDrag);
             document.removeEventListener("mouseup", anchorStop);
         }

@@ -104,15 +104,7 @@ editor.registerModal("layerProperty", class extends editor.modal {
         
             //Finally flag for update and close
             workspace.dirty = true;
-            modal.close();
+            this._close();
         }
     }
 });
-
-//Now replace the artimus call
-artimus.layerPropertyMenu = (workspace, layer) => editor.spawnModal("layerProperty", 
-    {
-        workspace: workspace,
-        layer: layer
-    }
-);

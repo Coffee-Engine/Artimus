@@ -325,38 +325,21 @@ artimus.translate = (item, context, noComplaints) => {
     return translated;
 }
 
+//Replace artimus calls so they will show the appropriate menus
 artimus.fontPopup = (workspace) => {
     return new Promise((resolve) => {
         workspace.getFonts().then(fonts => {
-            new editor.modal("Choose a font", (popup, modal) => {
-                const innerList = document.createElement("div");
-                let fontSet = new Set();
-                innerList.className = "artimus-font-list"
-
-                for (let fontID in fonts) {
-                    if (!fontSet.has(fonts[fontID].family)) {
-                        fontSet.add(fonts[fontID].family);
-
-                        const button = document.createElement("button");
-                        
-                        button.innerText = fonts[fontID].family;
-                        button.className = "artimus-font-button";
-                        button.style.fontFamily = fonts[fontID].family;
-
-                        button.onclick = () => {
-                            resolve(fonts[fontID].family);
-                            modal.close();
-                        }
-
-                        innerList.appendChild(button);
-                    }
-                }
-
-                popup.appendChild(innerList);
-            }, { height: 25.5 })
+            editor.spawnModal("fontMenu", { fonts: fonts, resolve: resolve });
         })
     })
 }
+
+artimus.layerPropertyMenu = (workspace, layer) => editor.spawnModal("layerProperty", 
+    {
+        workspace: workspace,
+        layer: layer
+    }
+);
 
 //Setup hotkeys
 artimus.unfocusedHotkeys = true;
