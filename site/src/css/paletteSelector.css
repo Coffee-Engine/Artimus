@@ -1,5 +1,6 @@
 .popup-paletteSelector {
-    overflow-y: scroll;
+    display: grid;
+    grid-template-rows: auto 1fr;
 }
 
 .paletteSelector-paletteContainer {

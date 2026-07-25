@@ -210,7 +210,6 @@
 
     "artimus.modal.settings.palettes.placeholder.name": "Paleta Desconocido",
     "artimus.modal.settings.palettes.placeholder.author": "Escritor Desconocido",
-    "artimus.modal.settings.palettes.colors": "[count] colors",
 
     "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
     "artimus.modal.settings.extensions.add": "+",
@@ -262,6 +261,20 @@
     "artimus.modal.exportFile.export": "Exportar",
 
     "artimus.modal.fontMenu.title": "Elige una Fuente",
+
+    "artimus.modal.paletteSelector.title": "Elige una Paleta",
+    "artimus.modal.paletteSelector.lastPage": "Previo",
+    "artimus.modal.paletteSelector.nextPage": "Luego",
+    "artimus.modal.paletteSelector.palettesOnPage": "Paletas [first]-[last]/[total]",
+
+    "artimus.modal.paletteSelector.palette.by": "De: [author]",
+    "artimus.modal.paletteSelector.palette.colors": "[count] colors",
+    "artimus.modal.paletteSelector.palette.use": "Usar",
+
+    "artimus.modal.paletteSelector.placeholder.name": "Paleta Desconocido",
+    "artimus.modal.paletteSelector.placeholder.author": "Escritor Desconocido",
+
+    "artimus.colorPicker.changePalette": "Combiar Paleta",
 
     "artimus.toolbar.file": "Archivo",
     "artimus.toolbar.file.new": "Nuevo",

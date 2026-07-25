@@ -47,7 +47,7 @@ editor.registerModal("languageMenu", class extends editor.modal {
                                     editor.closeAllModals();
                                     editor.spawnModal("startMenu");
                                 }
-                                modal._close();
+                                else this._close();
                             } catch (error) { console.error(`Language ${language.id} isn't valid!\n===---===\n${error}\n===---===`) }
                         })
                     }

@@ -309,7 +309,9 @@ window.editor = {
         document.body.appendChild(editor.downloader);
         editor.downloader.click();
         editor.downloader.parentElement.removeChild(editor.downloader);
-    }
+    },
+
+    currentPalette: null,
 };
 
 //Artimus configuration
@@ -401,8 +403,17 @@ editor.storageReady = async () => {
     }
 
     //Get the default palettes.
-    elemental.colorPickerConfig.globalSwatch = [];
     editor.palettes.getDefaultPalettes();
+
+    //Define new swatch getter
+    Object.defineProperty(elemental.colorPickerConfig, "globalSwatch", {
+        get() {
+            if (editor.currentPalette && editor.currentPalette instanceof editor.palettes.palette) {
+                return editor.currentPalette.colors;
+            }
+            return [];
+        }
+    });
 
     //Global preprocessor for modifying to CUGI to add elemental swatches
     artimus.toolCUGIPreprocess = (item) => {

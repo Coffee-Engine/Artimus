@@ -22,18 +22,20 @@
     border: var(--artimus-background-3) 2px solid;
     border-radius: 8px;
 
-    transition: 300ms background-color;
+    color: var(--artimus-icon);
+
+    transition: 300ms background;
 }
 
 .elemental-color-picker-confirmation-done-button:hover {
-    background-color: var(--artimus-button-hover);
+    background: var(--artimus-button-hover);
     border: var(--artimus-background-3) 2px solid;
 }
 
 .elemental-color-picker-confirmation-done-button:active {
-    background-color: var(--artimus-button-click);
+    background: var(--artimus-button-click);
     border: var(--artimus-background-3) 2px solid;
-    transition: 0ms background-color;
+    transition: 0ms background;
 }
 
 /* The selectors */
@@ -136,4 +138,42 @@
 .elemental-color-picker-gradient-point:active {
     border: var(--artimus-button-click) 4px solid;
     transition: 0ms border;
+}
+
+.elemental-color-picker-palette-container {
+    border: var(--artimus-background-3) 4px solid;
+    background: var(--artimus-background-2);
+}
+
+.elemental-color-picker-palette-color {
+    border: var(--artimus-background-3) 4px solid;
+    transition: 300ms border;
+}
+
+.elemental-color-picker-palette-color:hover {
+    border: var(--artimus-button-hover) 4px solid;
+}
+
+.elemental-color-picker-palette-color:active {
+    border: var(--artimus-button-click) 4px solid;
+    transition: 0ms border;
+}
+
+.elemental-color-picker-palette-button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.elemental-color-picker-change-palette-button {
+    border: var(--artimus-background-3) 2px solid;
+    transition: 300ms background, 300ms border;
+}
+
+.elemental-color-picker-change-palette-button:hover {
+    border-color: var(--artimus-button-hover);
+}
+
+.elemental-color-picker-change-palette-button:active {
+    border-color: var(--artimus-button-click);
+    transition: 0ms background, 0ms border;
 }

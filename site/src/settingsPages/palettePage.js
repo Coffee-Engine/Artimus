@@ -44,11 +44,11 @@ editor.paletteMenu = class extends editor.settingsPage {
         //Strange buttons
         const paletteExport = document.createElement("button");
         paletteExport.className = "artimus-button settings-paletteDetail settings-paletteExport";
-        paletteExport.innerText = artimus.translate("palette.export", this.translationKey).replace("[source]", palette.source);
+        paletteExport.innerText = artimus.translate("palette.export", this.translationKey);
         
         const paletteDelete = document.createElement("button");
         paletteDelete.className = "artimus-button settings-paletteDetail settings-paletteDelete";
-        paletteDelete.innerText = artimus.translate("palette.delete", this.translationKey).replace("[count]", palette.colors.length);
+        paletteDelete.innerText = artimus.translate("palette.delete", this.translationKey);
 
         //Now the actual palette display gradient.
         const paletteDisplay = document.createElement("div");
