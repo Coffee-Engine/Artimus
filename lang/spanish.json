@@ -261,6 +261,8 @@
     "artimus.modal.exportFile.background": "Fondo",
     "artimus.modal.exportFile.export": "Exportar",
 
+    "artimus.modal.fontMenu.title": "Elige una Fuente",
+
     "artimus.toolbar.file": "Archivo",
     "artimus.toolbar.file.new": "Nuevo",
     "artimus.toolbar.file.save": "Guardar",
