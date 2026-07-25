@@ -119,6 +119,7 @@ window.editor = {
                 break;
 
                 default:
+                    this.construct(this.content, this);
                     break;
             }
 
@@ -126,6 +127,8 @@ window.editor = {
 
             this.init(name, contents, options);
         }
+
+        construct(contents, self) {}
 
         CUGIPreprocess(context, inItem) {
             const item = {...inItem, modal: this};

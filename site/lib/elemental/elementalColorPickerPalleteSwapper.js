@@ -10,6 +10,7 @@
             //Add the functionality
             button.onclick = () => {
                 parent.destroyPopup();
+                editor.paletteSelectionMenu();
             }
         }
 

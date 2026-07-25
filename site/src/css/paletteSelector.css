@@ -1,0 +1,54 @@
+.popup-paletteSelector {
+    overflow-y: scroll;
+}
+
+.paletteSelector-paletteContainer {
+    --index: 0;
+    display: grid;
+    grid-template-rows: auto auto auto;
+
+    border: 2px var(--artimus-background-2) solid;
+    border-radius: 8px;
+    margin: 2px 0px 2px 0px;
+
+    animation: 300ms palettes-pop-in;
+    animation-fill-mode: backwards;
+    animation-delay: calc(100ms * var(--index));
+}
+
+.paletteSelector-paletteName {
+    margin: 0px;
+    font-size: x-large;
+    text-align: left;
+    margin-left: 8px;
+}
+
+.paletteSelector-paletteDetails {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+}
+
+.paletteSelector-paletteDetail { margin: 3px 0px 3px 0px; }
+
+.paletteSelector-paletteDisplay {
+    --palette: linear-gradient(90deg, #ff00ff 50%, #000000 50%);
+    background: var(--palette);
+
+    border: 2px var(--artimus-background-3) solid;
+    border-radius: 8px;
+
+    min-height: 16px;
+    margin: 4px;
+}
+
+@keyframes palettes-pop-in {
+    0% {
+        transform: scaleY(0) translateY(-100%);
+    }
+    50% {
+        transform: scaleY(1.2) translateY(10%);
+    }
+    100% {
+        transform: scaleY(1) translateY(0%);
+    }
+}
