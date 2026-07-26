@@ -2784,6 +2784,7 @@ window.artimus = {
                 }
 
                 this.layers[ID].dispose(ID);
+                this.dirty = true;
                 this.sendEvent("layerRemoved", { layerID: ID });
             }
         }
