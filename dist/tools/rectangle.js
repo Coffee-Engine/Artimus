@@ -23,9 +23,12 @@ artimus.tools.rectangle = class extends artimus.tool {
         if (width == 0) width = 1;
         if (height == 0) height = 1;
 
-        gl.fillStyle = toolProperties.fillColor;
-        gl.strokeStyle = toolProperties.strokeColor;
-        gl.lineWidth = toolProperties.strokeSize;
+        gl.fillStyle = artimus.parseColor(toolProperties.fillColor, gl, sx, sy, ex, ey);
+
+        if (toolProperties.strokeSize > 0) {
+            gl.strokeStyle = artimus.parseColor(toolProperties.fillColor, gl, sx, sy, ex, ey);
+            gl.lineWidth = toolProperties.strokeSize;
+        }
 
         if (toolProperties.cornerRounding > 0) {
             gl.beginPath();
@@ -51,7 +54,7 @@ artimus.tools.rectangle = class extends artimus.tool {
     }
 
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true, gradient: true },
+        { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true }, //, gradient: true },
         { target: artEditor.toolProperties, key: "strokeColor", type: "color" },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 0 },
         { target: artEditor.toolProperties, key: "cornerRounding", type: "int", min: 0 },

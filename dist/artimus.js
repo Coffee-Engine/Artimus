@@ -671,6 +671,294 @@ window.artimus = {
         }
     },
 
+    gradient: class {
+        modeToCSSFunction = {
+            "linear": () => `linear-gradient(${this.angle}rad`,
+            "radial": () => `radial-gradient(at center`,
+            "conic": () => `conic-gradient(from ${this.angle}rad`,
+        }
+
+        get css() {
+            let gradient = this.modeToCSSFunction[this.mode]();
+            for (let id in this.colors) {
+                gradient += `, ${this.colors[id][0].hex} ${this.colors[id][1] * 100}%`;
+            }
+
+            gradient += ")";
+
+            return gradient;
+        }
+
+        constructor(contents, mode, angle) {
+            //Default to pink and black if no content array is provided
+            if (Array.isArray(contents)) {
+                const step = 1 / contents.length;
+                this.colors = [];
+                
+                let cur = 0;
+                for (let colorID in contents) {
+                    const color = contents[colorID];
+                    if (Array.isArray(color) && color.length >= 2) {
+                        if (typeof color[0] == "string" && color[0].length == 6 || color[0].length == 8) this.colors.push([color[0], color[1]]);
+                        else this.colors.push(["#ff00ff", color[1]])
+                    }
+                    else if (typeof color == "string") {
+                        cur += step;
+                        this.colors.push([color, cur]);
+                    }
+                    else {
+                        cur += step;
+                        this.colors.push(["#ff00ff", cur]);
+                    }
+                }
+
+                this.organizeColors();
+            }
+            else if (typeof contents == "string") this.parseCSS(contents);
+            else this.failSafeColors();
+
+            this.mode = mode || this.mode || "linear";
+            this.angle = angle || this.angle || 0;
+        }
+
+        //JUST IN CASE
+        failSafeColors() {
+            this.mode = "linear";
+            this.angle = 0;
+            this.colors = [
+                [ "#ff00ff", 0 ],
+                [ "#000000", 1 ]
+            ];
+
+            this.organizeColors();
+
+            return this.colors;
+        }
+
+        parseCSSAngle(angle) {
+            let parsed = 0;
+            //For rads it's a simple find and parse.
+            if (angle.endsWith("rad")) {
+                parsed = Number(angle.replace("rad", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+            }
+            //For degrees we need to convert.
+            else if (angle.endsWith("deg")) {
+                parsed = Number(angle.replace("deg", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= 0.01745329;
+            }
+            //Who uses gradians?
+            else if (angle.endsWith("grad")) {
+                parsed = Number(angle.replace("grad", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= 0.01570796;
+            }
+            //and then turns
+            else if (angle.endsWith("turn")) {
+                parsed = Number(angle.replace("turn", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= Math.PI * 2;
+            }
+
+            return parsed;
+        }
+
+        parseColorsFromArgs(args, from) {
+            const colors = [];
+
+            //Get step just in case;
+            const step = 100 / (args.length - from);
+            let cur = 0;
+
+            for (let i=from; i<args.length; i++) {
+                let arg=args[i];
+                
+                //How, but if so just default it to pink
+                if (arg.length == 0) arg = ["#ff00ff", `${cur}%`];
+                else if (arg.length == 1) {
+                    cur += step;
+                    arg = [arg[0], `${cur}%`];
+                }
+
+                //Make sure both sides are SOMEWHAT valid
+                if (!arg[0].startsWith("#")) arg[0] = "#ff00ff";
+                if (!arg[1].endsWith("%")) {
+                    cur += step;
+                    arg[1] = `${cur}%`;
+                }
+
+                //Final parse
+                arg[0] = arg[0];
+                arg[1] = Number(arg[1].trim().replace("%", "")) / 100;
+                
+                //If it is somehow still not valid, make it
+                if (isNaN(arg[1])) {
+                    cur += step;
+                    arg[1] = cur / 100;
+                }
+                else cur = arg[1];
+
+                //Finally add it to the array;
+                colors.push([arg[0], arg[1]]);
+            }
+
+            return colors;
+        }
+
+        organizeColors() {
+            this.colors.sort((a, b) => a[1] - b[1]);
+        }
+
+        //The actual parsing of each type;
+        cssReaders = {
+            "linear": (args) => {
+                if (args.length < 3) return false;
+                this.angle = this.parseCSSAngle(args[0][0]);
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            },
+            "radial": (args) => {
+                if (args.length < 3) return false;
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            },
+            "conic": (args) => {
+                if (args.length < 3) return false;
+
+                //Parse the angle, because "From" can be here for some reason
+                if (args[0].length == 0) this.angle = 0;
+                else if (args[0].length == 1) this.angle = this.parseCSSAngle(args[0][0]);
+                else if (args[0].length == 2) this.angle = this.parseCSSAngle(args[0][1]);
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            }
+        }
+
+        parseCSS(str) {
+            let func = "";
+            let i = 0;
+
+            //Grab function
+            while (str.charAt(i) != "(" && i < str.length) {
+                func += str.charAt(i);
+                i++;
+            }
+
+            //make sure we didn't just hit a dead end.
+            if (i >= str.length) return this.failSafeColors();
+
+            //otherwise trim the function name
+            func = this.gradientFunc2Type[func.trim().toLowerCase()];
+            if (!func) func = "linear";
+            this.mode = func;
+            
+            //Step off and read args
+            i++;
+
+            let args = "";
+            while(str.charAt(i) != ")" && i < str.length) {
+                args += str.charAt(i);
+                i++;
+            }
+
+            if (i >= str.length || args.length == 0) return this.failSafeColors();
+
+            //Clean up the arguments
+            args = args.split(",");
+            for (let argsID in args) {
+                //Trim and split each argument into it's components,
+                //Also make sure to fancy them up aswell.
+                args[argsID] = args[argsID].trim().split(" ").reduce(
+                    (acc, cur) => { 
+                        if (cur) acc.push(cur.trim()) 
+                        return acc;
+                    }, 
+                    []
+                );
+            }
+
+            if (this.cssReaders[func]) {
+                const success = this.cssReaders[func](args);
+                if (!success) return this.failSafeColors();
+            }
+            else return this.failSafeColors();
+
+            this.organizeColors();
+        }
+
+        gradientFunc2Type = {
+            "linear-gradient":"linear",
+            "radial-gradient":"radial",
+            "conic-gradient": "conic",
+        };
+
+        toCanvasGradient(gl, startX, startY, endX, endY) {
+            let created = null;
+            const centerX = (endX + startX) / 2;
+            const centerY = (endY + startY) / 2;
+
+            //Flip it if we are on opposite sides
+            if (endX < startX) {
+                const temp = startX;
+                startX = endX;
+                endX = temp;
+            }
+
+            if (endY > startY) {
+                const temp = startY;
+                startY = endY;
+                endY = temp;
+            }
+
+            let directionX = Math.sin(this.angle);
+            let directionY = Math.cos(this.angle);
+            
+            switch (this.mode) {
+                case "linear":
+                    let stepX = (endX - startX) / 2;
+                    let stepY = (endY - startY) / 2;
+                    created = gl.createLinearGradient(centerX - (stepX * directionX), centerY - (stepY * directionY), centerX + (stepX * directionX), centerY + (stepY * directionY));
+                    break;
+
+                case "radial":
+                    created = gl.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 2);
+                    break;
+
+                case "conic":
+                    created = gl.createConicGradient(this.angle - (Math.PI / 2), centerX, centerY);
+                    break;
+            }
+            
+            //Loop through and create
+            for (let colorID in this.colors) {
+                const [color, position] = this.colors[colorID];
+                created.addColorStop(position, color);
+            }
+
+            return created;
+        }
+    },
+
+    parseColor: (colorValue, gl, startX, startY, endX, endY) => {
+        return (colorValue.startsWith("#")) ? colorValue : (new artimus.gradient(colorValue)).toCanvasGradient(gl, startX, startY, endX, endY);
+    },
+
     workspace: class {
         events = [
             "redraw",
