@@ -72,7 +72,7 @@ editor.registerModal("createPalette", class extends editor.modal {
             compiledPalette.url = authorURLInput.value || location.href;
 
             //Get all of the colors
-            for (childID in colorArea.children) {
+            for (let childID in colorArea.children) {
                 const child = colorArea.children[childID];
                 if (!(child instanceof HTMLElement)) continue;
                 if (child.tagName.toLowerCase() == "color-picker") compiledPalette.colors.push(child.value);
