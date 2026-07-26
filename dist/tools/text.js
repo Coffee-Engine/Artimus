@@ -4,7 +4,7 @@ artimus.tools.text = class extends artimus.tool {
     get icon() { return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="19.23435" height="19.23435" viewBox="0,0,19.23435,19.23435"><g transform="translate(-230.38282,-170.38282)"><g stroke="none" stroke-width="0" stroke-miterlimit="10"><path d="M234.63295,174.36291v-1.51378h10.73411v3.00263c0,0 -0.38276,0 -0.84118,0c-0.14059,0 -0.28829,-1.48885 -0.43425,-1.48885c-1.69363,0 -9.45868,0 -9.45868,0z" fill="currentColor"/><path d="M235.90838,174.36291c-0.14596,0 -0.29366,1.48885 -0.43425,1.48885c-0.45843,0 -0.84118,0 -0.84118,0v-3.00263h10.73411v1.51378c0,0 -7.76505,0 -9.45868,0z" fill="currentColor"/><path d="M239.14269,187.14473v-13.02743h1.95411c0,0 0,8.7727 0,10.98026c0,0.37553 -0.15509,0.95902 2.04717,1.11664c0.5274,0.03775 0,0.93053 0,0.93053z" fill="currentColor"/><path d="M236.85602,187.15088c0,0 -0.5274,-0.89279 0,-0.93053c2.20226,-0.15762 2.04717,-0.74111 2.04717,-1.11664c0,-2.20756 0,-10.98026 0,-10.98026h1.95411v13.02742z" fill="currentColor"/><path d="M230.38282,189.61718v-19.23435h19.23435v19.23435z" fill="none"/></g></g></svg><!--rotationCenter:9.617176336678597:9.617176336678625-->'; }
     
     //Thank you https://stackoverflow.com/a/68372384
-    cssFilter = `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="f" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncA type="discrete" tableValues="0 1 1 1 1"/></feComponentTransfer></filter></svg>#f')`;
+    cssFilter = `url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxmaWx0ZXIgaWQ9ImZpbHRlciIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgY29sb3ItaW50ZXJwb2xhdGlvbi1maWx0ZXJzPSJzUkdCIj48ZmVDb21wb25lbnRUcmFuc2Zlcj48ZmVGdW5jUiB0eXBlPSJpZGVudGl0eSIvPjxmZUZ1bmNHIHR5cGU9ImlkZW50aXR5Ii8+PGZlRnVuY0IgdHlwZT0iaWRlbnRpdHkiLz48ZmVGdW5jQSB0eXBlPSJkaXNjcmV0ZSIgdGFibGVWYWx1ZXM9IjAgMSIvPjwvZmVDb21wb25lbnRUcmFuc2Zlcj48L2ZpbHRlcj48L3N2Zz4=#filter)`;
 
     deselected(gl, previewGL, toolProperties) {
         if (this.typing) this.renderText(gl, toolProperties);
@@ -62,8 +62,6 @@ artimus.tools.text = class extends artimus.tool {
         let y = this.y;
         let characterOffset = 0;
 
-        if (toolProperties.pixelBrush) gl.filter = this.cssFilter;
-
         for (let line in split) {
             const lineText = split[line];
 
@@ -80,8 +78,6 @@ artimus.tools.text = class extends artimus.tool {
 
                     const markerOffset = gl.measureText(lineText.substring(0, relativePointer)).width;
                     gl.strokeRect(this.x + markerOffset, y - (lineHeight - 2), 1, lineHeight - 3);
-
-                    if (toolProperties.pixelBrush) gl.filter = this.cssFilter;
 
                     //Fix stroke style if need be
                     gl.strokeStyle = toolProperties.strokeColor;
@@ -278,7 +274,6 @@ artimus.tools.text = class extends artimus.tool {
         { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true },
         { target: artEditor.toolProperties, key: "strokeColor", type: "color", alpha: true },
         { target: artEditor.toolProperties, key: "strokeSize", type: "int", min: 0 },
-        //{ target: artEditor.toolProperties, key: "pixelBrush", type: "boolean" },
     ]}
 
     colorProperties = [ "strokeColor", "fillColor" ];
