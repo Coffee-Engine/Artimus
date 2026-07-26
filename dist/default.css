@@ -368,7 +368,7 @@ input[type="number"] {
         transition: 300ms grid-template-columns;
     }
 
-    @media (max-width: 50vh) {
+    @media (max-width: 60vh) {
         .artimus-container {
             grid-template-rows: 180px 48px 1fr;
         }
