@@ -1,7 +1,10 @@
-editor.newFile = (parentModal) => {
-    //Simple, easy.
-    new editor.modal(artimus.translate("title", "modal.newFile"), (contents, modal) => {
-        contents.className += " popup-newFile"
+editor.registerModal("newFile", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("title", "modal.newFile");
+        this.width = 60;
+
+        //Create the content
+        content.className += " popup-newFile"
         
         const presets = document.createElement("div");
         const tuning = document.createElement("div");
@@ -36,8 +39,8 @@ editor.newFile = (parentModal) => {
         tuning.appendChild(currentPreviewHolder);
         tuning.appendChild(sizingDiv);
         tuning.appendChild(finalDiv);
-        contents.appendChild(presets);
-        contents.appendChild(tuning);
+        content.appendChild(presets);
+        content.appendChild(tuning);
 
         createButton.innerText = artimus.translate("create", "modal.newFile");
 
@@ -88,8 +91,7 @@ editor.newFile = (parentModal) => {
 
         createButton.onclick = () => {
             editor.workspace.new(width, height);
-            modal.close();
-            if (parentModal) parentModal.close();
+            editor.closeAllModals();
         }
 
         //Append resolution presets
@@ -140,6 +142,5 @@ editor.newFile = (parentModal) => {
 
             container.onclick = () => updateResolution(preset.width, preset.height);
         }
-        
-    }, { translationContext: "newFile", width: 60 });
-}
+    }
+});

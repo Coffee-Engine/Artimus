@@ -68,16 +68,16 @@ editor.settingDefs = {
         }},
         {type: "boolean", target: editor.settings, key: "debug" },
         {type: "button", text: "changeLanguage", onclick: () => {
-            const openStart = editor.modals.length < 2;
-            for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
-            editor.languageMenu(!openStart, openStart);
+            const openStart = editor.spawnedModals.length < 2;
+            for (let modal = editor.spawnedModals.length - 1; modal >= 0; modal--) { editor.spawnedModals[modal].close(); }
+            editor.spawnModal("languageMenu", { forced: !openStart, noStartMenu: openStart });
         }},
         {type: "button", text: "customLanguage", onclick: () => {
             const inp = document.createElement("input");
             inp.onchange = () => {
                 if (inp.files.length > 0) {
-                    const openStart = editor.modals.length < 2;
-                    for (let modal = editor.modals.length - 1; modal >= 0; modal--) { editor.modals[modal].close(); }
+                    const openStart = editor.spawnedModals.length < 2;
+                    for (let modal = editor.spawnedModals.length - 1; modal >= 0; modal--) { editor.spawnedModals[modal].close(); }
 
                     editor.fileReader.onload = () => {
                         editor.customLanguageLoad(openStart);
@@ -180,16 +180,9 @@ editor.settingDefs = {
         onchange: () => { editor.useCustomTheme(); }},
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
-    hotkeys: { function: editor.hotkeyMenu, onchange: () => {
-        artimus.hotkeys = editor.settings.hotkeys;
-        editor.saveSettings();
-    }},
-    palettes: { function: editor.paletteMenu, onchange: () => {
-        editor.saveSettings();
-    }},
-    extensions: { function: editor.extensionMenu, onchange: () => {
-        editor.saveSettings();
-    }}
+    hotkeys: editor.hotkeyMenu,
+    palettes: editor.paletteMenu,
+    extensions: editor.extensionMenu
 };
 
 

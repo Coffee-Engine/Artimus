@@ -28,11 +28,55 @@ window.artimus = {
     degreeToRad: (deg) => (deg * (3.1415962 / 180)),
     radToDegree: (rad) => (rad * (180 / 3.1415962)),
 
+    //DOM sanitizer
+    DOMParser: new DOMParser(),
+    
+    //Just in case.
+    badElements: [
+        "script",
+        "foreignobject",
+        "style",
+        "link",
+        "iframe",
+        "embed",
+        "title"
+    ],
+
+    sanitizeDOM: (svg) => {
+        //Make sure the DOM is valid;
+        let DOM = artimus.DOMParser.parseFromString(`<elementalSanitizer>${svg}</elementalSanitizer>`, "application/xml");
+        if (DOM.documentElement.tagName == "parsererror") return "<p>Invalid DOM</p>";
+
+        //Search through children, and give the final result
+        const children = [...DOM.querySelectorAll("*")];
+        for (let childID = 0; childID < children.length; childID++) {
+            const child = children[childID];
+            if (artimus.badElements.includes(child.tagName.toLowerCase())) child.parentElement.removeChild(child);
+
+            //Search through attributes
+            const names = child.getAttributeNames();
+            for (let attributeID = 0; attributeID < names.length; attributeID++) {
+                const attribute = names[attributeID];
+
+                //If possibly an event
+                if (attribute.startsWith("on")) child.removeAttribute(attribute);
+                //If we have any odd values, like a "javascript:" uri
+                else {
+                    const data = child.getAttribute(attribute);
+                    if (data.startsWith("javascript:")) child.removeAttribute(attribute);
+                }
+            }
+        }
+
+        //Return the final sanitized HTML
+        return DOM.documentElement.innerHTML;
+    },
+
     //Host/Parasite relationship
     host: document.createElement("div"),
 
     elementFromString: (element) => {
-        artimus.host.innerHTML = element;
+        artimus.host.innerHTML = artimus.sanitizeDOM(element);
 
         //Remove the parasite
         const parasite = artimus.host.children[0];
@@ -44,10 +88,12 @@ window.artimus = {
         return getComputedStyle(document.body).getPropertyValue(`--artimus-${variable}`);
     },
 
+    //Basic number and buffer functions
     iRandRange: (min, max) => {
         return Math.floor(Math.random() * (max - min)) + min;
     },
 
+    //Color math
     BrightestChannel: (Color) => {
         if (typeof Color == "string") {
             const split = artimus.HexToRGB(Color);
@@ -264,6 +310,8 @@ window.artimus = {
         return artimus.RGBToHSV(artimus.HexToRGB(Hex));
     },
 
+    toolCUGIPreprocess: (tool) => { return tool; },
+
     translate: (item, context) => {
         return item;
     },
@@ -342,6 +390,8 @@ window.artimus = {
         "ctrl+c": "copy",
         "ctrl+v": "paste",
         "c": "clearSelection",
+        "ctrl+=": "zoomIn",
+        "ctrl+-": "zoomOut",
     },
 
     modifierKeys: [
@@ -391,31 +441,20 @@ window.artimus = {
         constructive = true;
     },
 
-    //History is important, and it's finally getting some TLC
+    //History is important, now it is associated with the layer
     maxHistory: 10,
-    historicalEventTypes: {
-        "imageChange": (workspace, data) => {
-            console.log(data);
-        }
-    },
-
-    historicalEvent: class {
-        constructor(type, data, workspace) {
-            this.type = type;
-            this.data = data;
-            this.workspace = workspace;
-        }
-
-        restoreTo() {
-            artimus.historicalEventTypes[this.type](this.workspace, this.data);
-        }
-    },
     
     layer: class {
         blendMode = "source-over";
         alpha = 1;
         bitmap = null;
         visibility = true;
+
+        #history = []
+        #historyIndex = 0
+
+        get historyLength() { return this.#history.length; }
+        get historyIndex() { return this.#historyIndex; }
 
         get data() {
             if (this.dataRaw) return this.dataRaw.data;
@@ -464,10 +503,15 @@ window.artimus = {
 
             //Finally use the new layer
             if (!noSwitch) this.workspace.setLayer(name);
+
+            //Capture initial history
+            this.captureHistory();
         }
 
         updateBitmap() {
-            if (this.bitmap) this.bitmap.close();
+            const bm = this.bitmap;
+            this.bitmap = null;
+            if (bm) bm.close();
 
             return new Promise((resolve, reject) => createImageBitmap(this.dataRaw).then(bitmap => {
                 this.bitmap = bitmap;
@@ -497,76 +541,422 @@ window.artimus = {
         }
 
         resizeByRect(active, rx, ry, width, height, editingData) {
-            const layer = (active) ? editingData : this;
-            if (width == layer.width && height == layer.height) return;
-
-            //Get needed attributes for the transfer
-            const output = new ImageData(width, height);
-
-            //Transfer data
-            for (let y = 0; y < layer.height; y++) {
-                for (let x = 0; x < layer.width; x++) {
-                    //Then get the position
-                    if (x < 0 || y < 0 || x >= width || y >= height) continue;
-
-                    //Now we do the stuff we need to
-                    const lID = (((ry + y) * layer.width) + (rx + x)) * 4;
-                    const oID = ((y * output.width) + x) * 4;
-
-                    output.data[oID] = layer.data[lID];
-                    output.data[oID + 1] = layer.data[lID + 1];
-                    output.data[oID + 2] = layer.data[lID + 2];
-                    output.data[oID + 3] = layer.data[lID + 3];
+            return new Promise((resolve) => {
+                const layer = (active) ? editingData : this;
+                if (width == layer.width && height == layer.height) {
+                    resolve();
+                    return;
                 }
-            }
-            
-            //Blit image data to editing canvas if needed
-            if (active) {
-                this.workspace.editGL.putImageData(output, 0, 0);
-            }
 
-            this.dataRaw = output;
-            this.updateBitmap();
+                //Get needed attributes for the transfer
+                const output = new ImageData(width, height);
+
+                //Transfer data
+                for (let y = 0; y < layer.height; y++) {
+                    for (let x = 0; x < layer.width; x++) {
+                        //Then get the position
+                        if (x < 0 || y < 0 || x >= width || y >= height) continue;
+
+                        //Now we do the stuff we need to
+                        const lID = (((ry + y) * layer.width) + (rx + x)) * 4;
+                        const oID = ((y * output.width) + x) * 4;
+
+                        output.data[oID] = layer.data[lID];
+                        output.data[oID + 1] = layer.data[lID + 1];
+                        output.data[oID + 2] = layer.data[lID + 2];
+                        output.data[oID + 3] = layer.data[lID + 3];
+                    }
+                }
+                
+                //Blit image data to editing canvas if needed
+                if (active) {
+                    this.workspace.editGL.putImageData(output, 0, 0);
+                }
+
+                this.dataRaw = output;
+                this.clearHistory();
+                this.updateBitmap().then(resolve);
+            });
         }
 
         resizeByAnchor(active, anchor, width, height, editingData) {
-            const layer = (active) ? editingData : this;
-            if (width == layer.width && height == layer.height) return;
-
-            //Get needed attributes for the transfer
-            const output = new ImageData(width, height);
-
-            const writeOffsetX = Math.floor((anchor[0] * width) - (anchor[0] * layer.width));
-            const writeOffsetY = Math.floor((anchor[1] * height) - (anchor[1] * layer.height));
-
-            //Transfer data
-            for (let y = 0; y < layer.height; y++) {
-                for (let x = 0; x < layer.width; x++) {
-                    //Pointer stuffs
-                    const pointerX = writeOffsetX + x;
-                    const pointerY = writeOffsetY + y;
-
-                    //Then get the position
-                    if (pointerX < 0 || pointerY < 0 || pointerX >= width || pointerY >= height) continue;
-
-                    //Now we do the stuff we need to
-                    const lID = ((y * layer.width) + x) * 4;
-                    const oID = ((pointerY * output.width) + pointerX) * 4;
-                    output.data[oID] = layer.data[lID];
-                    output.data[oID + 1] = layer.data[lID + 1];
-                    output.data[oID + 2] = layer.data[lID + 2];
-                    output.data[oID + 3] = layer.data[lID + 3];
+            return new Promise((resolve) => {
+                const layer = (active) ? editingData : this;
+                if (width == layer.width && height == layer.height) {
+                    resolve();
+                    return;
                 }
+
+                //Get needed attributes for the transfer
+                const output = new ImageData(width, height);
+
+                const writeOffsetX = Math.floor((anchor[0] * width) - (anchor[0] * layer.width));
+                const writeOffsetY = Math.floor((anchor[1] * height) - (anchor[1] * layer.height));
+
+                //Transfer data
+                for (let y = 0; y < layer.height; y++) {
+                    for (let x = 0; x < layer.width; x++) {
+                        //Pointer stuffs
+                        const pointerX = writeOffsetX + x;
+                        const pointerY = writeOffsetY + y;
+
+                        //Then get the position
+                        if (pointerX < 0 || pointerY < 0 || pointerX >= width || pointerY >= height) continue;
+
+                        //Now we do the stuff we need to
+                        const lID = ((y * layer.width) + x) * 4;
+                        const oID = ((pointerY * output.width) + pointerX) * 4;
+                        output.data[oID] = layer.data[lID];
+                        output.data[oID + 1] = layer.data[lID + 1];
+                        output.data[oID + 2] = layer.data[lID + 2];
+                        output.data[oID + 3] = layer.data[lID + 3];
+                    }
+                }
+                
+                //Blit image data to editing canvas if needed
+                if (active) {
+                    this.workspace.editGL.putImageData(output, 0, 0);
+                }
+
+                this.dataRaw = output;
+                this.clearHistory();
+                this.updateBitmap().then(resolve);
+            });
+        }
+
+        isCurrentlayer() {
+            return this.workspace.currentLayer == this.workspace.getLayerIndex(this.name);
+        }
+
+        //Undoing and redoing is relatively simple
+        undo() {
+            if (this.#historyIndex + 1 >= this.#history.length) return;
+            
+            this.#historyIndex++;
+            this.dataRaw = new ImageData(this.#history[this.#historyIndex], this.width, this.height);
+            
+            //Get if we are the current layer
+            if (this.isCurrentlayer()) this.workspace.editGL.putImageData(this.dataRaw, 0, 0);
+            else this.updateBitmap();
+            this.workspace.dirty = true;
+        }
+
+        redo() {
+            if (this.#historyIndex <= 0) return;
+
+            this.#historyIndex--;
+            this.dataRaw = new ImageData(this.#history[this.#historyIndex], this.width, this.height);
+
+            if (this.isCurrentlayer()) this.workspace.editGL.putImageData(this.dataRaw, 0, 0);
+            else this.updateBitmap();
+            this.workspace.dirty = true;
+        }
+
+        captureHistory() {
+            //Funny JS array hack
+            this.#history = this.#history.slice(this.#historyIndex, this.#history.length);
+
+            //Get current state, and reset the index to 0
+            if (this.isCurrentlayer()) this.#history.splice(0, 0, this.workspace.editGL.getImageData(0, 0, this.width, this.height).data);
+            else this.#history.splice(0, 0, this.data);
+            this.#historyIndex = 0;
+            
+            if (this.#history.length > artimus.maxHistory) this.#history = this.#history.slice(0, artimus.maxHistory);
+        }
+
+        clearHistory() {
+            this.#history = [];
+            this.#historyIndex = 0;
+            this.captureHistory();
+        }
+    },
+
+    gradient: class {
+        modeToCSSFunction = {
+            "linear": () => `linear-gradient(${this.angle}rad`,
+            "radial": () => `radial-gradient(at center`,
+            "conic": () => `conic-gradient(from ${this.angle}rad`,
+        }
+
+        get css() {
+            let gradient = this.modeToCSSFunction[this.mode]();
+            for (let id in this.colors) {
+                gradient += `, ${this.colors[id][0].hex} ${this.colors[id][1] * 100}%`;
+            }
+
+            gradient += ")";
+
+            return gradient;
+        }
+
+        constructor(contents, mode, angle) {
+            //Default to pink and black if no content array is provided
+            if (Array.isArray(contents)) {
+                const step = 1 / contents.length;
+                this.colors = [];
+                
+                let cur = 0;
+                for (let colorID in contents) {
+                    const color = contents[colorID];
+                    if (Array.isArray(color) && color.length >= 2) {
+                        if (typeof color[0] == "string" && color[0].length == 6 || color[0].length == 8) this.colors.push([color[0], color[1]]);
+                        else this.colors.push(["#ff00ff", color[1]])
+                    }
+                    else if (typeof color == "string") {
+                        cur += step;
+                        this.colors.push([color, cur]);
+                    }
+                    else {
+                        cur += step;
+                        this.colors.push(["#ff00ff", cur]);
+                    }
+                }
+
+                this.organizeColors();
+            }
+            else if (typeof contents == "string") this.parseCSS(contents);
+            else this.failSafeColors();
+
+            this.mode = mode || this.mode || "linear";
+            this.angle = angle || this.angle || 0;
+        }
+
+        //JUST IN CASE
+        failSafeColors() {
+            this.mode = "linear";
+            this.angle = 0;
+            this.colors = [
+                [ "#ff00ff", 0 ],
+                [ "#000000", 1 ]
+            ];
+
+            this.organizeColors();
+
+            return this.colors;
+        }
+
+        parseCSSAngle(angle) {
+            let parsed = 0;
+            //For rads it's a simple find and parse.
+            if (angle.endsWith("rad")) {
+                parsed = Number(angle.replace("rad", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+            }
+            //For degrees we need to convert.
+            else if (angle.endsWith("deg")) {
+                parsed = Number(angle.replace("deg", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= 0.01745329;
+            }
+            //Who uses gradians?
+            else if (angle.endsWith("grad")) {
+                parsed = Number(angle.replace("grad", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= 0.01570796;
+            }
+            //and then turns
+            else if (angle.endsWith("turn")) {
+                parsed = Number(angle.replace("turn", "").trim());
+                if (isNaN(parsed)) parsed = 0;
+                parsed *= Math.PI * 2;
+            }
+
+            return parsed;
+        }
+
+        parseColorsFromArgs(args, from) {
+            const colors = [];
+
+            //Get step just in case;
+            const step = 100 / (args.length - from);
+            let cur = 0;
+
+            for (let i=from; i<args.length; i++) {
+                let arg=args[i];
+                
+                //How, but if so just default it to pink
+                if (arg.length == 0) arg = ["#ff00ff", `${cur}%`];
+                else if (arg.length == 1) {
+                    cur += step;
+                    arg = [arg[0], `${cur}%`];
+                }
+
+                //Make sure both sides are SOMEWHAT valid
+                if (!arg[0].startsWith("#")) arg[0] = "#ff00ff";
+                if (!arg[1].endsWith("%")) {
+                    cur += step;
+                    arg[1] = `${cur}%`;
+                }
+
+                //Final parse
+                arg[0] = arg[0];
+                arg[1] = Number(arg[1].trim().replace("%", "")) / 100;
+                
+                //If it is somehow still not valid, make it
+                if (isNaN(arg[1])) {
+                    cur += step;
+                    arg[1] = cur / 100;
+                }
+                else cur = arg[1];
+
+                //Finally add it to the array;
+                colors.push([arg[0], arg[1]]);
+            }
+
+            return colors;
+        }
+
+        organizeColors() {
+            this.colors.sort((a, b) => a[1] - b[1]);
+        }
+
+        //The actual parsing of each type;
+        cssReaders = {
+            "linear": (args) => {
+                if (args.length < 3) return false;
+                this.angle = this.parseCSSAngle(args[0][0]);
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            },
+            "radial": (args) => {
+                if (args.length < 3) return false;
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            },
+            "conic": (args) => {
+                if (args.length < 3) return false;
+
+                //Parse the angle, because "From" can be here for some reason
+                if (args[0].length == 0) this.angle = 0;
+                else if (args[0].length == 1) this.angle = this.parseCSSAngle(args[0][0]);
+                else if (args[0].length == 2) this.angle = this.parseCSSAngle(args[0][1]);
+
+                const parsedColors = this.parseColorsFromArgs(args, 1);
+                if (parsedColors.length < 2) return false;
+
+                this.colors = parsedColors;
+
+                return true;
+            }
+        }
+
+        parseCSS(str) {
+            let func = "";
+            let i = 0;
+
+            //Grab function
+            while (str.charAt(i) != "(" && i < str.length) {
+                func += str.charAt(i);
+                i++;
+            }
+
+            //make sure we didn't just hit a dead end.
+            if (i >= str.length) return this.failSafeColors();
+
+            //otherwise trim the function name
+            func = this.gradientFunc2Type[func.trim().toLowerCase()];
+            if (!func) func = "linear";
+            this.mode = func;
+            
+            //Step off and read args
+            i++;
+
+            let args = "";
+            while(str.charAt(i) != ")" && i < str.length) {
+                args += str.charAt(i);
+                i++;
+            }
+
+            if (i >= str.length || args.length == 0) return this.failSafeColors();
+
+            //Clean up the arguments
+            args = args.split(",");
+            for (let argsID in args) {
+                //Trim and split each argument into it's components,
+                //Also make sure to fancy them up aswell.
+                args[argsID] = args[argsID].trim().split(" ").reduce(
+                    (acc, cur) => { 
+                        if (cur) acc.push(cur.trim()) 
+                        return acc;
+                    }, 
+                    []
+                );
+            }
+
+            if (this.cssReaders[func]) {
+                const success = this.cssReaders[func](args);
+                if (!success) return this.failSafeColors();
+            }
+            else return this.failSafeColors();
+
+            this.organizeColors();
+        }
+
+        gradientFunc2Type = {
+            "linear-gradient":"linear",
+            "radial-gradient":"radial",
+            "conic-gradient": "conic",
+        };
+
+        toCanvasGradient(gl, startX, startY, endX, endY) {
+            let created = null;
+            const centerX = (endX + startX) / 2;
+            const centerY = (endY + startY) / 2;
+
+            //Flip it if we are on opposite sides
+            if (endX < startX) {
+                const temp = startX;
+                startX = endX;
+                endX = temp;
+            }
+
+            if (endY > startY) {
+                const temp = startY;
+                startY = endY;
+                endY = temp;
+            }
+
+            let directionX = Math.sin(this.angle);
+            let directionY = Math.cos(this.angle);
+            
+            switch (this.mode) {
+                case "linear":
+                    let stepX = (endX - startX) / 2;
+                    let stepY = (endY - startY) / 2;
+                    created = gl.createLinearGradient(centerX - (stepX * directionX), centerY - (stepY * directionY), centerX + (stepX * directionX), centerY + (stepY * directionY));
+                    break;
+
+                case "radial":
+                    created = gl.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 2);
+                    break;
+
+                case "conic":
+                    created = gl.createConicGradient(this.angle - (Math.PI / 2), centerX, centerY);
+                    break;
             }
             
-            //Blit image data to editing canvas if needed
-            if (active) {
-                this.workspace.editGL.putImageData(output, 0, 0);
+            //Loop through and create
+            for (let colorID in this.colors) {
+                const [color, position] = this.colors[colorID];
+                created.addColorStop(position, color);
             }
 
-            this.dataRaw = output;
-            this.updateBitmap();
+            return created;
         }
+    },
+
+    parseColor: (colorValue, gl, startX, startY, endX, endY) => {
+        return (colorValue.startsWith("#")) ? colorValue : (new artimus.gradient(colorValue)).toCanvasGradient(gl, startX, startY, endX, endY);
     },
 
     workspace: class {
@@ -730,8 +1120,14 @@ window.artimus = {
         }
 
         //History
-        history = [];
-        historyIndex = 0;
+        get historyLength() {
+            if (this.layers[this.currentLayer]) return this.layers[this.currentLayer].historyLength;
+            return 0;
+        }
+        get historyIndex() {
+            if (this.layers[this.currentLayer]) return this.layers[this.currentLayer].historyIndex;
+            return 0;
+        }
 
         //CSS classes
         toolClass = "artimus-button artimus-sideBarButton artimus-tool ";
@@ -786,6 +1182,22 @@ window.artimus = {
             color1: [ 0.9, 0.9, 0.9 ],
             color2: [ 0.8, 0.8, 0.8 ],
             size: 8
+        }
+
+        zoomIn(percentage) {
+            if (percentage === 0) percentage = 1;
+            if (typeof percentage != "number") percentage = 2;
+
+            this.zoom *= percentage;
+            return this.zoom;
+        }
+
+        zoomOut(percentage) {
+            if (percentage === 0) percentage = 1;
+            if (typeof percentage != "number") percentage = 2;
+
+            this.zoom /= percentage;
+            return this.zoom;
         }
 
         updatePosition() {
@@ -1511,7 +1923,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolDown && this.tool && this.toolFunction.constructive) {
-                                this.updateLayerHistory();
+                                this.captureHistory();
                                 this.dirty = true;
                             }
                             this.toolDown = false; 
@@ -1752,7 +2164,7 @@ window.artimus = {
                             
                             //For the undoing
                             if (this.toolFunction.constructive) this.dirty = true;
-                            if (this.tool) this.updateLayerHistory();
+                            if (this.tool) this.captureHistory();
 
                             this.toolDown = false; 
                         }
@@ -1850,6 +2262,7 @@ window.artimus = {
             this.toolPropertyHolder.appendChild(CUGI.createList(this.toolFunction.CUGI(this), {
                 preprocess: (item) => {
                     item.text = artimus.translate(item.translationKey || item.key || item.text, "toolProperty") || item.text || item.key;
+                    item = artimus.toolCUGIPreprocess(item);
                     return item;
                 }
             }));
@@ -2036,20 +2449,21 @@ window.artimus = {
         }
 
         //Layer manipulation, for use inside of the library itself but exposed for people to use for their own purposes
-        setLayer(ID, then) {
+        setLayer(ID) {
             return new Promise((resolve, reject) => {
                 ID = this.getLayerIndex(ID);
 
                 if (typeof ID == "number") {
                     //Save current data to the layer position
-                    const oldLayer = this.layers[this.#currentLayer];
+                    const oldID = this.#currentLayer;
+                    const oldLayer = this.layers[oldID];
                     const label = oldLayer.label;
 
                     //Clean up data and save layer data to previous layer.
-                    this.layers[this.#currentLayer].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
-                    this.transferLayerData(oldLayer, this.layers[this.#currentLayer]);
+                    this.layers[oldID].dataRaw = this.editGL.getImageData(0, 0, this.width, this.height);
+                    this.transferLayerData(oldLayer, this.layers[oldID]);
 
-                    this.updateLayer(this.#currentLayer, () => {
+                    this.updateLayer(oldID).then(() => {
                         this.#currentLayer = ID;
 
                         //Now setup stuff we need/want like blitting the newly selected layer onto the editing canvas
@@ -2059,7 +2473,6 @@ window.artimus = {
                         label.className = this.layerClass;
                         current.label.className = this.layerClass + this.layerClassSelected;
 
-                        if (then) then();
                         resolve();
 
                         this.sendEvent("layerSwitched", { layer: this.layers[ID], id: ID });
@@ -2221,12 +2634,8 @@ window.artimus = {
                 elFrom.positionID = target;
                 elTo.positionID = ID;
 
-                if (ID == this.currentLayer) {
-                    this.#currentLayer = target;
-                }
-                else if (target == this.currentLayer) {
-                    this.#currentLayer = ID;
-                }
+                if (ID == this.currentLayer) this.#currentLayer = target;
+                else if (target == this.currentLayer) this.#currentLayer = ID;
 
                 const parent = elFrom.parentElement;
 
@@ -2248,18 +2657,20 @@ window.artimus = {
                     if (ID + 1 >= this.layers.length) parent.appendChild(elTo);
                     else parent.insertBefore(elTo, this.layers[ID + 1].element);
                 }
+
+                //Add the historical event, and shift elements;
+                this.dirty = true;
             }
         }
 
-        updateLayer(ID, then) {
+        updateLayer(ID) {
             return new Promise((resolve, reject) => {
                 ID = this.getLayerIndex(ID);
 
                 if (typeof ID == "number") {
                     this.layers[ID].updateBitmap().then(newBitmap => {
-                        if (then) then(newBitmap);
-                        resolve(newBitmap);
                         this.dirty = true;
+                        resolve(newBitmap);
                     });
                 }
                 else {
@@ -2311,14 +2722,7 @@ window.artimus = {
             return [];
         }
 
-        //Legacy history function
-        updateLayerHistory() {
-            this.addHistoricalEvent("imageChange", {
-                data: this.editGL.getImageData(0, 0, this.width, this.height),
-                rect: [0, 0, this.width, this.height]
-            });
-        }
-
+        //Layer data
         transferLayerData(from, to) {
             to.name = from.name;
             to.element = from.element;
@@ -2344,8 +2748,10 @@ window.artimus = {
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resizeByRect(ID == this.currentLayer, x, y, width, height, editingData);
+                return this.layers[ID].resizeByRect(ID == this.currentLayer, x, y, width, height, editingData);
             }
+
+            return new Promise((resolve) => { resolve() });
         }
 
         resizeLayerByAnchor(ID, anchor, width, height, editingData) {
@@ -2355,8 +2761,10 @@ window.artimus = {
             }
 
             if (typeof ID == "number") {
-                this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
+                return this.layers[ID].resizeByAnchor(ID == this.currentLayer, anchor, width, height, editingData);
             }
+
+            return new Promise((resolve) => { resolve(); });
         }
 
         removeLayer(ID) {
@@ -2376,6 +2784,7 @@ window.artimus = {
                 }
 
                 this.layers[ID].dispose(ID);
+                this.dirty = true;
                 this.sendEvent("layerRemoved", { layerID: ID });
             }
         }
@@ -2396,8 +2805,8 @@ window.artimus = {
 
         //Resizing in style
         resize(width, height, anchor) { 
-            if (anchor) this.resizeByAnchor(width, height, anchor);
-            else this.resizeByRect(0, 0, width, height);
+            if (anchor) return this.resizeByAnchor(width, height, anchor);
+            else return this.resizeByRect(0, 0, width, height);
         }
 
         _resizeCanvases(width, height) {
@@ -2442,85 +2851,90 @@ window.artimus = {
         }
 
         resizeByRect(x, y, width, height) {
-            if (x < 0 || typeof x != "number") x = 0;
-            else if (x >= this.width) x = this.width - 1;
+            return new Promise(async (resolve) => {
+                if (x < 0 || typeof x != "number") x = 0;
+                else if (x >= this.width) x = this.width - 1;
 
-            if (y < 0 || typeof y != "number") x = 0;
-            else if (y >= this.height) y = this.height - 1;
+                if (y < 0 || typeof y != "number") x = 0;
+                else if (y >= this.height) y = this.height - 1;
 
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
+                if (width < 1 || typeof width != "number") width = 1;
+                if (height < 1 || typeof height != "number") height = 1;
 
-            const editingData = this._resizeCanvases(width, height);
-            for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
-            }
+                //Add the historical event;
+                const editingData = this._resizeCanvases(width, height);
+                for (let index = 0; index < this.layers.length; index++) {
+                    await this.resizeLayerByRect(index, x, y, this.#width, this.#height, editingData);
+                }
 
-            //Update textures
-            this._updateTextures();
-            this.dirty = true;
-            this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
+                //Update textures
+                this._updateTextures();
+                this.dirty = true;
+
+                //Clear the history and send the event
+                this.sendEvent("resized", { x: x, y: y, width: width, height: height, type: "rect"});
+                resolve();
+            });
         }
 
         resizeByAnchor(width, height, anchor) {
-            //Get anchor data
-            anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
-            if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
+            return new Promise(async (resolve) => {
+                //Get anchor data
+                anchor = anchor || artimus.resizeAnchors.TOP_LEFT;
+                if (!Array.isArray(anchor)) anchor = artimus.resizeAnchors[anchor] || artimus.resizeAnchors.TOP_LEFT
 
-            //Copy the data
-            anchor = [...(anchor)];
+                //Copy the data
+                anchor = [...(anchor)];
 
-            if (width < 1 || typeof width != "number") width = 1;
-            if (height < 1 || typeof height != "number") height = 1;
+                if (width < 1 || typeof width != "number") width = 1;
+                if (height < 1 || typeof height != "number") height = 1;
 
-            const editingData = this._resizeCanvases(width, height);
-            for (let index = 0; index < this.layers.length; index++) {
-                this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
-            }
+                //Add the historical event;
+                const editingData = this._resizeCanvases(width, height);
+                for (let index = 0; index < this.layers.length; index++) {
+                    await this.resizeLayerByAnchor(index, anchor, this.#width, this.#height, editingData);
+                }
 
-            this.scrollX = this.scrollX;
-            this.scrollY = this.scrollY;
-            this.updatePosition();
+                this.scrollX = this.scrollX;
+                this.scrollY = this.scrollY;
+                this.updatePosition();
 
-            //Update textures
-            this._updateTextures();
-            this.dirty = true;
-            this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
+                //Update textures
+                this._updateTextures();
+                this.dirty = true;
+
+                //Clear the history and send the event
+                this.sendEvent("resized", { width: width, height: height, anchor: anchor, type: "anchor"});
+                resolve();
+            });
         }
 
+        //These use the new historical event system, which should be more modular and open to updates.
+        captureHistory() {
+            if (this.layers[this.currentLayer]) this.layers[this.currentLayer].captureHistory();
+        }
+        
         undo() {
-            if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
+            return new Promise(async () => {
+                if (this.toolFunction.undo && this.toolFunction.undo(this.editGL, this.previewGL, this.toolProperties)) return true;
 
-            if (this.historyIndex >= this.history.length - 1) return;
-            this.historyIndex++;
-
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
-            this.dirty = true;
-
-            this.sendEvent("undo", { historyIndex: this.historyIndex });
+                this.layers[this.currentLayer].undo();
+                this.sendEvent("undo", { historyIndex: this.historyIndex });
+            });
         }
 
         redo() {
-            if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
-
-            if (this.historyIndex <= 0) return;
-            this.historyIndex--;
-
-            this.editGL.putImageData(this.history[this.historyIndex], 0, 0);
-            this.dirty = true;
-
-            this.sendEvent("redo", { historyIndex: this.historyIndex });
+            return new Promise(async () => {
+                if (this.toolFunction.redo && this.toolFunction.redo(this.editGL, this.previewGL, this.toolProperties)) return true;
+                
+                this.layers[this.currentLayer].redo();
+                this.sendEvent("redo", { historyIndex: this.historyIndex });
+            });
         }
 
-        addHistoricalEvent(type, data) {
-            if (this.historyIndex > 0) {
-                this.history.splice(0, this.historyIndex);
-            }
-
-            this.historyIndex = 0;
-            this.history.splice(0, 0, new artimus.historicalEvent(type, data, this));
-            if (this.history.length > artimus.maxHistory) {
-                this.history.pop();
+        clearHistory() {
+            for (let layerID = 0; layerID < this.layers; layerID++) {
+                this.layers[layerID].clearHistory();
             }
         }
 
@@ -2707,30 +3121,32 @@ window.artimus = {
             else textPaste();
         }
 
-        new(width, height, then) {
-            this.scrollX = 0;
-            this.scrollY = 0;
+        new(width, height) {
+            //Move this to an async function to reduce clutter
+            return new Promise(async (resolve) => {
+                this.scrollX = 0;
+                this.scrollY = 0;
 
-            //Remove layers
-            this.#currentLayer = 0;
-            for (let ID = this.layers.length - 1; ID > 0; ID--) {
-                this.removeLayer(Number(ID));
-            }
+                //Remove layers
+                this.#currentLayer = 0;
+                for (let ID = this.layers.length - 1; ID > 0; ID--) {
+                    this.removeLayer(Number(ID));
+                }
 
-            //Then clear our current layer
-            this.editGL.clearRect(0, 0, this.width, this.height);
-            this.updateLayer(this.#currentLayer, () => {
-                this.resize(width, height);
-                this.currentLayer = 0;
+                //Then clear our current layer
+                this.editGL.clearRect(0, 0, this.width, this.height);
+                await this.updateLayer(this.#currentLayer);
+                await this.resize(width, height);
 
-                if (then) then();
-            });
+                //Clear the FS handle and reset the history
+                this.fileSystemHandle = null;
+                this.clearHistory();
 
-            this.historyIndex = 0;
-            this.history = [];
-            this.fileSystemHandle = null;
+                this.sendEvent("new", { width: width, height: height });
+                resolve();
 
-            this.sendEvent("new", { width: width, height: height });
+                //console.log("new called they want their dog back!")
+            })
         }
         
         //Artimus Files
@@ -3147,85 +3563,91 @@ window.artimus = {
         ];
         
         importArtimus(input, replaceFile) {
-            const data = new Uint8Array(input);
+            return new Promise((resolve, reject) => {
+                const data = new Uint8Array(input);
 
-            //Make sure it is an artimus image
-            if (
-                data[0] == artimus.magic[0] &&
-                data[1] == artimus.magic[1] &&
-                data[2] == artimus.magic[2] &&
-                data[3] == artimus.magic[3]
-            ) {
-                const handleImport = () => {
-                    //Calculate size based upon the Tri-fecta.
-                    const width = (data[5] << 16) + (data[6] << 8) + (data[7]);
-                    const height = (data[8] << 16) + (data[9] << 8) + (data[10]);
+                //Make sure it is an artimus image
+                if (
+                    data[0] == artimus.magic[0] &&
+                    data[1] == artimus.magic[1] &&
+                    data[2] == artimus.magic[2] &&
+                    data[3] == artimus.magic[3]
+                ) {
+                    const handleImport = async () => {
+                        //Calculate size based upon the Tri-fecta.
+                        const width = (data[5] << 16) + (data[6] << 8) + (data[7]);
+                        const height = (data[8] << 16) + (data[9] << 8) + (data[10]);
 
-                    //If we are replacing the file resize.
-                    if (replaceFile) this.resize(width, height);
+                        //If we are replacing the file resize.
+                        if (replaceFile) await this.resize(width, height);
 
-                    //Count bytes
-                    const bytesPerLayer = width * height * 4;
-                    const layerCount = (data[11] << 8) + data[12];
-                    const format = (data[4]);
+                        //Count bytes
+                        const bytesPerLayer = width * height * 4;
+                        const layerCount = (data[11] << 8) + data[12];
+                        const format = (data[4]);
 
-                    console.log(`Artimus format is ${format}!`);
+                        console.log(`Artimus format is ${format}!`);
 
-                    let idx = 12;
+                        let idx = 12;
 
-                    //layer 1 is set to NaN as to not confuse it with an actual layer
-                    if (replaceFile) this.layers[0].name = NaN;
-                    
-                    //Loop through layers, and read them with whatever format of reader is needed;
-                    let layerReader = this.layerReaders[format];
-                    if (typeof layerReader == "number") this.layerReaders[layerReader];
-                    if (typeof layerReader != "function") {
-                        console.log(`Invalid layer reader ${layerReader} with origin of ${this.layerReaders[format]} on format ${format}`);
-                        return;
-                    }
-
-                    const fileLayers = this.layers.length;
-                    
-                    //Prevent recalculation of for loop ending.
-                    const forEnd = (replaceFile ? layerCount : layerCount+fileLayers-1);
-                    for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < forEnd; layer++) {
-                        idx = layerReader(data, layer, width, height, bytesPerLayer, idx);
-                    }
-
-                    if (replaceFile) this.setLayer(1).then(() => {
-                        this.removeLayer(0)
-                        this.setLayer(0);
-                    });
-
-                    if (
-                        data[idx + 1] == artimus.jsonMagic[0] &&
-                        data[idx + 2] == artimus.jsonMagic[1] &&
-                        data[idx + 3] == artimus.jsonMagic[2] &&
-                        data[idx + 4] == artimus.jsonMagic[3]
-                    ) {
-                        idx += 4;
+                        //layer 1 is set to NaN as to not confuse it with an actual layer
+                        if (replaceFile) this.layers[0].name = NaN;
                         
-                        try {
-                            const parsed = JSON.parse(this.tDecoder.decode(data.slice(idx + 1, data.length)));
-                            this.projectStorage = parsed;
-                        } catch (error) {
-                            console.error("Json header could possibly be corrupted :(");
+                        //Loop through layers, and read them with whatever format of reader is needed;
+                        let layerReader = this.layerReaders[format];
+                        if (typeof layerReader == "number") this.layerReaders[layerReader];
+                        if (typeof layerReader != "function") {
+                            console.log(`Invalid layer reader ${layerReader} with origin of ${this.layerReaders[format]} on format ${format}`);
+                            return;
                         }
+
+                        const fileLayers = this.layers.length;
+                        
+                        //Prevent recalculation of for loop ending.
+                        const forEnd = (replaceFile ? layerCount : layerCount+fileLayers-1);
+                        for (let layer = (replaceFile ? 0 : this.layers.length-1); layer < forEnd; layer++) {
+                            idx = layerReader(data, layer, width, height, bytesPerLayer, idx);
+                        }
+
+                        if (replaceFile) await this.setLayer(1).then(() => {
+                            this.removeLayer(0)
+                            this.setLayer(0);
+                        });
+
+                        //Make sure the json footer is good.
+                        if (
+                            data[idx + 1] == artimus.jsonMagic[0] &&
+                            data[idx + 2] == artimus.jsonMagic[1] &&
+                            data[idx + 3] == artimus.jsonMagic[2] &&
+                            data[idx + 4] == artimus.jsonMagic[3]
+                        ) {
+                            idx += 4;
+                            
+                            try {
+                                const parsed = JSON.parse(this.tDecoder.decode(data.slice(idx + 1, data.length)));
+                                this.projectStorage = parsed;
+                            } catch (error) {
+                                console.error("Json header could possibly be corrupted :(");
+                            }
+                        }
+
+                        //Update the layer and clear the history again to get a fresh start.
+                        if (replaceFile) this.setLayer(0).then(() => {
+                            this.clearHistory();
+                        })
                     }
 
+                    if (replaceFile) this.new(
+                    (data[5] << 16) + (data[6] << 8) + (data[7]),
+                    (data[8] << 16) + (data[9] << 8) + (data[10]),
+                    ).then(handleImport);
+                    else handleImport();
 
+                    this.sendEvent("import", { file: input });
+                    resolve();
                 }
-
-                if (replaceFile) this.new(
-                (data[5] << 16) + (data[6] << 8) + (data[7]),
-                (data[8] << 16) + (data[9] << 8) + (data[10]),
-                handleImport
-                );
-                else handleImport();
-
-                this.sendEvent("import", { file: input });
-            }
-            else console.error("Artimus File invalid!");
+                else reject("Artimus File invalid!");
+            })
         }
 
         exportArtimus() {
@@ -3360,6 +3782,7 @@ window.artimus = {
                 fileInput.type = "file";
                 fileInput.accept = "image/*, .artimus";
 
+                //Wrap into a promise to later return when the file is selected.
                 const filePromise = new Promise((resolve) => {
                     fileInput.onchange = () => {
                         this.importFromImage(fileInput.files[0], replaceFile);
@@ -3384,17 +3807,19 @@ window.artimus = {
                 default:
                     const image = new Image();
                     image.onload = () => {
-                        if (replaceFile) this.new(image.width, image.height, () => {
-                            this.setLayer(0, () => {
+                        //If we want to fully replace the file, create the new file, draw the image and clear the history
+                        if (replaceFile) this.new(image.width, image.height).then(() => {
+                            this.setLayer(0).then(() => {
                                 this.editGL.drawImage(image, 0, 0);
+                                this.clearHistory();
                             });
                         });
 
                         else {
                             this.createLayer(`Layer ${this.layers.length+1}`, false);
-                            this.setLayer(this.layers.length-1, () => {
-                                this.editGL.drawImage(image, 0, 0, image.width, image.height); // Todo: Maybe prompt about resizing the canvas?
-                            });
+                            // Todo: Maybe prompt about resizing the canvas?
+                            // * Maybe DG, though I think that would be through some editor interface due to the nature of the library - David.
+                            this.setLayer(this.layers.length-1).then(() => this.editGL.drawImage(image, 0, 0, image.width, image.height));
                         }
                     }
 
@@ -3527,6 +3952,7 @@ window.artimus = {
     }
 }
 
+//Get the canvas for export ready.
 artimus.exportCanvas.width = 1;
 artimus.exportCanvas.height = 1;
 artimus.exportGL = artimus.exportCanvas.getContext("2d");

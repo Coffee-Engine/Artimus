@@ -1,41 +1,58 @@
-editor.hotkeyMenu = (container, translationKey, onchange) => {
-    container.className = "settings-hotkeyList";
-    const joiner = artimus.translate("joiner", translationKey);
-    
-    //Create elements
-    const hotkeyInputHolder = document.createElement("div");
-    hotkeyInputHolder.className = "settings-hotkeyDisplay settings-hotkeyAdditionDisplay";
-
-    const hotkeyInput = document.createElement("button");
-    hotkeyInput.className = "artimus-button settings-hotkeyInput";
-    hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
-
-    const addFunctionOptions = (selectElements) => {
+editor.hotkeyMenu = class extends editor.settingsPage {
+    addFunctionOptions(selectElements) {
         for (let funcID in editor.hotkeyFunctions) {
             const func = editor.hotkeyFunctions[funcID];
 
             const option = document.createElement("option");
-            option.innerText = artimus.translate(func, `${translationKey}.functions`);
+            option.innerText = artimus.translate(func, `${this.translationKey}.functions`);
             option.value = func;
 
             selectElements.appendChild(option);
         }
     }
 
-    //Add the dropdown menu, and it's options.
-    const hotkeyFunction = document.createElement("select");
-    addFunctionOptions(hotkeyFunction)
+    addHotkeyDisplay(hotkey, animationOffset) {
+        const holder = document.createElement("div");
 
-    const hotkeyAdd = document.createElement("button");
-    hotkeyAdd.className = "artimus-button settings-hotkeyAdd";
-    hotkeyAdd.innerText = artimus.translate("add", translationKey);
+        //For sequential animations
+        holder.style.setProperty("--index", animationOffset);
+        holder.className = "settings-hotkeyDisplay";
 
-    const hotkeyDisplayHolder = document.createElement("div");
-    hotkeyDisplayHolder.className = "settings-hotkeyDisplayHolder";
+        let translatedDescription = hotkey.split("+");
+        for (let idx in translatedDescription) {
+            translatedDescription[idx] = artimus.translate(translatedDescription[idx], this.translationKey, true);
+        }
 
-    //Add functionality to the key capture mechanism.
-    let hotkeyToAdd = "";
-    const inputCapturer = (event) => {
+        //Create the inner elements
+        const description = document.createElement("p");
+        description.innerText = translatedDescription.join(this.joiner);
+        description.className = "settings-hotkeyDescription";
+
+        const hotkeyDisplayFunction = document.createElement("select");
+        this.addFunctionOptions(hotkeyDisplayFunction);
+        hotkeyDisplayFunction.value = artimus.hotkeys[hotkey];
+
+        const hotkeyRemove = document.createElement("button");
+        hotkeyRemove.className = "artimus-button settings-hotkeyAdd settings-hotkeyRemove";
+        hotkeyRemove.innerText = artimus.translate("remove", this.translationKey);
+
+        //Update hotkeys
+        hotkeyRemove.onclick = () => {
+            holder.parentElement.removeChild(holder);
+            delete editor.settings.hotkeys[hotkey];
+            artimus.hotkeys = editor.settings.hotkeys;
+            this.onchange();
+        }
+
+        //Then create the dom and add to the display holder
+        holder.appendChild(description);
+        holder.appendChild(hotkeyDisplayFunction);
+        holder.appendChild(hotkeyRemove);
+        
+        this.hotkeyDisplayHolder.appendChild(holder);
+    }
+
+    inputCapturer(event) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -53,89 +70,81 @@ editor.hotkeyMenu = (container, translationKey, onchange) => {
             let translatedDescription = keyDescription.split("+");
 
             for (let idx in translatedDescription) {
-                translatedDescription[idx] = artimus.translate(translatedDescription[idx], translationKey, true);
+                translatedDescription[idx] = artimus.translate(translatedDescription[idx], this.translationKey, true);
             }
             
-            hotkeyInput.innerText = translatedDescription.join(joiner);
-            hotkeyToAdd = keyDescription;
-            document.removeEventListener("keydown", inputCapturer);
+            this.hotkeyInput.innerText = translatedDescription.join(this.joiner);
+            this.hotkeyToAdd = keyDescription;
+            document.removeEventListener("keydown", this.inputCapturer);
         }
     }
 
-    //For adding hotkeys to the list.
-    const addHotkeyDisplay = (hotkey, animationOffset) => {
-        const holder = document.createElement("div");
+    init(container, translationKey, onchange) {
+        const self = this;
 
-        //For sequential animations
-        holder.style.setProperty("--index", animationOffset);
-        holder.className = "settings-hotkeyDisplay";
-
-        let translatedDescription = hotkey.split("+");
-        for (let idx in translatedDescription) {
-            translatedDescription[idx] = artimus.translate(translatedDescription[idx], translationKey, true);
-        }
-
-        //Create the inner elements
-        const description = document.createElement("p");
-        description.innerText = translatedDescription.join(joiner);
-        description.className = "settings-hotkeyDescription";
-
-        const hotkeyDisplayFunction = document.createElement("select");
-        addFunctionOptions(hotkeyDisplayFunction);
-        hotkeyDisplayFunction.value = artimus.hotkeys[hotkey];
-
-        const hotkeyRemove = document.createElement("button");
-        hotkeyRemove.className = "artimus-button settings-hotkeyAdd settings-hotkeyRemove";
-        hotkeyRemove.innerText = artimus.translate("remove", translationKey);
-
-        hotkeyRemove.onclick = () => {
-            holder.parentElement.removeChild(holder);
-            delete editor.settings.hotkeys[hotkey];
-            onchange();
-        }
-
-        //Then create the dom and add to the display holder
-        holder.appendChild(description);
-        holder.appendChild(hotkeyDisplayFunction);
-        holder.appendChild(hotkeyRemove);
+        container.className = "settings-hotkeyList";
+        this.joiner = artimus.translate("joiner", translationKey);
         
-        hotkeyDisplayHolder.appendChild(holder);
-    }
+        //Create elements
+        this.hotkeyInputHolder = document.createElement("div");
+        this.hotkeyInputHolder.className = "settings-hotkeyDisplay settings-hotkeyAdditionDisplay";
 
-    hotkeyInput.onclick = () => {
-        hotkeyInput.innerText = artimus.translate("waitingForInput", translationKey);
+        this.hotkeyInput = document.createElement("button");
+        this.hotkeyInput.className = "artimus-button settings-hotkeyInput";
+        this.hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
 
-        document.addEventListener("keydown", inputCapturer);
-    }
+        //Add the dropdown menu, and it's options.
+        this.hotkeyFunction = document.createElement("select");
+        this.addFunctionOptions(this.hotkeyFunction)
 
-    hotkeyAdd.onclick = () => {
-        //Give an error if the hotkey doesn't exist.
-        if (artimus.hotkeys[hotkeyToAdd]) {
-            hotkeyInput.innerText = artimus.translate("hotkeyExists", translationKey);
+        this.hotkeyAdd = document.createElement("button");
+        this.hotkeyAdd.className = "artimus-button settings-hotkeyAdd";
+        this.hotkeyAdd.innerText = artimus.translate("add", translationKey);
+
+        this.hotkeyDisplayHolder = document.createElement("div");
+        this.hotkeyDisplayHolder.className = "settings-hotkeyDisplayHolder";
+
+        //Add functionality to the key capture mechanism.
+        this.hotkeyToAdd = "";
+
+        this.hotkeyInput.onclick = () => {
+            this.hotkeyInput.innerText = artimus.translate("waitingForInput", translationKey);
+
+            document.addEventListener("keydown", (event) => {this.inputCapturer.call(self, event);});
         }
-        else {
-            editor.settings.hotkeys[hotkeyToAdd] = hotkeyFunction.value;
-            addHotkeyDisplay(hotkeyToAdd, 0);
-            onchange();
-            
-            hotkeyToAdd = "";
-            hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
+
+        this.hotkeyAdd.onclick = () => {
+            //Give an error if the hotkey doesn't exist.
+            if (artimus.hotkeys[this.hotkeyToAdd]) {
+                this.hotkeyInput.innerText = artimus.translate("hotkeyExists", translationKey);
+            }
+            else {
+                editor.settings.hotkeys[this.hotkeyToAdd] = this.hotkeyFunction.value;
+                artimus.hotkeys = editor.settings.hotkeys;
+
+                this.addHotkeyDisplay(this.hotkeyToAdd, 0);
+                onchange();
+                
+                this.hotkeyToAdd = "";
+                this.hotkeyInput.innerText = artimus.translate("clickToInput", translationKey);
+            }
+        }
+
+        //Setup the dom for the initial holder.
+        this.hotkeyInputHolder.appendChild(this.hotkeyInput);
+        this.hotkeyInputHolder.appendChild(this.hotkeyFunction);
+        this.hotkeyInputHolder.appendChild(this.hotkeyAdd);
+        container.appendChild(this.hotkeyInputHolder);
+        container.appendChild(this.hotkeyDisplayHolder);
+
+        let offset = 1;
+        for (let hotkey in artimus.hotkeys) {
+            this.addHotkeyDisplay(hotkey, offset);
+            offset++;
         }
     }
 
-    //Setup the dom for the initial holder.
-    hotkeyInputHolder.appendChild(hotkeyInput);
-    hotkeyInputHolder.appendChild(hotkeyFunction);
-    hotkeyInputHolder.appendChild(hotkeyAdd);
-    container.appendChild(hotkeyInputHolder);
-    container.appendChild(hotkeyDisplayHolder);
-
-    let offset = 1;
-    for (let hotkey in artimus.hotkeys) {
-        addHotkeyDisplay(hotkey, offset);
-        offset++;
+    destroy() {
+        document.removeEventListener("keydown", this.inputCapturer);
     }
-
-    //Prevent errors from switching pages.
-    return () => document.removeEventListener("keydown", inputCapturer);
 }

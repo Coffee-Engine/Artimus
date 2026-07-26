@@ -1,7 +1,9 @@
-editor.fileResize = () => {
-    //Simple, easy.
-    new editor.modal(artimus.translate("title", "modal.resizeFile"), (contents, modal) => {
-        contents.className += " newFile-tuning popup-resizeFile";
+editor.registerModal("resizeCanvas", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("title", "modal.resizeFile");
+        this.width = 22.5;
+
+        content.className += " newFile-tuning popup-resizeFile";
         
         const currentPreviewHolder = document.createElement("div");
         const currentPreview = document.createElement("div");
@@ -37,9 +39,9 @@ editor.fileResize = () => {
 
         finalDiv.appendChild(createButton);
 
-        contents.appendChild(currentPreviewHolder);
-        contents.appendChild(sizingDiv);
-        contents.appendChild(finalDiv);
+        content.appendChild(currentPreviewHolder);
+        content.appendChild(sizingDiv);
+        content.appendChild(finalDiv);
 
         createButton.innerText = artimus.translate("resize", "modal.resizeFile");
 
@@ -74,6 +76,7 @@ editor.fileResize = () => {
             heightInput.value = Math.max(heightInput.min, Math.min(heightInput.max, height));
         }
 
+        //Anchor movement is rather simple
         const updateAnchor = (x, y) => {
             x = (x === undefined) ? anchor[0] : x;
             y = (y === undefined) ? anchor[1] : y;
@@ -132,10 +135,9 @@ editor.fileResize = () => {
 
         createButton.onclick = () => {
             editor.workspace.resize(width, height, anchor);
-            modal.close();
+            this._close();
             document.removeEventListener("mousemove", anchorDrag);
             document.removeEventListener("mouseup", anchorStop);
         }
-        
-    }, { translationContext: "resizeFile", width: 22.5 });
-}
+    }
+});

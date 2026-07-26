@@ -33,7 +33,7 @@ artimus.tools.sprayPaint = class extends artimus.tool {
     }
 
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "color", type: "color" },
+        { target: artEditor.toolProperties, key: "color", type: "color", alpha: true },
         { target: artEditor.toolProperties, key: "radius", type: "int", min: 1 },
         { target: artEditor.toolProperties, key: "points", type: "int", min: 1 },
     ]}

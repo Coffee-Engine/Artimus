@@ -18,17 +18,21 @@
     <link rel="stylesheet" href="site/src/css/layerProperties.css">
     <link rel="stylesheet" href="site/src/css/settings.css">
     <link rel="stylesheet" href="site/src/css/lospec.css">
+    <link rel="stylesheet" href="site/src/css/createPalette.css">
+    <link rel="stylesheet" href="site/src/css/paletteSelector.css">
     <link rel="stylesheet" href="site/src/css/socials.css">
     <link rel="stylesheet" href="site/lib/elemental/elementalStyles.css">
     <link rel="shortcut icon" href="site/icons/icon.ico" type="image/x-icon">
+    <link rel="icon" href="site/icons/icon.ico" type="image/x-icon">
     <title>Artimus test</title>
 </head>
 <body>
     <style id="customCSSElement"></style>
     <!-- For some reason outside scripts aren't allowed to have context menus? -->
-    <script src="site/src/CUGI.js"></script>
+    <script src="site/lib/CUGI/CUGI.js"></script>
 
     <script src="site/lib/elemental/elemental.js"></script>
+    <script src="site/lib/elemental/elementalColorPickerPalleteSwapper.js"></script>
     <script src="site/lib/elemental/elementalCUGIBridge.js"></script>
 
     <script src="dist/artimus.js"></script>
@@ -49,46 +53,13 @@
     
     <div class="main-grid">
         <div id="toolbar" class="top-bar">
-            <cugi-dropdown>File
-                <cugi-option></cugi-option>
-                <cugi-option>{ type: "button", text: "Save", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC();
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Save as", onclick: () => {
-                    artimus.activeWorkspaces[0].exportToPC("artimus", { forceDialogue: true });
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Export", onclick: () => {
-                    editor.exportMenu();
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Load", onclick: () => {
-                    editor.loadFile(false);
-                }}</cugi-option>
-            </cugi-dropdown>
-            <cugi-dropdown>Edit
-                <cugi-option>{ type: "label", text:"Sprite" }</cugi-option>
-                <cugi-option>{ type: "button", text: "Resize", onclick: () => {
-                    editor.fileResize(false);
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Crop", onclick: () => {
-                    artimus.activeWorkspaces[0].cropToSelection();
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Undo (ctrl + z)", onclick: () => {
-                    artimus.activeWorkspaces[0].undo();
-                }}</cugi-option>
-                <cugi-option>{ type: "button", text: "Redo (ctrl + shift + z)", onclick: () => {
-                    artimus.activeWorkspaces[0].redo();
-                }}</cugi-option>
-                <cugi-option>{ type: "label", text:"Editor" }</cugi-option>
-                <cugi-option>{ type: "button", text: "Editor Settings", onclick: () => {
-                    editor.settingsPage();
-                }}</cugi-option>
-            </cugi-dropdown>
             <p style="text-align: right; width: 100%;" id="versionIdentifier">Artimus web [Γ 1.3]</p>
         </div>
         <div id="workspace-area" class="workspace"></div>
     </div>
 
     <script src="site/src/main.js"></script>
+    <script src="site/src/palettes.js"></script>
     <script src="site/src/toolbar.js"></script>
     <script src="site/src/indexedDB.js"></script>
     <script src="site/src/themes.js"></script>
@@ -107,6 +78,9 @@
     <script src="site/src/menus/loadFile.js"></script>
     <script src="site/src/menus/settingsPage.js"></script>
     <script src="site/src/menus/lospecImport.js"></script>
+    <script src="site/src/menus/createPalette.js"></script>
+    <script src="site/src/menus/paletteSelector.js"></script>
+    <script src="site/src/menus/fontMenu.js"></script>
     <script src="site/src/extensions.js"></script>
 </body>
 </html>

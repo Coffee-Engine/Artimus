@@ -5,7 +5,7 @@ window.editor = {
     bannerAuthorURL: "https://bitdisco.itch.io/",
 
     dbName: "artimusDB",
-    dbVersion: 2,
+    dbVersion: 3,
 
     docEdit: {
         width: 256,
@@ -17,82 +17,150 @@ window.editor = {
 
     resolutionPresets: {},
 
-    modals: [],
+    //Events
+    events: [
+        "paletteAdded",
+        "paletteRemoved"
+    ],
+
+    listeners: {},
+    addEventListener: (event, callback) => {
+        if (editor.events.includes(event)) {
+            if (!editor.listeners[event]) editor.listeners[event] = [];
+            editor.listeners[event].push(callback);
+        }
+    },
+    sendEvent: (event, data) => {
+        //Make sure the event list exists
+        if (Array.isArray(editor.listeners[event])) {
+            //Run the callbacks
+            const callbacks = editor.listeners[event];
+            for (let i = 0; i<callbacks.length; i++) {
+                callbacks[i](data);
+            }
+        }
+    },
+    removeEventListener: (event, callback) => {
+        if (editor.events.includes(event)) {
+            if (!editor.listeners[event]) return;
+            const index = editor.listeners[event].indexOf(callback);
+            if (index < 0) return;
+            editor.listeners[event].splice(index, 1);
+        }
+    },
+
+    //Modal registery
+    modals: {},
+    registerModal: (id, modalClass) => {
+        if (modalClass.prototype instanceof editor.modal) {
+            editor.modals[id] = modalClass;
+        }
+    },
+
+    spawnModal: (id, extraData) => {
+        if (editor.modals[id] && editor.modals[id].prototype instanceof editor.modal) new editor.modals[id](extraData);
+    },
+
+    closeAllModals: () => {
+        //Close all modals
+        for (let modal = 0; modal < editor.spawnedModals.length; modal++) {
+            if (editor.spawnedModals[modal] instanceof editor.modal) {
+                editor.spawnedModals[modal]._close();
+                modal--;
+            }
+        }
+    },
+
+    //Modals
+    spawnedModals: [],
     modal: class {
-        constructor(name, contents, options) {
+        //Title stuff
+        set title(value) { this.titleElement.innerText = value; }
+        get title() { return this.titleElement.innerText; }
+
+        //Modal sizing
+        #width = 0;
+        #height = 0;
+
+        set width(value) {
+            this.#width = value;
+            this.windowElement.style.setProperty("--window-width", this.#width);
+        }
+        get width() { return this.#height; }
+
+        set height(value) {
+            this.#height = value;
+            this.windowElement.style.setProperty("--window-height", this.#height);
+        }
+        get height() { return this.#height; }
+
+        //Closability
+        #canClose = false;
+        set canClose(value) {
+            this.#canClose = value != false;
+
+            //Add or remove close button
+            if (this.#canClose && !this.closeButton.parentElement) this.taskbarElement.appendChild(this.closeButton);
+            else if (this.closeButton.parentElement) this.closeButton.parentElement.removeChild(this.closeButton);
+        }
+        get canClose() { return this.#canClose; }
+
+        constructor(extraData) {
+            //Make sure we are using an object
+            if (typeof extraData != "object") extraData = {};
+
+            //Create initial state
             artimus.unfocusedHotkeys = false;
 
-            options = Object.assign({
-                hasClose: true,
-                width: 40,
-                height: 40,
-                translationContext: "CUGI"
-            }, options);
+            //Create needed elements for a modal
+            this.backgroundElement = document.createElement("div");
+            this.backgroundElement.className = "modal-background";
+            this.backgroundElement.style.pointerEvents = "all";
 
-            options.translationContext = `modal.${options.translationContext}`;
+            this.windowElement = document.createElement("div");
+            this.windowElement.className = "popup";
 
-            this.background = document.createElement("div");
-            this.background.className = "modal-background";
-            this.background.style.pointerEvents = "all";
-
-            this.window = document.createElement("div");
-            this.window.style.setProperty("--window-width", options.width);
-            this.window.style.setProperty("--window-height", options.height);
-            this.window.className = "popup";
-
-            this.taskbar = document.createElement("div");
-            this.taskbar.className = "popup-top";
+            this.taskbarElement = document.createElement("div");
+            this.taskbarElement.className = "popup-top";
 
             this.content = document.createElement("div");
             this.content.className = "popup-content";
 
-            this.title = document.createElement("p");
-            this.title.className = "popup-title";
-            this.title.innerText = name;
+            this.titleElement = document.createElement("p");
+            this.titleElement.className = "popup-title";
+            this.titleElement.innerText = name;
 
-            this.background.appendChild(this.window);
-            this.window.appendChild(this.taskbar);
-            this.taskbar.appendChild(this.title);
-            this.window.appendChild(this.content);
+            this.backgroundElement.appendChild(this.windowElement);
+            this.windowElement.appendChild(this.taskbarElement);
+            this.taskbarElement.appendChild(this.titleElement);
+            this.windowElement.appendChild(this.content);
 
-            document.body.appendChild(this.background);
-            
-            this.background.style.setProperty("--modal-opacity", "100%");
-            
-            if (options.hasClose) {
-                this.closeButton = document.createElement("button");
-                this.closeButton.className = "popup-close";
-                this.closeButton.onclick = () => {
-                    this.close();
-                }
-                
-                fetch("site/images/close.svg").then(res => res.text()).then(text => {
-                    if (this.closeButton) {
-                        this.closeButton.appendChild(artimus.elementFromString(text));
-                        this.closeButton.children[0].style.width = "100%";
-                        this.closeButton.children[0].style.height = "100%";
-                    }
-                });
+            document.body.appendChild(this.backgroundElement);
+            this.backgroundElement.style.setProperty("--modal-opacity", "100%");
 
-                this.taskbar.appendChild(this.closeButton);
+            //Now create togglable ones, (for now only the close button)
+            this.closeButton = document.createElement("button");
+            this.closeButton.className = "popup-close";
+            this.closeButton.onclick = () => {
+                this._close();
             }
+            
+            this.closeButton.appendChild(artimus.elementFromString(editor.modalCloseButton));
+            this.closeButton.children[0].style.width = "100%";
+            this.closeButton.children[0].style.height = "100%";
 
-            switch (typeof contents) {
-                case "function": contents(this.content, this); break;
-                case "string": this.content.innerHTML = contents; break;
-                case "object": this.content.appendChild(CUGI.createList({...contents}, {
-                    preprocess: (item) => this.CUGIPreprocess(options.translationContext, {...item})
-                }));
-                break;
+            //Set initial config
+            this.width = 40;
+            this.height = 40;
+            this.title = "Modal";
+            this.canClose = true;
 
-                default:
-                    break;
-            }
-
-            editor.modals.push(this);
-
-            this.init(name, contents, options);
+            editor.spawnedModals.push(this);
+            this.init(this.content, this, extraData);
         }
+
+        init(content, self) {}
+        close(content, self) {}
 
         CUGIPreprocess(context, inItem) {
             const item = {...inItem, modal: this};
@@ -110,20 +178,33 @@ window.editor = {
             }
             return item;
         }
-
-        init() {}
         
-        close() {
-            this.background.parentElement.removeChild(this.background);
+        _close() {
+            this.backgroundElement.parentElement.removeChild(this.backgroundElement);
 
             //Remove from global modals list.
-            const index = editor.modals.indexOf(this);
-            if (index > -1) editor.modals.splice(index, 1);
+            const index = editor.spawnedModals.indexOf(this);
+            if (index > -1) editor.spawnedModals.splice(index, 1);
 
-            if (editor.modals.length == 0) artimus.unfocusedHotkeys = true;
+            if (editor.spawnedModals.length == 0) artimus.unfocusedHotkeys = true;
 
+            this.close(this.content, this);
             delete this;
         }
+    },
+
+    settingsPage: class {
+        constructor(container, translationKey, onchange) {
+            //Just so we can call from both functions
+            this.container = container;
+            this.translationKey = translationKey;
+            this.onchange = onchange;
+
+            this.init(container, translationKey, onchange);
+        }
+        
+        init(container, translationKey, onchange) {}
+        destroy() {}
     },
 
     quickP: (text, cls) => {
@@ -143,6 +224,8 @@ window.editor = {
         "createLayer",
         "clearSelection",
         "cropToSelection",
+        "zoomIn",
+        "zoomOut"
     ],
 
     refreshLanguage: () => {
@@ -151,7 +234,7 @@ window.editor = {
     },
 
     initialize: (noStartMenu) => {
-        if (!noStartMenu) editor.startMenu.open();
+        if (!noStartMenu) editor.spawnModal("startMenu");
         editor.toolbar.refresh();
 
         //Inject our workspace.
@@ -208,14 +291,27 @@ window.editor = {
                 //Timing
                 editor.versionIdentifier.innerText = `dt:${Math.floor(editor.workspace.performance.delta * 1000) / 1000} fps:${Math.floor(editor.workspace.performance.fps)}`;
                 //Canvas
-                editor.versionIdentifier.innerText += ` ud: ${editor.workspace.history.length} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
+                editor.versionIdentifier.innerText += ` ud: ${editor.workspace.historyLength} hs: ${editor.workspace.historyIndex} d:${editor.workspace.dirty} l:${editor.workspace.layers.length} || cw: ${editor.workspace.width} ch: ${editor.workspace.height}`;
 
                 if (editor.workspace.tool) editor.versionIdentifier.innerText = editor.versionIdentifier.innerText += ` || t: ${editor.workspace.tool} tc: ${editor.workspace.toolFunction.constructive} pc: ${JSON.stringify(editor.workspace.toolFunction.colorProperties)}`
                 else editor.versionIdentifier.innerText += ` || t: none`;
                 editor.versionIdentifier.innerText += `|| x: ${editor.workspace.scrollX} y: ${editor.workspace.scrollY} z: ${editor.workspace.zoom} vb: ${editor.workspace.viewBounds}`
             }
         })
-    }
+    },
+
+    downloader: document.createElement("a"),
+    downloadText: (name, content) => {
+        editor.downloader.download = name;
+        editor.downloader.href = `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`;
+        
+        //Download
+        document.body.appendChild(editor.downloader);
+        editor.downloader.click();
+        editor.downloader.parentElement.removeChild(editor.downloader);
+    },
+
+    currentPalette: null,
 };
 
 //Artimus configuration
@@ -231,38 +327,21 @@ artimus.translate = (item, context, noComplaints) => {
     return translated;
 }
 
+//Replace artimus calls so they will show the appropriate menus
 artimus.fontPopup = (workspace) => {
     return new Promise((resolve) => {
         workspace.getFonts().then(fonts => {
-            new editor.modal("Choose a font", (popup, modal) => {
-                const innerList = document.createElement("div");
-                let fontSet = new Set();
-                innerList.className = "artimus-font-list"
-
-                for (let fontID in fonts) {
-                    if (!fontSet.has(fonts[fontID].family)) {
-                        fontSet.add(fonts[fontID].family);
-
-                        const button = document.createElement("button");
-                        
-                        button.innerText = fonts[fontID].family;
-                        button.className = "artimus-font-button";
-                        button.style.fontFamily = fonts[fontID].family;
-
-                        button.onclick = () => {
-                            resolve(fonts[fontID].family);
-                            modal.close();
-                        }
-
-                        innerList.appendChild(button);
-                    }
-                }
-
-                popup.appendChild(innerList);
-            }, { height: 25.5 })
+            editor.spawnModal("fontMenu", { fonts: fonts, resolve: resolve });
         })
     })
 }
+
+artimus.layerPropertyMenu = (workspace, layer) => editor.spawnModal("layerProperty", 
+    {
+        workspace: workspace,
+        layer: layer
+    }
+);
 
 //Setup hotkeys
 artimus.unfocusedHotkeys = true;
@@ -271,6 +350,9 @@ artimus.hotkeys["ctrl+l"] = "importFromPC";
 
 //Prepare storage ready function
 editor.storageReady = async () => {
+    //Get modal close button data
+    editor.modalCloseButton = await fetch("site/images/close.svg").then(res => res.text());
+
     //Get fallback data
     editor.englishFallback = await fetch("lang/english.json").then(result => result.text());
     try {
@@ -316,7 +398,26 @@ editor.storageReady = async () => {
             catch (error) { console.error(`English fallback error!\n===---===\n${error}\n===---===`); }
             
             editor.initialize(true);
-            editor.languageMenu(true);
+            editor.spawnModal("languageMenu", { forced: true });
         })
+    }
+
+    //Get the default palettes.
+    editor.palettes.getDefaultPalettes();
+
+    //Define new swatch getter
+    Object.defineProperty(elemental.colorPickerConfig, "globalSwatch", {
+        get() {
+            if (editor.currentPalette && editor.currentPalette instanceof editor.palettes.palette) {
+                return editor.currentPalette.colors;
+            }
+            return [];
+        }
+    });
+
+    //Global preprocessor for modifying to CUGI to add elemental swatches
+    artimus.toolCUGIPreprocess = (item) => {
+        item.swatch = true;
+        return item;
     }
 }

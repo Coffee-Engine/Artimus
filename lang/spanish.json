@@ -118,6 +118,7 @@
     "artimus.modal.settings.category.general": "General",
     "artimus.modal.settings.category.theme": "Tema",
     "artimus.modal.settings.category.hotkeys": "Acceso Directos",
+    "artimus.modal.settings.category.palettes": "Paletas",
     "artimus.modal.settings.category.extensions": "Extensiónes",
 
     "artimus.modal.settings.general.maxHistory": "Longitud de Historia",
@@ -188,6 +189,27 @@
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Cargar",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Guardar",
     "artimus.modal.settings.hotkeys.functions.createLayer": "Nueva capa",
+    "artimus.modal.settings.hotkeys.functions.zoomIn": "Hacer zoom",
+    "artimus.modal.settings.hotkeys.functions.zoomOut": "Quitar Zoom",
+
+    "artimus.modal.settings.palettes.create": "Nuevo Paleta",
+    "artimus.modal.settings.palettes.import": "Cargar Paleta",
+    "artimus.modal.settings.palettes.importLospec": "Cargar de Lospec",
+
+    "artimus.modal.settings.palettes.lastPage": "Previo",
+    "artimus.modal.settings.palettes.nextPage": "Luego",
+    "artimus.modal.settings.palettes.palettesOnPage": "Paletas [first]-[last]/[total]",
+
+    "artimus.modal.settings.palettes.palette.by": "De: [author]",
+    "artimus.modal.settings.palettes.palette.origin": "Origen: [source]",
+    "artimus.modal.settings.palettes.palette.colors": "[count] colors",
+    "artimus.modal.settings.palettes.palette.link": "[site] ([protocol])",
+    "artimus.modal.settings.palettes.palette.delete": "Eliminar",
+    "artimus.modal.settings.palettes.palette.export": "Guardar",
+    "artimus.modal.settings.palettes.palette.linkUnknown": "Link Desconocido",
+
+    "artimus.modal.settings.palettes.placeholder.name": "Paleta Desconocido",
+    "artimus.modal.settings.palettes.placeholder.author": "Escritor Desconocido",
 
     "artimus.modal.settings.extensions.placeholder": "https://link.to.extension/main.json",
     "artimus.modal.settings.extensions.add": "+",
@@ -208,6 +230,24 @@
     ],
     "artimus.modal.settings.extensions.reload": "Recargar",
 
+    "artimus.modal.lospec.title": "Cargar de Lospec",
+    "artimus.modal.lospec.placeholder": "¡Esbribe el nombre o ID para paleta aqui!",
+    "artimus.modal.lospec.colors": "[count] colors",
+    "artimus.modal.lospec.by": "De : [author]",
+    "artimus.modal.lospec.add": "Añado Paleta",
+    "artimus.modal.lospec.placeholder.author": "Escritor Desconocido",
+    "artimus.modal.lospec.placeholder.name": "Desconocido",
+
+    "artimus.modal.createPalette.title": "Crear una Paleta",
+    "artimus.modal.createPalette.addColor": "+",
+    "artimus.modal.createPalette.name": "Nombre",
+    "artimus.modal.createPalette.author": "Escritor",
+    "artimus.modal.createPalette.url": "Link",
+    "artimus.modal.createPalette.placeholder.name": "Paleta",
+    "artimus.modal.createPalette.placeholder.author": "¡Tu Nombre!",
+    "artimus.modal.createPalette.placeholder.url": "https://my.website.com/",
+    "artimus.modal.createPalette.done": "Hecho",
+
     "artimus.modal.exportFile.defaultName": "Foto",
     "artimus.modal.exportFile.formatText": "Formato",
     "artimus.modal.exportFile.formatDescription.png": "Un formato de imagen transparente bien soportado con un tamaño de archivo pequeño",
@@ -220,6 +260,22 @@
     "artimus.modal.exportFile.background": "Fondo",
     "artimus.modal.exportFile.export": "Exportar",
 
+    "artimus.modal.fontMenu.title": "Elige una Fuente",
+
+    "artimus.modal.paletteSelector.title": "Elige una Paleta",
+    "artimus.modal.paletteSelector.lastPage": "Previo",
+    "artimus.modal.paletteSelector.nextPage": "Luego",
+    "artimus.modal.paletteSelector.palettesOnPage": "Paletas [first]-[last]/[total]",
+
+    "artimus.modal.paletteSelector.palette.by": "De: [author]",
+    "artimus.modal.paletteSelector.palette.colors": "[count] colors",
+    "artimus.modal.paletteSelector.palette.use": "Usar",
+
+    "artimus.modal.paletteSelector.placeholder.name": "Paleta Desconocido",
+    "artimus.modal.paletteSelector.placeholder.author": "Escritor Desconocido",
+
+    "artimus.colorPicker.changePalette": "Combiar Paleta",
+
     "artimus.toolbar.file": "Archivo",
     "artimus.toolbar.file.new": "Nuevo",
     "artimus.toolbar.file.save": "Guardar",
@@ -228,7 +284,7 @@
     "artimus.toolbar.file.load": "Cargar",
 
     "artimus.toolbar.edit": "Editar",
-    "artimus.toolbar.edit.sprite": "Sprite",
+    "artimus.toolbar.edit.sprite": "Imagen",
     "artimus.toolbar.edit.resize": "Redimensionar",
     "artimus.toolbar.edit.crop": "Recortar",
     "artimus.toolbar.edit.undo": "Deshacer",

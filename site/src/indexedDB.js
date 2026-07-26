@@ -91,8 +91,10 @@
         editor.indexedDB.upgraded = true;
         editor.indexedDB.db = event.target.result;
 
+        //Get our storages
         editor.storage = editor.indexedDB.getStore("extensionStorage", true);
         editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
+        editor.paletteStorage = editor.indexedDB.getStore("paletteStorage", true);
         editor.storageReady();
     };
 
@@ -102,8 +104,10 @@
         editor.indexedDB.db = event.target.result;
 
         if (!editor.indexedDB.upgraded) {
+            //Get our storages
             editor.storage = editor.indexedDB.getStore("extensionStorage", true);
             editor.recentStorage = editor.indexedDB.getStore("recentProjects", true);
+            editor.paletteStorage = editor.indexedDB.getStore("paletteStorage", true);
             editor.storageReady();
         }
     };

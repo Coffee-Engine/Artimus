@@ -1,118 +1,119 @@
-editor.startMenu = {
-    open: () => {
-        new editor.modal(artimus.translate("ready.title", "modal").replace("[VERSION]", editor.version), (content, modal) => {
-            content.className += " ready-popup";
+editor.registerModal("startMenu", class extends editor.modal {
+    init(content, self) {
+        this.title = artimus.translate("ready.title", "modal").replace("[VERSION]", editor.version);
+        this.canClose = false;
 
-            const banner = document.createElement("div");
-            banner.className = "ready-banner";
+        content.className += " ready-popup";
 
-            banner.onclick = () => {
-                window.open(location.href + "site/images/banner.png");
-            }
+        const banner = document.createElement("div");
+        banner.className = "ready-banner";
 
-            const bannerText = document.createElement("p");
-            bannerText.innerText = artimus.translate("ready.authorTag", "modal").replace("[TITLE]", editor.bannerTitle);
-            bannerText.className = "ready-banner-text";
+        banner.onclick = () => {
+            window.open(location.href + "site/images/banner.png");
+        }
 
-            const authorLink = document.createElement("a");
-            authorLink.innerText = editor.bannerAuthor;
-            authorLink.href = editor.bannerAuthorURL;
+        const bannerText = document.createElement("p");
+        bannerText.innerText = artimus.translate("ready.authorTag", "modal").replace("[TITLE]", editor.bannerTitle);
+        bannerText.className = "ready-banner-text";
 
-            const seperator = document.createElement('hr');
+        const authorLink = document.createElement("a");
+        authorLink.innerText = editor.bannerAuthor;
+        authorLink.href = editor.bannerAuthorURL;
 
-            const divider = document.createElement('div');
-            divider.className = "ready-divider"
+        const seperator = document.createElement('hr');
 
-            const recentFiles = document.createElement("div");
-            recentFiles.className = "ready-list ready-recent";
+        const divider = document.createElement('div');
+        divider.className = "ready-divider"
 
-            const recentText = document.createElement("p");
-            recentText.innerText = artimus.translate("ready.recentFiles", "modal");
-            recentText.className = "ready-recentText";
+        const recentFiles = document.createElement("div");
+        recentFiles.className = "ready-list ready-recent";
 
-            const recentList = document.createElement("div");
-            recentList.className = "ready-recentList";
+        const recentText = document.createElement("p");
+        recentText.innerText = artimus.translate("ready.recentFiles", "modal");
+        recentText.className = "ready-recentText";
 
-            //Show recent projects if possible
-            if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
-            else {
-                editor.recentStorage.getKey("recentProjects").then((arr) => {
-                    arr = arr || [];
-                    for (let i = arr.length - 1; i >= 0; i--) {
-                        const fileHandle = arr[i];
+        const recentList = document.createElement("div");
+        recentList.className = "ready-recentList";
 
-                        //Create the button and add the text
-                        const recentButton = document.createElement("button");
-                        recentButton.className = "artimus-button ready-recentButton";
+        //Show recent projects if possible
+        if (!window.showSaveFilePicker) recentList.innerText = artimus.translate("ready.recentFiles.notSupported", "modal");
+        else {
+            editor.recentStorage.getKey("recentProjects").then((arr) => {
+                arr = arr || [];
+                for (let i = arr.length - 1; i >= 0; i--) {
+                    const fileHandle = arr[i];
 
-                        let extensionless = fileHandle.name.split(".");
-                        extensionless.splice(extensionless.length - 1, 1);
-                        
-                        recentButton.innerText = extensionless.join(".");
+                    //Create the button and add the text
+                    const recentButton = document.createElement("button");
+                    recentButton.className = "artimus-button ready-recentButton";
 
-                        recentList.appendChild(recentButton);
+                    let extensionless = fileHandle.name.split(".");
+                    extensionless.splice(extensionless.length - 1, 1);
+                    
+                    recentButton.innerText = extensionless.join(".");
 
-                        //Finally add functionality.
-                        recentButton.onclick = () => {
-                            fileHandle.requestPermission().then((val) => {
-                                if (val != "granted") return;
-                                fileHandle.getFile().then((file) => {
-                                    editor.workspace.fileSystemHandle = fileHandle;
-                                    editor.workspace.importFromImage(file, true);
-                                    modal.close();
-                                })
+                    recentList.appendChild(recentButton);
+
+                    //Finally add functionality.
+                    recentButton.onclick = () => {
+                        fileHandle.requestPermission().then((val) => {
+                            if (val != "granted") return;
+                            fileHandle.getFile().then((file) => {
+                                editor.workspace.fileSystemHandle = fileHandle;
+                                editor.workspace.importFromImage(file, true);
+                                this._close();
                             })
-                        }
+                        })
                     }
-                });
-            }
+                }
+            });
+        }
 
-            const fileButtons = document.createElement("div");
-            fileButtons.className = "ready-list ready-options";
-            
-            const newFile = document.createElement('button');
-            newFile.className = "artimus-button";
-            newFile.innerText = artimus.translate("ready.newFile", "modal");
-            newFile.onclick = () => { editor.newFile(modal); }
-            
-            const loadFile = document.createElement('button');
-            loadFile.className = "artimus-button";
-            loadFile.innerText = artimus.translate("ready.loadFile", "modal");
-            loadFile.onclick = () => { editor.loadFile(modal); }
-            
-            const settings = document.createElement('button');
-            settings.className = "artimus-button";
-            settings.innerText = artimus.translate("ready.settings", "modal");
-            settings.onclick = () => { editor.settingsPage(); }
-            
-            const credits = document.createElement('button');
-            credits.className = "artimus-button";
-            credits.innerText = artimus.translate("ready.credits", "modal");
-            credits.onclick = () => { editor.creditsMenu(); }
-            
-            const socials = document.createElement('button');
-            socials.className = "artimus-button";
-            socials.innerText = artimus.translate("ready.socials", "modal");
-            socials.onclick = () => { editor.socialsMenu(); }
+        const fileButtons = document.createElement("div");
+        fileButtons.className = "ready-list ready-options";
+        
+        const newFile = document.createElement('button');
+        newFile.className = "artimus-button";
+        newFile.innerText = artimus.translate("ready.newFile", "modal");
+        newFile.onclick = () => { editor.spawnModal("newFile"); }
+        
+        const loadFile = document.createElement('button');
+        loadFile.className = "artimus-button";
+        loadFile.innerText = artimus.translate("ready.loadFile", "modal");
+        loadFile.onclick = () => { editor.loadFile(this); }
+        
+        const settings = document.createElement('button');
+        settings.className = "artimus-button";
+        settings.innerText = artimus.translate("ready.settings", "modal");
+        settings.onclick = () => { editor.spawnModal("settings"); }
+        
+        const credits = document.createElement('button');
+        credits.className = "artimus-button";
+        credits.innerText = artimus.translate("ready.credits", "modal");
+        credits.onclick = () => { editor.spawnModal("creditsMenu"); }
+        
+        const socials = document.createElement('button');
+        socials.className = "artimus-button";
+        socials.innerText = artimus.translate("ready.socials", "modal");
+        socials.onclick = () => { editor.spawnModal("socials"); }
 
-            recentFiles.appendChild(recentText);
-            recentFiles.appendChild(recentList);
+        recentFiles.appendChild(recentText);
+        recentFiles.appendChild(recentList);
 
-            fileButtons.appendChild(newFile);
-            fileButtons.appendChild(loadFile);
-            fileButtons.appendChild(settings);
-            fileButtons.appendChild(credits);
-            fileButtons.appendChild(socials);
+        fileButtons.appendChild(newFile);
+        fileButtons.appendChild(loadFile);
+        fileButtons.appendChild(settings);
+        fileButtons.appendChild(credits);
+        fileButtons.appendChild(socials);
 
-            divider.appendChild(recentFiles);
-            divider.appendChild(fileButtons);
+        divider.appendChild(recentFiles);
+        divider.appendChild(fileButtons);
 
-            bannerText.appendChild(authorLink);
+        bannerText.appendChild(authorLink);
 
-            content.appendChild(banner);
-            content.appendChild(bannerText);
-            content.appendChild(seperator);
-            content.appendChild(divider);
-        }, { hasClose: false })
+        content.appendChild(banner);
+        content.appendChild(bannerText);
+        content.appendChild(seperator);
+        content.appendChild(divider);
     }
-}
+});
