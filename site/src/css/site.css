@@ -443,3 +443,7 @@ color-picker:hover:checked { border-color: var(--artimus-button-selected); }
         transform: translate(-50%, -50%) scaleY(1);
     }
 }
+
+a { color: var(--artimus-text); }
+a:visited { color: var(--artimus-text); }
+a:hover { color: var(--artimus-button-click); }
