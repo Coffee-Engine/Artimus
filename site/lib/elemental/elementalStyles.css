@@ -177,3 +177,19 @@
     border-color: var(--artimus-button-click);
     transition: 0ms background, 0ms border;
 }
+
+@media screen and (max-width: 392px) {
+    .elemental-color-picker-container {
+        width: calc(100vw - 8px);
+    }
+
+    .elemental-color-picker-slider-container {
+        margin: auto;
+
+        grid-template-columns: 85% 15%;
+        grid-template-rows: 50% 50%;
+
+        aspect-ratio: 2/3;
+        max-height: 50vh;
+    }
+}

@@ -1645,17 +1645,21 @@ SOFTWARE.
 
                     this.container.style.setProperty("--x", `${x}px`);
                     this.container.style.setProperty("--y", `${y}px`);
-                    const {top, left, bottom, right} = this.container.getBoundingClientRect();
+                    const {top, left, bottom, right, width, height} = this.container.getBoundingClientRect();
                     
                     //Visible X
                     let finalX = x;
                     let finalY = y;
 
+                    let comparedMeasurements = [window.innerWidth, window.innerHeight];
+                    if (window.visualViewport) comparedMeasurements = [visualViewport.width, visualViewport.height]
+                    
+                    //Move into bounds
                     if (top < 0) finalY = y - top;
-                    else if (bottom > window.innerHeight) finalY = y + window.innerHeight - bottom;
+                    else if (bottom > comparedMeasurements[1]) finalY = y + comparedMeasurements[1] - bottom;
 
                     if (left < 0) finalX = x - left;
-                    else if (right > window.innerWidth) finalX = x + window.innerWidth - right;
+                    else if (right > comparedMeasurements[0]) finalX = x + comparedMeasurements[0] - right;
 
                     //Reposition to be on screen... if oob
                     if (finalX != x) this.container.style.setProperty("--x", `${finalX}px`);
