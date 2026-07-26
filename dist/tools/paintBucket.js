@@ -7,112 +7,75 @@ artimus.tools.paintBucket = class extends artimus.tool {
 
     mixMult = 1 / 255;
 
-    colorAt(data, x, y, width) {
-        const targetCoord = this.coordToColourID(x, y, width);
-        return [
-            data[targetCoord],
-            data[targetCoord + 1],
-            data[targetCoord + 2],
-            data[targetCoord + 3]
-        ];
-    }
-
-    compareColor(gl, data, x, y, width, targetColor, toolProperties) {
-        if (!this.inSelection(gl, x, y)) return false;
-        
-        const compareColor = this.colorAt(data, x, y, width);
-        if (targetColor[3] == 0 && toolProperties.respectTransparency) return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && compareColor[3] == targetColor[3]) || compareColor[3] < 240;
-        else return (targetColor[0] == compareColor[0] && targetColor[1] == compareColor[1] && targetColor[2] == compareColor[2] && targetColor[3] == compareColor[3]);
-    }
-
     mouseDown(gl, x, y, toolProperties) {
         //Get image data as array here so we don't run continous calls
         const {data, width, height} = gl.getImageData(0,0, gl.canvas.width, gl.canvas.height);
         const myColor = artimus.HexToRGB(toolProperties.fillColor);
+        
+        //Get the target colour
+        let targetCoord = this.coordToColourID(x, y, width);
+        const targetColor = [
+            data[targetCoord],
+            data[targetCoord + 1],
+            data[targetCoord + 2],
+            data[targetCoord + 3]
+        ]
 
-        const targetColor = this.colorAt(data, x, y, width);
+        //Make sure we aren't targeting ourselves (Infinite loop)
         if (targetColor[0] == myColor.r && targetColor[1] == myColor.g && targetColor[2] == myColor.b && targetColor[3] == myColor.a) return;
 
-        const paintQueue = [[ x,y ]];
+        //Our compare and set functions, these are used in propigation, we need to make sure to stop transparent stuff when working with non transparent pixels
+        const colorCompare = (toolProperties.respectTransparency && (targetColor[3] == 0)) ?
+            (() => (targetColor[0] == data[targetCoord] && targetColor[1] == data[targetCoord + 1] && targetColor[2] == data[targetCoord + 2] && data[targetCoord + 3] == targetColor[3]) || data[targetCoord + 3] < 240):
+            (() => (targetColor[0] == data[targetCoord] && targetColor[1] == data[targetCoord + 1] && targetColor[2] == data[targetCoord + 2] && targetColor[3] == data[targetCoord + 3]));
 
+        const colorSet = (toolProperties.respectTransparency && (targetColor[3] == 0)) ? () => {
+            const mix = (255 - data[targetCoord + 3]) * this.mixMult;
+            data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
+            data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
+            data[targetCoord + 2] += (myColor.b - data[targetCoord + 2]) * mix;
+            data[targetCoord + 3] = 255;
+        } : () => {
+            data[targetCoord] = myColor.r;
+            data[targetCoord + 1] = myColor.g;
+            data[targetCoord + 2] = myColor.b;
+            data[targetCoord + 3] = myColor.a;
+        }
+
+        //Detection for selection, since we do this a lot it's good to have this.
+        const outsideSelection = (this.workspace.hasSelection > 0) ? 
+            (x, y) => !(this.inSelection(gl, x, y)) : 
+            () => false;
+
+        //Queue related stuff to prevent backtracking
+        let paintQueue = [[x, y]];
+
+        const queueIncludes = (pos) => paintQueue.filter((comp) => comp[0] == pos[0] && comp[1] == pos[1]).length > 0;
+
+        //Go through the paint queue setting colours and getting next positions, finally ending when none are left
         while (paintQueue.length > 0) {
-            let [rx, ry] = paintQueue[0];
+            let [ px, py ] = paintQueue[0];
 
-            if (rx < 0 || rx >= width || ry < 0 || ry >= height) {
+            if (outsideSelection(px, py)) {
                 paintQueue.splice(0, 1);
                 continue;
-            };
-
-            let lowerBlocked = true;
-            let upperBlocked = true;
-            for (let wx = rx; wx < width; wx++) {
-                //Get color
-                if (this.compareColor(gl, data, wx, ry, width, targetColor, toolProperties)) {
-                    let targetCoord = this.coordToColourID(wx, ry, width);
-                    const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
-
-                    data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
-                    data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
-                    data[targetCoord + 2] += (myColor.b - data[targetCoord + 2]) * mix;
-                    if (myColor.a < 255) data[targetCoord + 3] += myColor.a;
-                    else data[targetCoord + 3] = myColor.a;
-                    
-                    if (!lowerBlocked) {
-                        if (!this.compareColor(gl, data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
-                    }
-                    else {
-                        if (this.compareColor(gl, data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
-                            paintQueue.push([wx, ry + 1]);
-                            lowerBlocked = false;
-                        }
-                    }
-                    
-                    if (!upperBlocked) {
-                        if (!this.compareColor(gl, data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
-                    }
-                    else {
-                        if (this.compareColor(gl, data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
-                            paintQueue.push([wx, ry - 1]);
-                            upperBlocked = false;
-                        }
-                    }
-                }
-                else break;
             }
 
-            for (let wx = rx - 1; wx >= 0; wx--) {
-                //Get color
-                if (this.compareColor(gl, data, wx, ry, width, targetColor, toolProperties)) {
-                    let targetCoord = this.coordToColourID(wx, ry, width);
-                    const mix = (targetColor[3] == 255) ? 1 : (1 - (data[targetCoord + 3] / 255));
+            targetCoord = this.coordToColourID(px, py, width);
+            const isTransparent = (toolProperties.pierceTransparency) ? data[targetCoord + 3] <= 240 : data[targetCoord + 3] == 0 || data[targetCoord + 3] == 255;
 
-                    data[targetCoord] += (myColor.r - data[targetCoord]) * mix;
-                    data[targetCoord + 1] += (myColor.g - data[targetCoord + 1]) * mix;
-                    data[targetCoord + 2] += (myColor.b - data[targetCoord + 2]) * mix;
-                    if (myColor.a < 255) data[targetCoord + 3] += myColor.a;
-                    else data[targetCoord + 3] = myColor.a;
-                    
-                    if (!lowerBlocked) {
-                        if (!this.compareColor(gl, data, wx, ry + 1, width, targetColor, toolProperties)) lowerBlocked = true;
-                    }
-                    else {
-                        if (this.compareColor(gl, data, wx, ry + 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
-                            paintQueue.push([wx, ry + 1]);
-                            lowerBlocked = false;
-                        }
-                    }
-                    
-                    if (!upperBlocked) {
-                        if (!this.compareColor(gl, data, wx, ry - 1, width, targetColor, toolProperties)) upperBlocked = true;
-                    }
-                    else {
-                        if (this.compareColor(gl, data, wx, ry - 1, width, targetColor, {...toolProperties, respectTransparency: toolProperties.pierceTransparency})) {
-                            paintQueue.push([wx, ry - 1]);
-                            upperBlocked = false;
-                        }
-                    }
-                }
-                else break;
+            colorSet();
+
+            if (isTransparent) {
+                targetCoord = this.coordToColourID(px - 1, py, width);
+                if ((px - 1) >= 0 && colorCompare() && !queueIncludes([px - 1, py])) paintQueue.push([px - 1, py]);
+                targetCoord = this.coordToColourID(px + 1, py, width);
+                if ((px + 1) < width && colorCompare() && !queueIncludes([px + 1, py])) paintQueue.push([px + 1, py]);
+
+                targetCoord = this.coordToColourID(px, py - 1, width);
+                if ((py - 1) >= 0 && colorCompare() && !queueIncludes([px, py - 1])) paintQueue.push([px, py - 1]);
+                targetCoord = this.coordToColourID(px, py + 1, width);
+                if ((py + 1) < height && colorCompare() && !queueIncludes([px, py + 1])) paintQueue.push([px, py + 1]);
             }
 
             paintQueue.splice(0, 1);
@@ -122,13 +85,9 @@ artimus.tools.paintBucket = class extends artimus.tool {
         gl.putImageData(new ImageData(data, width, height), 0, 0);
     }
 
-    preview(gl, x, y, toolProperties) {
-        gl.fillStyle = toolProperties.fillColor,
-        gl.fillRect(x, y, 1, 1);
-    }
-
     CUGI(artEditor) { return [
-        { target: artEditor.toolProperties, key: "fillColor", type: "color", alpha: true }, //, gradient: true },
+        { target: artEditor.toolProperties, key: "fillColor", type: "color" },
+        { target: artEditor.toolProperties, key: "respectTransparency", type: "boolean" },
         { target: artEditor.toolProperties, key: "pierceTransparency", type: "boolean" },
     ]}
 
@@ -137,6 +96,5 @@ artimus.tools.paintBucket = class extends artimus.tool {
     properties = {
         fillColor: "#000000",
         respectTransparency: true,
-        pierceTransparency: true,
     }
 }
