@@ -181,6 +181,7 @@ editor.settingDefs = {
     ],
     //Hotkeys are complex, so we use a function instead of a cugi menu.
     hotkeys: editor.hotkeyMenu,
+    touchCalibration: editor.touchCalibrationMenu,
     palettes: editor.paletteMenu,
     extensions: editor.extensionMenu
 };

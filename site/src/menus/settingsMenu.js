@@ -46,6 +46,7 @@ editor.registerModal("settings", class extends editor.modal {
 
                     //If we are a function, or class spawn/run it.
                     case "function":
+                        settings.className = "settings-settingsList";
                         if (categoryInfo.constructor) {
                             const constructed = new categoryInfo(settings, `modal.settings.${category}`, () => editor.saveSettings());
                             pageSwitch = () => { constructed.destroy.call(constructed); };

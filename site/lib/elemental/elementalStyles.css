@@ -181,6 +181,7 @@
 @media screen and (max-width: 392px) {
     .elemental-color-picker-container {
         width: calc(100vw - 8px);
+        left: 4px;
     }
 
     .elemental-color-picker-slider-container {
