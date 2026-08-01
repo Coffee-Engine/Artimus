@@ -45,6 +45,9 @@ artimus.tools.paintBrush = class extends artimus.tool {
     }
 
     mouseDown(gl, x, y, toolProperties) {
+        //Apply pressure if need be
+        toolProperties = { ...toolProperties, strokeSize: toolProperties.strokeSize * this.workspace.pressureMultiplier};
+
         //if (toolProperties.pixelBrush) { x--; y--; };
         //Set stroke properties
         gl.lineCap = "round";
@@ -72,6 +75,10 @@ artimus.tools.paintBrush = class extends artimus.tool {
     }
 
     mouseMove(gl, x, y, vx, vy, toolProperties) {
+        //Apply pressure if need be
+        toolProperties = { ...toolProperties, strokeSize: toolProperties.strokeSize * this.workspace.pressureMultiplier};
+
+        //Calculate line start
         const linePos = this.linePos;
         let distance = 1 / Math.sqrt(Math.pow(linePos[0] - x, 2.0) + Math.pow(linePos[1] - y, 2.0));
 

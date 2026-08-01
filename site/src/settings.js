@@ -25,8 +25,15 @@ editor.settings = {
     customCSSCode: "",
 
     hotkeys: {...artimus.hotkeys},
-    extensions: [],
+
+    //Calibration
+    lightPressure: 0,
+    lightMultiplier: 0.5,
+    heavyPressure: 1,
+    heavyMultiplier: 2,
+
     palettes: [],
+    extensions: [],
 };
 
 editor.fileReader = new FileReader();
@@ -194,9 +201,8 @@ if (localStorage.getItem("settings")) {
         const categoryObj = editor.settingDefs[category];
         //If we aren't a CUGI menu, then try to call object functions
         if (!Array.isArray(categoryObj)) {
-            if (typeof categoryObj == "object") {
-                if (categoryObj.onchange) categoryObj.onchange();
-            }
+            if (typeof categoryObj == "object" && categoryObj.onchange) categoryObj.onchange();
+            else if (typeof categoryObj == "function" && categoryObj.prototype instanceof editor.settingsPage) categoryObj.prototype.editorReady();
             continue;
         }
 

@@ -203,6 +203,7 @@ window.editor = {
             this.init(container, translationKey, onchange);
         }
         
+        editorReady() {}
         init(container, translationKey, onchange) {}
         destroy() {}
     },

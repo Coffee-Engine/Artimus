@@ -251,7 +251,29 @@
 /* Touch/Pen calibration */
 .settings-touchCalibrationMenu {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto 1fr;
+
+    overflow-y: scroll;
+}
+
+.settings-touchCalibrationInputs {
+    display: grid;
+    grid-template-columns: auto auto;
+    margin-bottom: 4px;
+}
+
+.touchCalibrationMenu-multiplierText {
+    margin: 0px;
+    padding: 2px;
+
+    text-align: right;
+    
+    border-right-color: var(--artimus-background-3);
+    border-right-width: 4px;
+    border-right-style: solid;
+    border-radius: 0px;
+
+    background-color: var(--artimus-background-2);
 }
 
 .touchCalibrationMenu-scratchPad {

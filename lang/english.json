@@ -200,6 +200,13 @@
     "artimus.modal.settings.hotkeys.functions.zoomIn": "Zoom In",
     "artimus.modal.settings.hotkeys.functions.zoomOut": "Zoom Out",
 
+    "artimus.modal.settings.touchCalibration.start": "Start Calibration!",
+    "artimus.modal.settings.touchCalibration.lightly": "Press and drag LIGHTLY. Release when satisfied.",
+    "artimus.modal.settings.touchCalibration.heavily": "Now repeat, but HEAVILY.",
+    "artimus.modal.settings.touchCalibration.calibrated": "Calibrated! Press again to restart!",
+    "artimus.modal.settings.touchCalibration.lightMultiplier": "Light Multiplier",
+    "artimus.modal.settings.touchCalibration.heavyMultiplier": "Heavy Multiplier",
+
     "artimus.modal.settings.palettes.create": "New Palette",
     "artimus.modal.settings.palettes.import": "Load Palette",
     "artimus.modal.settings.palettes.importLospec": "Import from Lospec",

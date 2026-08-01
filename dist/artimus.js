@@ -6,9 +6,18 @@ window.artimus = {
 
     hexArray: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ],
 
+    //Small settings / configuration
     windRule: "evenodd",
     pickType: "layer",
     preferGreaterAxis: true,
+
+    //Pen calibration
+    penCalibration: {
+        lightPressure: 0,
+        lightMultiplier: 0.5,
+        heavyPressure: 1,
+        heavyMultiplier: 2,
+    },
 
     //For and pasting
     preferredMoveTool: "move",
@@ -1875,11 +1884,13 @@ window.artimus = {
         }
 
         //Control stuffs
+        pressureMultiplier = 1;
         fingersDown = 0;
         panning = false;
         controlSets = {
             kbMouse: {
                 mouseDown: (event) => {
+                    this.pressureMultiplier = 1;
                     switch (event.button) {
                         case 0:
                             if (event.target != this.canvas) return;
@@ -1912,6 +1923,7 @@ window.artimus = {
                 },
 
                 mouseUp: (event) => {
+                    this.pressureMultiplier = 1;
                     switch (event.button) {
                         case 0:
                             const position = this.getCanvasPosition(event.clientX, event.clientY);
@@ -1936,11 +1948,10 @@ window.artimus = {
                         default:
                             break;
                     }
-                    
-                    
                 },
 
                 mouseMove: (event) => {
+                    this.pressureMultiplier = 1;
                     if (this.panning) {
                         this.scrollX += event.movementX * this.invZoom;
                         this.scrollY += event.movementY * this.invZoom;
@@ -1963,6 +1974,7 @@ window.artimus = {
 
                 mouseWheel: (event) => {
                     event.preventDefault();
+                    this.pressureMultiplier = 1;
                     if (event.ctrlKey) {
                         this.zoom += event.deltaY / -100;
                     }
@@ -2037,6 +2049,7 @@ window.artimus = {
                         this.controlSets.touch.touches[touch.identifier] = {
                             lx: touch.clientX,
                             ly: touch.clientY,
+                            force: touch.force,
                             obj: touch
                         }
                     }
@@ -2115,6 +2128,7 @@ window.artimus = {
                             if (this.controlSets.touch.hadMoved) return;
 
                             const position = this.getCanvasPosition(firstTouch.clientX, firstTouch.clientY);
+                            this.pressureMultiplier = this.calculatePressureMultiplier(firstTouch.force);
 
                             //Initilize drawing if we haven't
                             if (!this.toolDown) {
@@ -2146,6 +2160,7 @@ window.artimus = {
                         this.controlSets.touch.touches[touch.identifier] = {
                             lx: touch.clientX,
                             ly: touch.clientY,
+                            force: touch.force,
                             obj: touch
                         }
                     }
@@ -2203,6 +2218,19 @@ window.artimus = {
                     }
                 }
             }
+        }
+
+        calculatePressureMultiplier(pressure) {
+            //Get pressure values
+            const {lightPressure, lightMultiplier, heavyPressure, heavyMultiplier} = artimus.penCalibration;
+            pressure = Math.max(Math.min(heavyPressure, pressure), lightPressure);
+
+            //Make sure there are no conflicts
+            if (lightPressure == heavyPressure) return 1;
+            if (lightMultiplier == heavyMultiplier) return lightMultiplier;
+
+            //Calculate if there are no conflicts
+            return lightMultiplier * (heavyMultiplier - lightMultiplier) * ((pressure - lightPressure) / (heavyPressure - lightPressure))
         }
 
         requestKeyboard() {
