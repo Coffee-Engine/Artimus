@@ -131,3 +131,37 @@
     justify-content: center;
     align-items: center;
 }
+
+@media screen and (min-height: 100vw) {
+    .popup-newFile {
+        display: grid;
+        grid-template-columns: none;
+        grid-template-rows: 50% 50%;
+    }
+
+    .newFile-presets {
+        grid-template-columns: 25% 25% 25% 25%;
+    }
+
+    .newFile-tuning {
+        grid-template-rows: none;
+        grid-template-columns: auto 1fr 1fr;
+    }
+
+    .newFile-tuning-previewHolder {
+        aspect-ratio: 1;
+        height: calc(100% - 32px);
+    }
+
+    .newFile-sizingDiv {
+        justify-content: center;
+
+        grid-template-columns: none;
+        grid-template-rows: 50% 50%;
+        aspect-ratio: 1;
+    }
+
+    .newFile-resolutionHolder {
+        justify-content: center;
+    }
+}
