@@ -189,8 +189,8 @@
     "artimus.modal.settings.hotkeys.functions.cropToSelection": "Recortar",
     "artimus.modal.settings.hotkeys.functions.importFromPC": "Cargar",
     "artimus.modal.settings.hotkeys.functions.exportToPC": "Guardar",
-    "artimus.modal.settings.hotkeys.functions.createLayer": "Nueva capa",
-    "artimus.modal.settings.hotkeys.functions.zoomIn": "Hacer zoom",
+    "artimus.modal.settings.hotkeys.functions.createLayer": "Nueva Capa",
+    "artimus.modal.settings.hotkeys.functions.zoomIn": "Hacer Zoom",
     "artimus.modal.settings.hotkeys.functions.zoomOut": "Quitar Zoom",
 
     "artimus.modal.settings.touchCalibration.start": "¡Empeza Calibrado!",
