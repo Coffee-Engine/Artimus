@@ -195,7 +195,7 @@
 
     "artimus.modal.settings.touchCalibration.start": "¡Empeza Calibrado!",
     "artimus.modal.settings.touchCalibration.lightly": "Pulsa y LIGERAMENTE arrastra. Solta este contento.",
-    "artimus.modal.settings.touchCalibration.heavily": "Repeto, excepto fuerte.",
+    "artimus.modal.settings.touchCalibration.heavily": "Repeto, excepto FUERTE.",
     "artimus.modal.settings.touchCalibration.calibrated": "¡Calibrado! ¡Pulsa de nuevo a reiniciar!",
     "artimus.modal.settings.touchCalibration.lightMultiplier": "Multiplicador Ligero",
     "artimus.modal.settings.touchCalibration.heavyMultiplier": "Multiplicador Fuerte",
