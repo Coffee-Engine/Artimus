@@ -22,7 +22,7 @@ artimus.tools.selectionLasso = class extends artimus.tool {
     mouseUp(gl, x, y, toolProperties) {
         if (this.path) {
             this.path.push(x, y);
-            if (this.path.length == 0) this.workspace.clearSelection();
+            if (this.path.length <= 2) this.workspace.clearSelection();
             else this.workspace.setSelection(this.path);
         }
 
