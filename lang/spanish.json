@@ -194,11 +194,11 @@
     "artimus.modal.settings.hotkeys.functions.zoomOut": "Quitar Zoom",
 
     "artimus.modal.settings.touchCalibration.start": "¡Empeza Calibrado!",
-    "artimus.modal.settings.touchCalibration.lightly": "Press and drag LIGHTLY. Release when satisfied.",
-    "artimus.modal.settings.touchCalibration.heavily": "Now repeat, but HEAVILY.",
-    "artimus.modal.settings.touchCalibration.calibrated": "¡Calibrado! ¡Empuja de nuevo a reinicio!",
-    "artimus.modal.settings.touchCalibration.lightMultiplier": "Light Multiplier",
-    "artimus.modal.settings.touchCalibration.heavyMultiplier": "Heavy Multiplier",
+    "artimus.modal.settings.touchCalibration.lightly": "Pulsa y LIGERAMENTE arrastra. Solta este contento.",
+    "artimus.modal.settings.touchCalibration.heavily": "Repeto, excepto fuerte.",
+    "artimus.modal.settings.touchCalibration.calibrated": "¡Calibrado! ¡Pulsa de nuevo a reiniciar!",
+    "artimus.modal.settings.touchCalibration.lightMultiplier": "Multiplicador Ligero",
+    "artimus.modal.settings.touchCalibration.heavyMultiplier": "Multiplicador Fuerte",
 
     "artimus.modal.settings.palettes.create": "Nuevo Paleta",
     "artimus.modal.settings.palettes.import": "Cargar Paleta",
