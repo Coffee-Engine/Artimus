@@ -9,6 +9,7 @@
     "artimus.tool.curve": "Curva",
     "artimus.tool.paintBucket": "Cubeta de Pintura",
     "artimus.tool.rectangle": "Rectángulo",
+    "artimus.tool.shape": "Forma",
     "artimus.tool.circle": "Circulo",
     "artimus.tool.text": "Texto",
     "artimus.tool.jumble": "Mezclar",
@@ -106,10 +107,10 @@
     "artimus.modal.layerProperty.done": "Hecho",
 
     "artimus.modal.newFile.title": "Nuevo Archivo",
-    "artimus.modal.newFile.create": "Crear!",
+    "artimus.modal.newFile.create": "¡Crear!",
 
     "artimus.modal.resizeFile.title": "Redimensionar",
-    "artimus.modal.resizeFile.resize": "Redimensionar!",
+    "artimus.modal.resizeFile.resize": "¡Redimensionar!",
 
     "artimus.modal.exportFile.title": "Exportar Archivo",
     "artimus.modal.exportFile.preferred": "(Preferido)",
@@ -169,9 +170,9 @@
 
     "artimus.modal.settings.hotkeys.add": "+",
     "artimus.modal.settings.hotkeys.remove": "-",
-    "artimus.modal.settings.hotkeys.clickToInput": "Clic para Entrada!",
+    "artimus.modal.settings.hotkeys.clickToInput": "¡Clic para Entrada!",
     "artimus.modal.settings.hotkeys.waitingForInput": "Tener Esperar para Entrada.",
-    "artimus.modal.settings.hotkeys.hotkeyExists": "Acceso Directos Existe!",
+    "artimus.modal.settings.hotkeys.hotkeyExists": "¡Acceso Directos Existe!",
 
     "artimus.modal.settings.hotkeys.ctrl": "ctrl",
     "artimus.modal.settings.hotkeys.shift": "shift",
@@ -191,6 +192,13 @@
     "artimus.modal.settings.hotkeys.functions.createLayer": "Nueva capa",
     "artimus.modal.settings.hotkeys.functions.zoomIn": "Hacer zoom",
     "artimus.modal.settings.hotkeys.functions.zoomOut": "Quitar Zoom",
+
+    "artimus.modal.settings.touchCalibration.start": "¡Empeza Calibrado!",
+    "artimus.modal.settings.touchCalibration.lightly": "Press and drag LIGHTLY. Release when satisfied.",
+    "artimus.modal.settings.touchCalibration.heavily": "Now repeat, but HEAVILY.",
+    "artimus.modal.settings.touchCalibration.calibrated": "¡Calibrado! ¡Empuja de nuevo a reinicio!",
+    "artimus.modal.settings.touchCalibration.lightMultiplier": "Light Multiplier",
+    "artimus.modal.settings.touchCalibration.heavyMultiplier": "Heavy Multiplier",
 
     "artimus.modal.settings.palettes.create": "Nuevo Paleta",
     "artimus.modal.settings.palettes.import": "Cargar Paleta",
